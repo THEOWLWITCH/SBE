@@ -11,7 +11,8 @@
   const ZCOL = { claims: '#2A9D8F', sources: '#1D3F63', missing: '#E9A23B', alternatives: '#8AB17D', certainty: '#9B5DE5', questions: '#E76F51' };
   const REL_COL = { supports: '#2E9E32', weakens: '#EF6C00', contradicts: '#C62828', raises: '#1D3F63', check: '#9B5DE5' };
   let busy = false;
-  const view = { zoom: 0.7, sx: null, sy: null, zones: true, full: false, connect: false, from: null };
+  const view = { zoom: 0.7, sx: null, sy: null, zones: true, full: false, connect: false, from: null, flash: null };
+  let lastVw = null, lastCanvas = null;
   try { const v = JSON.parse(localStorage.getItem('sbe.dlm.map.view') || 'null'); if (v) Object.assign(view, { zoom: v.zoom || 0.7, zones: v.zones !== false }); } catch (e) {}
   const saveView = () => { try { localStorage.setItem('sbe.dlm.map.view', JSON.stringify({ zoom: view.zoom, zones: view.zones })); } catch (e) {} };
 
@@ -50,7 +51,7 @@
       const al = (board.alerts || []).filter((a) => a.itemId === i.id);
       const inStack = stackIdx[i.id] !== undefined, top = inStack && stackIdx[i.id] === items.filter((x) => x.cluster === i.cluster).length - 1;
       const links = (board.links || []).filter((l) => l.from === i.id).map((l) => { const to = byId[l.to]; return to ? '<div>↳ ' + esc((M.RELATIONS.find((r) => r.k === l.rel) || {}).t) + ': ' + esc(to.text.slice(0, 40)) + (o.readOnly ? '' : ' <button type="button" class="dlm-btn small" data-unlink="' + esc(l.id) + '" aria-label="הסרת הקשר">×</button>') + '</div>' : ''; }).join('');
-      return '<div class="dlm-item mm-card' + (o.sel === i.id ? ' sel' : '') + (inStack ? ' in-stack' : '') + '" data-item="' + esc(i.id) + '" style="left:' + p.x + 'px;top:' + p.y + 'px;--zc:' + ZCOL[z.k] + (inStack ? ';z-index:' + (10 + stackIdx[i.id]) : '') + '">'
+      return '<div class="dlm-item mm-card' + (o.sel === i.id ? ' sel' : '') + (view.flash === i.id ? ' mm-new' : '') + (inStack ? ' in-stack' : '') + '" data-item="' + esc(i.id) + '" style="left:' + p.x + 'px;top:' + p.y + 'px;--zc:' + ZCOL[z.k] + (inStack ? ';z-index:' + (10 + stackIdx[i.id]) : '') + '">'
         + '<div class="mm-zone">' + esc(z.t) + (i.origin === 'facilitator' ? ' · מנחה' : '') + '</div>'
         + (s ? M.dotHTML(U.scoreNow(s, board)) + ' ' : '') + (al.length ? '<span class="dlm-warnmark" title="התרעה: לבדיקה">⚠</span> ' : '')
         + (o.readOnly || inStack ? '' : '<span class="mm-handle" data-handle="1" title="גוררים מכאן לכרטיס אחר כדי למתוח קו" aria-label="קו לכרטיס אחר">⟶</span>')
@@ -73,11 +74,11 @@
     const tools = '<div class="mm-tools">'
       + (o.readOnly ? '' : '<form class="dlm-add mm-addcard" data-addto="claims"><select class="mm-zsel" aria-label="לאיזה אזור">' + M.ZONES.filter((z) => z.k !== 'sources').map((z) => '<option value="' + z.k + '">' + esc(z.t) + '</option>').join('') + '</select>'
         + '<input type="text" aria-label="כרטיס חדש" placeholder="כרטיס חדש: טענה, שאלה, מידע חסר…"><button class="dlm-btn small main">➕ כרטיס</button></form>'
-        + '<button type="button" class="dlm-btn small" data-addsrc="1">➕ מקור או קובץ</button><button type="button" class="dlm-btn small" data-kadd="1">🗂 קבוצה חדשה</button><button type="button" class="dlm-btn small' + (view.connect ? ' main' : '') + '" data-connect="1">🔗 ' + (view.connect ? 'סיום מתיחת קווים' : 'קו בין כרטיסים') + '</button>')
+        + '<button type="button" class="dlm-btn small" data-addsrc="1">➕ מקור או קובץ</button><button type="button" class="dlm-btn small" data-kadd="1">🗂 קבוצה או ערימה</button><button type="button" class="dlm-btn small' + (view.connect ? ' main' : '') + '" data-connect="1">🔗 ' + (view.connect ? 'סיום מתיחת קווים' : 'קו בין כרטיסים') + '</button>')
       + '<span class="mm-sp"></span><button type="button" class="dlm-btn small" data-zoom="-1" aria-label="הקטנה">−</button><button type="button" class="dlm-btn small" data-zoom="0" title="התאמה למסך">⤢</button><button type="button" class="dlm-btn small" data-zoom="1" aria-label="הגדלה">+</button>'
       + '<label class="mm-zt"><input type="checkbox" data-zones' + (view.zones ? ' checked' : '') + '> אזורי הלוח</label>'
       + '<button type="button" class="dlm-btn small main" data-full="1">' + (view.full ? '✕ יציאה ממסך מלא' : '⛶ מסך מלא') + '</button></div>'
-      + (o.readOnly ? '' : (view.connect ? '<p class="dlm-msg warn mm-help">מצב מתיחת קווים: לוחצים על כרטיס, ואחר כך על הכרטיס שרוצים לחבר אליו.</p>' : '') + '<p class="dlm-hint mm-help">גוררים כרטיס לכל מקום בלוח. כדי למתוח קו: גוררים את ⟶ שבפינת הכרטיס אל כרטיס אחר. כרטיס שנגרר לתוך קבוצה מצטרף אליה. "⧉ ערימה" מקבצת את הכרטיסים של הקבוצה, ו"⋯" פותח פעולות על כרטיס.</p>');
+      + (o.readOnly ? '' : (view.connect ? '<p class="dlm-msg warn mm-help">מצב מתיחת קווים: לוחצים על כרטיס, ואחר כך על הכרטיס שרוצים לחבר אליו.</p>' : '') + '<p class="dlm-hint mm-help">גוררים כרטיס לכל מקום בלוח. כדי למתוח קו: גוררים את ⟶ שבפינת הכרטיס אל כרטיס אחר. גוררים כרטיס על כרטיס אחר כדי לערום אותם יחד, או לתוך קבוצה כדי לצרף אותו אליה. "⧉ ערימה" מקבצת את הכרטיסים של הקבוצה, ו"⋯" פותח פעולות על כרטיס.</p>');
     return '<div class="mm-wrap' + (view.full ? ' mm-full' : '') + '">' + tools + '<div class="mm-view" tabindex="0" aria-label="הלוח כמפת חשיבה"><div class="mm-size" style="width:' + Math.round(W * view.zoom) + 'px;height:' + Math.round(H * view.zoom) + 'px">'
       + '<div class="mm-canvas" style="width:' + W + 'px;height:' + H + 'px;transform:scale(' + view.zoom + ')">' + zonesBg + clusterHTML + '<svg class="mm-lines" width="' + W + '" height="' + H + '"></svg>' + cards + '</div></div></div></div>';
   }
@@ -99,8 +100,14 @@
     o = o || {};
     const board = o.board, vw = root.querySelector('.mm-view'), canvas = root.querySelector('.mm-canvas');
     if (!vw || !canvas) return;
+    lastVw = vw; lastCanvas = canvas;
     if (view.sx === null) { view.sx = vw.scrollWidth; view.sy = 0; }
     vw.scrollLeft = view.sx; vw.scrollTop = view.sy;
+    // כרטיס חדש: גוללים אליו ומאירים אותו לרגע (17/11/2026: "אני לוחצת על הוסף ולא רואה כלום")
+    if (view.flash) { const nc = canvas.querySelector('.mm-card[data-item="' + CSS.escape(view.flash) + '"]'); view.flash = null;
+      if (nc) { const zz = view.zoom; const tx = nc.offsetLeft * zz - vw.clientWidth / 2 + 115 * zz, ty = nc.offsetTop * zz - vw.clientHeight / 2 + 60 * zz;
+        if (nc.offsetLeft * zz < vw.scrollLeft || nc.offsetLeft * zz > vw.scrollLeft + vw.clientWidth - 100 || nc.offsetTop * zz < vw.scrollTop || nc.offsetTop * zz > vw.scrollTop + vw.clientHeight - 60) { vw.scrollLeft = Math.max(0, tx); vw.scrollTop = Math.max(0, ty); view.sx = vw.scrollLeft; view.sy = vw.scrollTop; }
+        setTimeout(() => nc.classList.remove('mm-new'), 5200); } }
     vw.addEventListener('scroll', () => { view.sx = vw.scrollLeft; view.sy = vw.scrollTop; });
     requestAnimationFrame(() => drawLines(root, board));
     root.querySelectorAll('[data-zoom]').forEach((b) => b.onclick = () => {
@@ -126,10 +133,22 @@
         const st = point(e), ox = el.offsetLeft, oy = el.offsetTop; let moved = false;
         el.setPointerCapture(e.pointerId); busy = true;
         const mv = (ev) => { const p = point(ev), dx = p.x - st.x, dy = p.y - st.y; if (!moved && Math.hypot(dx, dy) < 4) return; moved = true; el.classList.add('drag'); el.style.left = Math.round(ox + dx) + 'px'; el.style.top = Math.round(oy + dy) + 'px'; drawLines(root, board); };
-        const up = () => {
-          el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up); el.classList.remove('drag');
-          if (!moved) { busy = false; return; }
+        const up = (ev) => {
+          el.removeEventListener('pointermove', mv); el.removeEventListener('pointerup', up); el.removeEventListener('pointercancel', up);
+          if (!moved) { el.classList.remove('drag'); busy = false; return; }
+          // 17/11/2026 ("לא רואה סימון של ערמה"): כרטיס שנגרר על כרטיס אחר יוצר איתו ערימה (או מצטרף לקבוצה שלו)
+          el.style.pointerEvents = 'none'; const under = ev && ev.clientX !== undefined ? document.elementFromPoint(ev.clientX, ev.clientY) : null; el.style.pointerEvents = '';
+          el.classList.remove('drag');
+          const tc = under && under.closest ? under.closest('.mm-card') : null;
           const x = el.offsetLeft, y = el.offsetTop, k = clusterAt(x + el.offsetWidth / 2, y + 30);
+          if (tc && tc !== el && !k) {
+            const tIt = (board.items || []).find((i) => i.id === tc.dataset.item);
+            if (tIt && tIt.cluster) { send({ kind: 'move', id: el.dataset.item, x, y, cluster: tIt.cluster }); return; }
+            const n = prompt('ערימה חדשה משני הכרטיסים. מה שם הערימה? (למשל: טענות על ניגוד עניינים)', '');
+            if (n === null) { send({ kind: 'move', id: el.dataset.item, x, y, cluster: null }); return; }
+            send({ kind: 'cluster', action: 'add', name: n.trim() || 'ערימה', x: Math.max(0, tc.offsetLeft - 14), y: Math.max(0, tc.offsetTop - 46), w: 300, h: 230, items: [tc.dataset.item, el.dataset.item], stacked: true });
+            return;
+          }
           send({ kind: 'move', id: el.dataset.item, x, y, cluster: k ? k.id : null });
         };
         el.addEventListener('pointermove', mv); el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
@@ -200,5 +219,10 @@
     };
   }
 
-  window.SBE_DLM_MAP = { html, bind, busy: () => busy, W, H };
+  // מרכז החלק הנראה של הלוח (לכרטיס חדש), וסימון כרטיס חדש
+  function center() {
+    if (!lastVw || !document.body.contains(lastVw)) return null;
+    const z = view.zoom; return { x: Math.round((lastVw.scrollLeft + lastVw.clientWidth / 2) / z - CW / 2 + (Math.random() * 60 - 30)), y: Math.round((lastVw.scrollTop + lastVw.clientHeight / 2) / z - 60 + (Math.random() * 60 - 30)) };
+  }
+  window.SBE_DLM_MAP = { html, bind, busy: () => busy, W, H, center, flash: (id) => { view.flash = id || null; } };
 })();

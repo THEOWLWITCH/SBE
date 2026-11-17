@@ -198,7 +198,8 @@
     const cl = $('[data-cancel-link]'); if (cl) cl.onclick = () => { S.linkFrom = null; stepBoard(); };
     root.querySelectorAll('form[data-addto]').forEach((f) => f.onsubmit = async (e) => {
       e.preventDefault(); const v = f.querySelector('input').value.trim(); if (!v) return;
-      await boardOp({ kind: 'add', zone: f.dataset.addto, text: v }).catch(() => {}); refreshBoard();
+      const c = (window.SBE_DLM_MAP && mapOn() && window.SBE_DLM_MAP.center()) || {};
+      const r = await boardOp(Object.assign(c, { kind: 'add', zone: f.dataset.addto, text: v })).catch(() => null); if (r && r.id && window.SBE_DLM_MAP) window.SBE_DLM_MAP.flash(r.id); refreshBoard();
     });
     root.querySelectorAll('[data-addsrc]').forEach((b) => b.onclick = () => sourceForm());
     root.querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => { if (confirm('להסיר את הכרטיס מהלוח? הגרסה הקודמת נשמרת ביומן.')) { await boardOp({ kind: 'remove', id: b.dataset.del }).catch(() => {}); refreshBoard(); } });
@@ -252,7 +253,8 @@
           const fid = await uploadFile(file); source.fileId = fid; source.fileName = file.name; if (!source.title) source.title = file.name;
           if (!source.type) source.type = /^image\//.test(file.type) ? 'תמונה' : /^video\//.test(file.type) ? 'וידאו' : /^audio\//.test(file.type) ? 'הקלטת קול' : '';
         }
-        const r = await call('p.board', { kind: 'add', source, origin: p.origin === 'ai' ? 'ai' : 'participant', text: source.title }); S.board = r.board; S.ver = r.board.ver; dlg.close(); refreshBoard();
+        const c = (window.SBE_DLM_MAP && mapOn() && window.SBE_DLM_MAP.center()) || {};
+        const r = await call('p.board', Object.assign(c, { kind: 'add', source, origin: p.origin === 'ai' ? 'ai' : 'participant', text: source.title })); if (r.id && window.SBE_DLM_MAP) window.SBE_DLM_MAP.flash(r.id); S.board = r.board; S.ver = r.board.ver; dlg.close(); refreshBoard();
         const it = itemById(r.id); if (it && source.url) verifySource(it.sourceId, true); }
       catch (e) { $('#sf-save').disabled = false; $('#sf-msg').innerHTML = msg(e.message, 'err'); }
     };
