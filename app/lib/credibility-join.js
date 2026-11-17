@@ -131,7 +131,7 @@
       + '<p class="dlm-hint">' + esc(M.ATT.note) + '</p>'
       + '<ul class="crd-prelist">' + t.members.map((m) => '<li>' + ((S.data.reflections[m.id] || {}).pre ? '✓ ' : '○ ') + esc(m.name) + '</li>').join('') + '</ul>'
       + '<label for="pm">השם שלי</label><select id="pm" data-closed><option value="">בחירה</option>' + missing.map((m) => '<option value="' + esc(m.id) + '"' + (sel === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>').join('') + '</select>'
-      + (sel ? attForm('pre-') + '<label for="pi">' + esc(M.INITIAL.t) + '</label><textarea id="pi" rows="3" placeholder="' + esc(M.INITIAL.ph) + '"></textarea>'
+      + (sel ? attForm('pre-') + '<h4 class="crd-ini-h">' + esc(M.INITIAL.h) + '</h4><label for="pi">' + esc(M.INITIAL.t) + ' <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="pi" rows="5"></textarea>'
         + '<p><button class="dlm-btn main" id="savePre">שליחת השאלון</button></p>' : '')
       + '<div id="pmm"></div></div>';
   }

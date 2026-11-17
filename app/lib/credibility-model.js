@@ -112,7 +112,7 @@
   function reflectText(ctx) {
     const r = ctx.reflect || {}, L = [];
     if (ctx.dilemma) L.push('הדילמה: ' + ctx.dilemma);
-    if (ctx.initial) L.push('העמדה הראשונית: ' + ctx.initial);
+    if (ctx.initial) L.push('העמדה הראשונית (על ספקולציות, פייק ניוז, קונספירציות ודיסאינפורמציה בתקשורת, ברשתות החברתיות ובעיתונות): ' + ctx.initial);
     for (const q of REFLECT) { const v = r[q.k]; if (!v) continue; L.push(q.t + ' ' + (q.opts ? ((q.opts.find((o) => o[0] === v) || [, v])[1]) : v)); }
     if (ctx.checks) L.push('הבדיקות של הצוות (ציון ראשון של ה־AI / ציון הצוות / ציון חוזר): ' + ctx.checks);
     return L.join('\n');
@@ -145,7 +145,7 @@
     for (const q of ATTITUDES) { const v = o[q.k]; if (v === 'na') r[q.k] = 'na'; else if ([1, 2, 3, 4, 5].includes(Number(v)) && v !== '' && v != null) r[q.k] = Number(v); else return null; }
     return r;
   }
-  const INITIAL = { t: 'עמדה ראשונית על הדילמה (רשות)', ph: 'כמה משפטים: מה אני חושב/ת עכשיו, מה איני יודע/ת, ומה יכול לשנות את דעתי. אין צורך בהזדהות פוליטית.' };
+  const INITIAL = { t: 'מה עמדתי לגבי ספקולציות, פייק ניוז, קונספירציות ודיסאינפורמציה בתקשורת, ברשתות החברתיות ובעתונות?', h: 'העמדה הראשונית שלי', ph: '' };
   // מחוון לציון התרגיל (למרצות): משקלות, ארבע רמות
   const GRADE = {
     levels: [[100, 'מצוין'], [75, 'טוב'], [50, 'חלקי'], [25, 'בתחילת הדרך']],
