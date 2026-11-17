@@ -59,9 +59,9 @@
       + '<label style="font-weight:400"><input type="checkbox" id="nr" checked> הפעילות מלווה במחקר (המשתתפים יבחרו אם להשתתף בו)</label>'
       + '<p><button class="dlm-btn main" id="create">יצירת הפעילות</button></p><div id="cm"></div></div>'
       + '<div class="dlm-card soft"><h2>הפעילויות שלי</h2>' + (rows.length ? '<table class="dlm-table"><thead><tr><th>הפעילות</th><th>מצב</th><th>כיתות</th><th>עודכנה</th><th></th></tr></thead><tbody>'
-        + rows.map((r) => '<tr><td><a href="#" data-open="' + esc(r.id) + '">' + esc(r.title) + '</a>' + (r.co ? ' <span class="dlm-tag">שותפות בהנחיה</span>' : '') + '</td><td>' + esc(STATUS[r.status]) + '</td><td>' + r.classes + '</td><td>' + esc(new Date(r.updatedAt).toLocaleDateString('he-IL')) + '</td><td>' + (r.co ? '' : '<button type="button" class="dlm-btn small red" data-delact="' + esc(r.id) + '" data-name="' + esc(r.title) + '">מחיקה</button>') + '</td></tr>').join('') + '</tbody></table>'
+        + rows.map((r) => '<tr><td><a href="#" data-open="' + esc(r.id) + '">' + esc(r.title) + '</a>' + (r.co ? ' <span class="dlm-tag">שותפות בהנחיה</span>' : '') + '</td><td>' + esc(STATUS[r.status]) + '</td><td>' + r.classes + '</td><td>' + esc(new Date(r.updatedAt).toLocaleDateString('he-IL')) + '</td><td>' + (r.co ? '' : '<button type="button" class="dlm-btn small" data-coact="' + esc(r.id) + '" data-name="' + esc(r.title) + '">🤝 קוד שותפות</button> <button type="button" class="dlm-btn small red" data-delact="' + esc(r.id) + '" data-name="' + esc(r.title) + '">מחיקה</button>') + '</td></tr>').join('') + '</tbody></table>'
         : '<p>עדיין אין פעילויות. אפשר להתחיל מאחת משלוש הדילמות המוכנות.</p>') + '</div>'
-      + '<div class="dlm-card soft"><h2>הצטרפות להנחיה של פעילות קיימת</h2><p class="dlm-hint">כשמנחים יחד את אותה פעילות: מי שיצר/ה אותה מפיק/ה קוד שותפות (בלשונית "כיתות ו־QR"), ומי שמצטרף/ת מזינה אותו כאן.</p>'
+      + '<div class="dlm-card soft"><h2>קיבלתי קוד שותפות ממנחה אחר/ת</h2><p class="dlm-hint">המקום הזה הוא רק להצטרפות לפעילות של מישהו אחר. כדי לתת קוד שותפות לפעילות שיצרת: הכפתור "🤝 קוד שותפות" בשורה של הפעילות, בטבלה "הפעילויות שלי".</p>'
       + '<div class="dlm-grid2"><div><label for="coc">קוד השותפות</label><input type="text" id="coc" dir="ltr" placeholder="למשל: AB12CD34"></div><div><label for="con">השם שלי, כפי שיופיע לשותפים (רשות)</label><input type="text" id="con" placeholder="למשל: ד״ר עינת"></div></div>'
       + '<p><button class="dlm-btn" id="cojoin">הצטרפות</button></p><div id="com"></div></div>';
     $('#nt').onchange = () => {
@@ -79,6 +79,16 @@
       catch (e) { $('#cm').innerHTML = msg(e.message, 'err'); }
     };
     app.querySelectorAll('[data-open]').forEach((a) => a.onclick = (e) => { e.preventDefault(); open(a.dataset.open); });
+    // 17/11/2026 ("אני יצרתי את הפעילות ואיני יכולה לתת קוד"): קוד שותפות ישר מרשימת הפעילויות
+    app.querySelectorAll('[data-coact]').forEach((b) => b.onclick = async () => {
+      try {
+        let a = (await call('f.get', { id: b.dataset.coact })).activity;
+        if (!a.coCode) a = (await call('f.coCode', { id: a.id })).activity;
+        openDlg('<h2>קוד שותפות: ' + esc(b.dataset.name) + '</h2><p>שולחים את הקוד למנחה השותף/ה. הוא/היא נכנס/ת לבירור דילמות עם קוד Begood משלו/ה, ומזין/ה את הקוד ב"קיבלתי קוד שותפות ממנחה אחר/ת".</p>'
+          + '<p><span class="dlm-code" style="font-size:1.6rem">' + esc(a.coCode) + '</span></p><div class="dlm-row"><button class="dlm-btn main" id="coCopy">העתקה</button><button class="dlm-btn" data-close>סגירה</button></div>');
+        $('#coCopy').onclick = () => { navigator.clipboard.writeText(a.coCode).then(() => { $('#coCopy').textContent = '✓ הועתק'; }).catch(() => {}); };
+      } catch (e) { alert(e.message); }
+    });
     // 17/11/2026 ("אפשר למחוק פעילות מכאן"): מחיקה מרשימת הפעילויות, עם אישור
     app.querySelectorAll('[data-delact]').forEach((b) => b.onclick = async () => {
       if (!confirm('למחוק את הפעילות "' + b.dataset.name + '"? יימחקו הלוחות וכל מה שהמשתתפים כתבו. אי אפשר לבטל.')) return;
