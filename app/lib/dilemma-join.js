@@ -165,14 +165,20 @@
     body().innerHTML = '<div class="dlm-card"><h2>הלוח ' + (S.activity.mode === 'group' ? 'הקבוצתי' : 'שלי') + '</h2>'
       + '<details><summary><b>כיצד עובדים עם הלוח?</b></summary><p><b>' + esc(M.PROTOCOL.lead) + '</b></p><ol>' + M.PROTOCOL.steps.map((s) => '<li>' + esc(s) + '</li>').join('') + '</ol><p>' + esc(M.PROTOCOL.rolesNote) + ' לדוגמה: ' + esc(M.PROTOCOL.roles.join(', ')) + '.</p><p class="dlm-hint">' + esc(M.PROTOCOL.noSummary) + '</p></details>'
       + (S.linkFrom ? msg('בחרו כרטיס אחר כדי לקשר אליו, או לחצו כאן לביטול.', 'warn').replace('<div class="dlm-msg', '<div data-cancel-link class="dlm-msg') : '')
-      + '<div class="dlm-boardwrap"><div id="boardHost">' + U.boardHTML(S.board, { readOnly: ro, sel: S.linkFrom }) + '</div><aside>' + M.legendHTML()
-      + '<p class="dlm-hint" style="margin-top:.6rem">' + esc(M.RUBRIC_NOTES.grey) + '</p></aside></div></div>'
+      + '<div class="dlm-boardwrap mm-wide"><div id="boardHost">' + boardInner(ro) + '</div><details class="dlm-card soft"><summary><b>מקרא אמינות מקורות</b></summary>' + M.legendHTML()
+      + '<p class="dlm-hint" style="margin-top:.6rem">' + esc(M.RUBRIC_NOTES.grey) + '</p></details></div></div>'
       + (ro ? '' : aiPanelHTML()) + nextBtn('challenge', 'למידע החדש או הסותר');
     bindBoard(); if (!ro) bindAI(); bindNext();
   }
+  // 17/11/2026: הלוח כמפת חשיבה (גרירה, קבוצות וערימות), ואפשר לחזור לתצוגת האזורים.
+  const mapOn = () => { try { return localStorage.getItem('sbe.dlm.view') !== 'zones'; } catch (e) { return true; } };
+  function boardInner(ro) {
+    const sw = '<div class="dlm-row" style="justify-content:flex-end;margin-bottom:.3rem"><button type="button" class="dlm-btn small" data-viewsw="1">' + (mapOn() ? '▦ תצוגת אזורים' : '🗺 מפת חשיבה') + '</button></div>';
+    return sw + (mapOn() && window.SBE_DLM_MAP ? window.SBE_DLM_MAP.html(S.board, { readOnly: ro, sel: S.linkFrom }) : U.boardHTML(S.board, { readOnly: ro, sel: S.linkFrom }));
+  }
   function refreshBoard() {
     const host = $('#boardHost'); if (!host) return;
-    host.innerHTML = U.boardHTML(S.board, { readOnly: S.activity.status !== 'open', sel: S.linkFrom });
+    host.innerHTML = boardInner(S.activity.status !== 'open');
     bindBoard(true);
   }
   async function boardOp(input) {
@@ -186,6 +192,8 @@
   }
   function bindBoard(onlyBoard) {
     const root = onlyBoard ? $('#boardHost') : body();
+    const vs = root.querySelector('[data-viewsw]'); if (vs) vs.onclick = () => { try { localStorage.setItem('sbe.dlm.view', mapOn() ? 'zones' : 'map'); } catch (e) {} refreshBoard(); };
+    if (mapOn() && window.SBE_DLM_MAP) window.SBE_DLM_MAP.bind($('#boardHost'), { board: S.board, readOnly: S.activity.status !== 'open', op: (input) => boardOp(input), refresh: refreshBoard });
     bindSourceClicks(root);
     const cl = $('[data-cancel-link]'); if (cl) cl.onclick = () => { S.linkFrom = null; stepBoard(); };
     root.querySelectorAll('form[data-addto]').forEach((f) => f.onsubmit = async (e) => {
@@ -554,7 +562,7 @@
         try {
           const r = await call('p.poll', { since: S.ver });
           if (r.status !== S.activity.status || r.challengeOpen !== S.activity.challengeOpen) { S.activity.status = r.status; S.activity.challengeOpen = r.challengeOpen; if (r.board) { S.board = r.board; S.ver = r.ver; } main(); }
-          else if (r.board) { const typing = document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName) && document.activeElement.value; if (!typing) { S.board = r.board; S.ver = r.ver; if (S.step === 'board') refreshBoard(); else if (S.step === 'challenge') stepChallenge(); } }
+          else if (r.board) { const typing = (document.activeElement && /^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement.tagName) && document.activeElement.value) || (window.SBE_DLM_MAP && window.SBE_DLM_MAP.busy()); if (!typing) { S.board = r.board; S.ver = r.ver; if (S.step === 'board') refreshBoard(); else if (S.step === 'challenge') stepChallenge(); } }
         } catch (e) { if (e.status === 401) { say('הכניסה הסתיימה. אפשר לחזור עם הקוד האישי.', 'warn'); return; } }
       }
       poll();

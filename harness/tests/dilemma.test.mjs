@@ -373,3 +373,30 @@ test('participants upload media to their own board; facilitator can open it and 
   assert.equal(fget.stats.consents.some((c) => c.code === x.code), false);
   assert.ok(st);
 });
+
+// 17/11/2026: מפת חשיבה: מיקום חופשי, קבוצות עם שם וערימה; והמנחה עובד/ת על הלוח
+test('mind map: free position, named clusters that stack and move their cards; facilitator adds and arranges on a group board', async () => {
+  const s = await setup();
+  const x = await s.join(s.c1, 'learning', 0);
+  const [, a1] = await x.P('p.board', { kind: 'add', zone: 'claims', text: 'טענה א' });
+  const [, a2] = await x.P('p.board', { kind: 'add', zone: 'claims', text: 'טענה ב', x: 500, y: 400 });
+  const [ms, mv] = await x.P('p.board', { kind: 'move', id: a1.id, x: 120, y: 90 });
+  assert.equal(ms, 200, JSON.stringify(mv));
+  assert.deepEqual(mv.board.items.find((i) => i.id === a1.id).pos, { x: 120, y: 90 });
+  const [, k] = await x.P('p.board', { kind: 'cluster', action: 'add', name: 'ניגוד עניינים', x: 100, y: 60, items: [a1.id, a2.id] });
+  assert.equal(k.board.clusters[0].name, 'ניגוד עניינים');
+  assert.equal(k.board.items.filter((i) => i.cluster === k.id).length, 2);
+  const [, st] = await x.P('p.board', { kind: 'cluster', action: 'edit', id: k.id, stacked: true, name: 'ניגוד עניינים וקרבה' });
+  assert.equal(st.board.clusters[0].stacked, true);
+  const [, mvk] = await x.P('p.board', { kind: 'cluster', action: 'move', id: k.id, x: 200, y: 160 });
+  assert.deepEqual(mvk.board.items.find((i) => i.id === a1.id).pos, { x: 220, y: 190 }, 'cards move with their cluster');
+  const [, rm] = await x.P('p.board', { kind: 'cluster', action: 'remove', id: k.id });
+  assert.equal(rm.board.clusters.length, 0); assert.equal(rm.board.items.find((i) => i.id === a1.id).cluster, null);
+  const g = s.c1.groups[0].id;
+  const f = await s.fac('f.boardOp', { id: s.A.id, g, op: { kind: 'add', zone: 'questions', text: 'שאלה מהמנחה' } });
+  const fit = f.board.items.find((i) => i.id === f.id);
+  assert.equal(fit.by, 'מנחה'); assert.equal(fit.origin, 'facilitator');
+  await s.fac('f.boardOp', { id: s.A.id, g, op: { kind: 'move', id: a2.id, x: 10, y: 10 } });
+  assert.equal((await s.run('f.boardOp', { id: s.A.id, g: 'g-nope', op: { kind: 'add', text: 'x' } }, { token: 'T1' }))[0], 404);
+  assert.equal((await s.run('f.boardOp', { id: s.A.id, g, op: { kind: 'add', text: 'x' } }, { token: 'T2' }))[0], 404, 'another facilitator cannot write');
+});
