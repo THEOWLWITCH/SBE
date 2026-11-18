@@ -254,7 +254,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <span class="chip muted sbe-sysonly" title="בנוי, כבוי כברירת מחדל עד הפעלה מוסדית">מצב קול: כבוי</span>
   <span class="spacer"></span>
   <button type="button" id="bRecall">הסיפור שוב</button>
-  <button type="button" id="bEndChat" disabled>סיום שיחה</button>
+  <button type="button" id="bEndChat" disabled>סיום ומשוב</button>
   <button type="button" class="danger" id="bExit">יציאה</button>
 </div>
 <div class="progress"><div class="progress-fill" id="progressFill"></div></div>
@@ -971,7 +971,10 @@ function updateProgress(){
   const endBtn = document.getElementById("bEndChat");
   const ready = state.turn >= MIN_TURNS;
   endBtn.disabled = !ready || state.ended;
-  endBtn.title = ready ? "" : `אפשר לסיים מתור ${MIN_TURNS}`;
+  endBtn.title = ready ? "סיום השיחה וקבלת משוב על התרגול" : `המשוב נפתח מתור ${MIN_TURNS}`;
+  // 18/11/2026 ("וודא שבכלי יש כפתור לקבלת משוב על התרגול"): הכפתור אומר במילים מה הוא עושה, וגם מתי הוא נפתח.
+  endBtn.textContent = ready || state.ended ? "סיום ומשוב ←" : `סיום ומשוב (מתור ${MIN_TURNS})`;
+  endBtn.classList.toggle("primary", ready && !state.ended);
 }
 
 // כשהתרגול נעצר בתוך הצ'אט (חצייה אלימה) — לא עוברים מסך, כדי שהמתרגלת
