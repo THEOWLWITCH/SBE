@@ -72,7 +72,7 @@ export async function handleTalkStudy(store, body, { isSys = false } = {}) {
           const mine = parts.filter((p) => p.code === c.code);
           const step = (n, part) => mine.filter((p) => p.sessions?.[n]?.[part]).length;
           return { ...classView(c), participants: mine.length,
-            progress: [1, 2, 3].map((n) => ({ session: n, pre: n === 1 ? step(1, 'pre') : null, model: step(n, 'model'), practice: step(n, 'practice'), post: step(n, 'post'), reflection: step(n, 'reflection') })) };
+            progress: [1, 2, 3].map((n) => ({ session: n, pre: n === 1 ? step(1, 'pre') : null, model: step(n, 'model'), practice: step(n, 'practice'), post: n === 3 ? step(3, 'post') : null, reflection: n === 3 ? step(3, 'reflection') : null })) };
         }) }];
       }
       const code = String(d.code || '');
@@ -135,13 +135,15 @@ export async function handleTalkStudy(store, body, { isSys = false } = {}) {
       if (c.status !== 'open') throw new TsError('הקבוצה סגורה כרגע. מה שכתבתם נשמר במכשיר.', 403);
       const n = Number(d.session), part = String(d.part || '');
       if (![1, 2, 3].includes(n) || !PARTS.includes(part)) throw new TsError('חלק לא מוכר');
+      // 18/11/2026: שאלון עמדות בפתיחת מפגש 1 ובסוף מפגש 3; רפלקציה רק במפגש 3; משוב אחרי כל תרגול
+      if ((part === 'pre' && n !== 1) || ((part === 'post' || part === 'reflection') && n !== 3)) throw new TsError('החלק הזה לא שייך למפגש הזה');
       const data = d.data && typeof d.data === 'object' && !Array.isArray(d.data) ? d.data : null;
       if (!data) throw new TsError('אין מה לשמור');
       if (JSON.stringify(data).length > LIM.part) throw new TsError('התוכן ארוך מדי', 413);
       p.sessions = p.sessions || {};
       const s = p.sessions[n] = p.sessions[n] || { startedAt: now() };
       s[part] = { ...structuredClone(data), at: now() };
-      if (part === 'reflection') s.doneAt = now();
+      if (part === 'reflection' || (part === 'practice' && n < 3)) s.doneAt = s.doneAt || now();
       p.updatedAt = now();
       await store.set('tsp:' + c.code + ':' + p.pid, p);
       return [200, { participant: participantView(p) }];

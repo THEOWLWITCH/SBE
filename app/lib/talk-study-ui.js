@@ -47,6 +47,7 @@
     }
     clearTimeout(t);
     await takePracticeResult();
+    if (justDone) { const n = justDone; justDone = 0; return doneView(n); }
     render();
   }
 
@@ -55,12 +56,13 @@
     if (!me) return;
     const res = store.get('sbe.ts.result');
     if (!res || res.code !== code || res.pid !== me.pid) return;
-    try { const r = await api('p.save', { code, pid: cred.pid, key: cred.key, session: res.session, part: 'practice', data: res.data }); me = r.participant; store.del('sbe.ts.result'); }
+    try { const r = await api('p.save', { code, pid: cred.pid, key: cred.key, session: res.session, part: 'practice', data: res.data }); me = r.participant; store.del('sbe.ts.result'); if (res.session < 3) justDone = res.session; }
     catch (e) { /* נשאר במכשיר, וננסה שוב בפעם הבאה */ }
   }
 
   function currentSession() { for (const n of [1, 2, 3]) if (!me.sessions?.[n]?.doneAt) return n; return 4; }
   function currentStep(n) { const s = me.sessions?.[n] || {}; for (const st of T.stepsFor(n)) { if (st.id === 'consent') continue; if (!s[st.id]) return st.id; } return 'done'; }
+  let justDone = 0;
 
   function render() {
     who.textContent = me ? 'קוד המשתתף/ת: ' + me.pid : '';
@@ -84,8 +86,7 @@
   }
 
   function stepper(n, now) {
-    const ol = el('ol', 'steps'), list = T.stepsFor(n); let passed = true;
-    if (n === 1) passed = true;
+    const ol = el('ol', 'steps'), list = T.stepsFor(n);
     for (const st of list) {
       const li = el('li', '', st.label);
       const done = st.id === 'consent' || !!me.sessions?.[n]?.[st.id];
@@ -221,12 +222,13 @@
   // ── תרגול: בכלי התרגול, ומשם חוזרים לכאן ──
   function practiceView(n) {
     const s = me.sessions[n], cs = s.case || {}, md = s.model || {};
-    const c = card('תרגול', ['הכלי בונה מהתיאור שלך דמות, ואפשר לדבר איתה. בסוף מקבלים משוב, ואפשר לנסות שוב את הרגע המאתגר. כפתור "עצירה" זמין בכל רגע.']);
+    const rounds = T.ROUNDS[n] || 1;
+    const c = card('תרגול ומשוב', ['הכלי בונה מהתיאור שלך דמות, ואפשר לדבר איתה. אחרי כל שיחה מקבלים משוב, ואפשר לחזור לרגע המאתגר ולנסות שוב. כפתור "עצירה" זמין בכל רגע.'].concat(rounds > 1 ? ['במפגש הזה מתרגלים פעמיים: תרגול ומשוב, ואחר כך "תרגול נוסף" ועוד משוב.'] : []));
     c.append(el('p', '', 'השיחה: ' + (cs.fields?.other || '') + ' · ' + (cs.type || '')), el('p', '', 'המודל: ' + (md.names || []).join(' + ')));
     const go = el('button', '', '▶ פתיחת התרגול'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = () => {
       store.set('sbe.ts.cred', { c: code, p: cred.pid, key: cred.key });
-      store.set('sbe.ts.handoff', { code, pid: cred.pid, session: n, fields: cs.fields || {}, me: cs.me || 'נקבה', modelNote: T.modelNote(md), modelNames: md.names || [], back: location.pathname.split('/').pop() + '?c=' + code });
+      store.set('sbe.ts.handoff', { code, pid: cred.pid, session: n, rounds, next: n < 3 ? 'סיום המפגש ←' : 'המשך: שאלון עמדות מסכם ←', fields: cs.fields || {}, me: cs.me || 'נקבה', modelNote: T.modelNote(md), modelNames: md.names || [], back: location.pathname.split('/').pop() + '?c=' + code });
       location.href = 'talk-practice.html';
     };
     const pending = store.get('sbe.ts.result');
@@ -241,7 +243,7 @@
   // ── רפלקציה אישית ──
   function reflectionView(n) {
     const d = store.get(draftKey(n, 'reflection')) || {};
-    const c = card('רפלקציה אישית', ['אין תשובות נכונות. מה שכתוב כאן עוזר לך לסכם, ועוזר לנו להבין מה התרגול נותן.']);
+    const c = card('רפלקציה אישית', ['על כל שלושת המפגשים. אין תשובות נכונות. מה שכתוב כאן עוזר לך לסכם, ועוזר לנו להבין מה התרגול נותן.']);
     const f = {};
     for (const [k, label, ph] of T.REFLECTION.main) { const l = el('label', 'f', label), i = el('textarea'); i.placeholder = ph; i.value = d[k] || ''; f[k] = i; c.append(l, i); }
     const det = el('details'); det.append(el('summary', '', 'עוד שלוש שאלות קצרות (רשות)'));
@@ -249,7 +251,7 @@
     if (T.REFLECTION.short.some(([k]) => d[k])) det.open = true;
     c.append(det);
     c.addEventListener('input', () => store.set(draftKey(n, 'reflection'), Object.fromEntries(Object.entries(f).map(([k, i]) => [k, i.value]))));
-    const go = el('button', '', n < 3 ? 'שמירה וסיום המפגש' : 'שמירה וסיום המסלול'), b = el('div', 'btns'); b.append(go); c.append(b);
+    const go = el('button', '', 'שמירה וסיום המסלול'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = async () => {
       const data = Object.fromEntries(Object.entries(f).map(([k, i]) => [k, i.value.trim()]));
       if (T.REFLECTION.main.some(([k]) => !data[k])) return say(c, 'נשמח לכמה מילים בכל אחת משלוש השאלות הראשונות.', true);
