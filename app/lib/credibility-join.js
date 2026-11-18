@@ -6,6 +6,7 @@
   const M = window.SBE_CRED, U = window.SBE_CRD_UI, esc = M.esc;
   const $ = (s, r) => (r || document).querySelector(s);
   const app = $('#app');
+  app.addEventListener('input', (e) => trackDraft(e)); app.addEventListener('change', (e) => trackDraft(e));
   const qs = new URLSearchParams(location.search);
   let classCode = (qs.get('c') || '').toUpperCase().trim();
   const S = { cred: null, data: null, open: null, tab: 'checks', busy: false, files: {}, timer: null };
@@ -101,7 +102,26 @@
     if (!quiet || !S.busy) render();
     clearInterval(S.timer); S.timer = setInterval(() => { if (!S.busy && !document.hidden && !document.querySelector('dialog[open]') && !isTyping()) load(true); }, 12000);
   }
-  const isTyping = () => { const el = document.activeElement; return el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) && el.value; };
+  // עדכון אוטומטי לא נוגע במסך כשמישהו בתוך שדה (17/11/2026: "תוך כדי שהקלדתי המסך קפץ וכל הקלט שכבר הקלדתי נמחק")
+  const isTyping = () => { const el = document.activeElement; return !!(el && /^(INPUT|TEXTAREA|SELECT)$/.test(el.tagName) && el.id !== 'who'); };
+  // טיוטות: כל מה שמוקלד נשמר במכשיר וחוזר אחרי כל ציור מחדש של המסך, עד שליחה מוצלחת
+  let DR = null;
+  const DK = () => 'sbe.crd.draft.' + ((S.cred && S.cred.t) || '');
+  const drafts = () => { if (!DR) { try { DR = JSON.parse(localStorage.getItem(DK()) || '{}') || {}; } catch (e) { DR = {}; } } return DR; };
+  const saveDrafts = () => { try { localStorage.setItem(DK(), JSON.stringify(drafts())); } catch (e) {} };
+  const ctxKey = () => (S.tab || '') + '|' + (S.open || '') + '|';
+  const skipDraft = (el) => !el || el.type === 'file' || el.id === 'who' || (!el.id && el.type !== 'radio') || !!el.closest('dialog');
+  const dkey = (el) => ctxKey() + (el.type === 'radio' ? 'r:' + el.name : el.id);
+  function trackDraft(e) { const el = e.target; if (skipDraft(el) || !app.contains(el)) return; drafts()[dkey(el)] = el.type === 'checkbox' ? el.checked : el.value; saveDrafts(); }
+  function restoreDrafts() {
+    const d = drafts();
+    app.querySelectorAll('input,textarea,select').forEach((el) => {
+      if (skipDraft(el) || el.disabled) return;
+      const k = dkey(el); if (!(k in d)) return;
+      if (el.type === 'radio') { if (el.value === d[k]) el.checked = true; } else if (el.type === 'checkbox') el.checked = !!d[k]; else el.value = d[k];
+    });
+  }
+  function clearDrafts() { const d = drafts(), p = ctxKey(); Object.keys(d).forEach((k) => { if (k.startsWith(p)) delete d[k]; }); saveDrafts(); }
   function render() {
     const D = S.data, t = D.team;
     $('#topTitle').textContent = D.activity.title;
@@ -121,7 +141,7 @@
     app.innerHTML = head + '<div id="body">' + body + '</div>';
     $('#who').onchange = (e) => { setMe(e.target.value); };
     app.querySelectorAll('[data-tab]').forEach((b) => { b.onclick = () => { S.tab = b.dataset.tab; S.open = null; render(); }; });
-    bind();
+    bind(); restoreDrafts(); if (S.focus) { const f = document.getElementById(S.focus); if (f) { f.focus(); try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) {} } S.focus = null; }
   }
   // שאלון עמדות: כל היגד בשורה, סולם 1–5
   function attForm(pfx, vals) {
@@ -347,7 +367,7 @@
         const up = await call('p.upload', { data: small || await U.readFile(f), type: small ? 'image/jpeg' : f.type, name: f.name });
         fileId = up.fid; fileName = f.name; fileType = small ? 'image/jpeg' : f.type;
       }
-      const r = await saveCheck('new', { url, title, fileId, fileName, fileType });
+      const r = await saveCheck('new', { url, title, fileId, fileName, fileType }); clearDrafts();
       S.open = r.id; S.stage = 'describe'; S.stageFor = r.id; render();
     }, $('#km')));
     on('#saveFields', () => act(async () => {
@@ -357,14 +377,14 @@
       if (!s) throw new Error('אפשר לבחור ציון מ־1 עד 5.');
       if (!$('#tw').value.trim()) throw new Error('אפשר לכתוב נימוק: על מה הציון נשען.');
       await saveCheck('fields', { id: k.id, fields, extra: [], title: $('#ft').value || k.title });
-      await saveCheck('team', { id: k.id, score: Number(s), why: $('#tw').value });
+      await saveCheck('team', { id: k.id, score: Number(s), why: $('#tw').value }); clearDrafts();
       S.stage = 'first'; S.stageFor = k.id; render(); window.scrollTo(0, 0);
     }));
     on('#nextCheck', () => { S.open = null; S.stage = null; render(); window.scrollTo(0, 0); });
     on('#addext', () => act(async () => {
       const url = $('#eu').value.trim(), title = $('#et').value.trim(), found = $('#ef').value.trim();
       if (!found) throw new Error('אפשר לכתוב מה מצאתם.');
-      await saveCheck('ext', { id: k.id, url, title, extKind: $('#ek').value, found });
+      await saveCheck('ext', { id: k.id, url, title, extKind: $('#ek').value, found }); clearDrafts();
       render(); const f = $('#ef'); if (f) f.focus();
     }));
     on('#done', () => act(async () => {
@@ -391,7 +411,7 @@
       if (!pre) throw new Error('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים.');
       const init = $('#pi').value.trim();
       if (!init) throw new Error('כדי לשלוח, אפשר לכתוב את עמדתך לגבי ספקולציות, פייק ניוז, קונספירציות ודיסאינפורמציה.');
-      await call('p.reflect', { member: id, pre, initial: init });
+      await call('p.reflect', { member: id, pre, initial: init }); clearDrafts();
       if (!me()) setMe(id);
       S.pm = ''; window.scrollTo(0, 0); await load();
     }, $('#pmm')));
@@ -399,7 +419,7 @@
       const r = {}; for (const q of M.REFLECT) r[q.k] = q.opts ? ((app.querySelector('input[name=rf-' + q.k + ']:checked') || {}).value || '') : $('#rf-' + q.k).value;
       const post = readAtt('post-'), had = (S.data.reflections[$('#rm').value] || {}).post;
       if (!post && !had) throw new Error('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים בשאלון העמדות המסכם.');
-      await call('p.reflect', Object.assign({ member: $('#rm').value, reflect: r }, post ? { post } : {})); keepLocal({ reflect: r });
+      await call('p.reflect', Object.assign({ member: $('#rm').value, reflect: r }, post ? { post } : {})); keepLocal({ reflect: r }); clearDrafts();
       const id = $('#rm').value;
       S.data.reflections[id] = Object.assign({}, S.data.reflections[id], { reflect: r, post: true, ai: null }); render(); $('#rmm').innerHTML = msg('הרפלקציה נשלחה. תודה! עכשיו ה־AI מנתח אותה.');
       try { await analyzeReflection(id); render(); $('#rmm').innerHTML = msg('הרפלקציה נשלחה ונותחה.'); } catch (e) { render(); $('#rmm').innerHTML = msg('הרפלקציה נשלחה. הניתוח לא הצליח: ' + (e.message || '') + ' אפשר ללחוץ על "ניתוח ה־AI".'); }
