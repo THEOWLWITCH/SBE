@@ -9,15 +9,18 @@
   'use strict';
   const BG = () => root.SBE_BGSTUDY || (typeof require === 'function' ? require('./begood-study.js') : null);
 
+  // 18/11/2026: שאלון עמדות בפתיחת מפגש 1 ובסוף מפגש 3; משוב מהמודל אחרי כל תרגול; רפלקציה רק במפגש 3.
+  // במפגש 2 מתרגלים פעמיים (תרגול ומשוב, ועוד תרגול ומשוב).
   const STEPS = Object.freeze([
-    { id: 'consent', label: 'הסכמה', first: true },
-    { id: 'pre', label: 'שאלון פתיחה', first: true },
-    { id: 'model', label: 'בחירת מודל' },
-    { id: 'practice', label: 'תרגול' },
-    { id: 'post', label: 'שאלון מסכם' },
-    { id: 'reflection', label: 'רפלקציה' }
+    { id: 'consent', label: 'הסכמה', sessions: [1] },
+    { id: 'pre', label: 'שאלון עמדות', sessions: [1] },
+    { id: 'model', label: 'בחירת מודל', sessions: [1, 2, 3] },
+    { id: 'practice', label: 'תרגול ומשוב', sessions: [1, 2, 3] },
+    { id: 'post', label: 'שאלון עמדות מסכם', sessions: [3] },
+    { id: 'reflection', label: 'רפלקציה', sessions: [3] }
   ]);
-  const stepsFor = (session) => STEPS.filter((s) => session === 1 || !s.first);
+  const stepsFor = (session) => STEPS.filter((s) => s.sessions.includes(session));
+  const ROUNDS = Object.freeze({ 1: 1, 2: 2, 3: 1 });
 
   const MODELS = Object.freeze([
     { id: 'spikes', name: 'SPIKES, ולצדו NURSE', tag: 'מסירת מידע קשה',
@@ -58,14 +61,12 @@
     report: 'אני רוצה לקבל במייל דו״ח משוב אישי על שלושת התרגולים (רשות). המייל נשמר בנפרד מנתוני המחקר, ומשמש רק לשליחת הדו״ח.'
   });
 
-  // שאלון פתיחה (מפגש 1) ושאלון מסכם לכל מפגש, מתוך השאלונים של המחקר
+  // שאלון העמדות (נספח א בהצעת המחקר): בפתיחת מפגש 1 ובסוף מפגש 3, מתוך השאלונים של המחקר (begood-study.js)
   function questionnaire(session, kind) {
     const S = BG(); if (!S) return null;
-    if (kind === 'pre') return session === 1 ? S.byId('bg-s1-open').definition : null;
-    if (session === 2) return S.byId('bg-s2-close').definition;
-    if (session === 3) return S.byId('bg-s3-close').definition;
-    const core = S.byId('bg-s2-close').definition.items;
-    return { title: 'שאלון מסכם · מפגש 1', description: S.byId('bg-s2-close').definition.description.replace('בסוף המפגש השני', 'בסוף המפגש הראשון'), items: core };
+    if (kind === 'pre' && session === 1) return Object.assign({}, S.byId('bg-s1-open').definition, { title: 'שאלון עמדות · פתיחה' });
+    if (kind === 'post' && session === 3) return Object.assign({}, S.byId('bg-s3-close').definition, { title: 'שאלון עמדות מסכם' });
+    return null;
   }
 
   const CASE = Object.freeze({
@@ -97,5 +98,5 @@
       (choice.reason ? '. הנימוק: ' + choice.reason : '') + '. במשוב, התייחס/י גם לאופן שבו עקרונות המודל ניכרו בשיחה (כמסגרת, לא כתסריט), בלי ציון.';
   }
 
-  return Object.freeze({ STEPS, stepsFor, MODELS, CONSENT, questionnaire, CASE, REFLECTION, modelNote });
+  return Object.freeze({ STEPS, stepsFor, ROUNDS, MODELS, CONSENT, questionnaire, CASE, REFLECTION, modelNote });
 });

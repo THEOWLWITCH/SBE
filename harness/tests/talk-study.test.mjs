@@ -32,11 +32,18 @@ test('research center creates a link; students join with consent only; data save
   assert.equal(saved.participant.sessions[1].pre.answers.M1, 4);
   assert.equal((await call(store, 'p.save', { ...cred, session: 4, part: 'pre', data: {} }))[0], 400);
   assert.equal((await call(store, 'p.save', { ...cred, session: 1, part: 'secret', data: {} }))[0], 400);
-  await call(store, 'p.save', { ...cred, session: 1, part: 'reflection', data: { contribution: 'עזר' } });
+  // רפלקציה ושאלון מסכם רק במפגש 3; מפגש 1 ו־2 נגמרים בתרגול (משוב אחרי כל תרגול)
+  assert.equal((await call(store, 'p.save', { ...cred, session: 1, part: 'reflection', data: { contribution: 'עזר' } }))[0], 400);
+  assert.equal((await call(store, 'p.save', { ...cred, session: 2, part: 'pre', data: { answers: {} } }))[0], 400);
+  const [, p1] = await call(store, 'p.save', { ...cred, session: 1, part: 'practice', data: { tries: 1 } });
+  assert.ok(p1.participant.sessions[1].doneAt);
+  await call(store, 'p.save', { ...cred, session: 3, part: 'post', data: { answers: { M1: 5 } } });
+  await call(store, 'p.save', { ...cred, session: 3, part: 'reflection', data: { contribution: 'עזר' } });
   // מרכז המחקר: התקדמות וייצוא בלי מפתחות ובלי מיילים; המיילים בנפרד
   const [, list] = await call(store, 'f.list', { studyId: 's1' }, { token: sys.token });
   assert.equal(list.classes[0].participants, 1);
-  assert.equal(list.classes[0].progress[0].reflection, 1);
+  assert.equal(list.classes[0].progress[2].reflection, 1);
+  assert.equal(list.classes[0].progress[0].reflection, null);
   const [, exp] = await call(store, 'f.export', { code }, { token: sys.token });
   assert.equal(exp.participants.length, 1);
   assert.ok(!JSON.stringify(exp).includes('keyHash') && !JSON.stringify(exp).includes('a@b.co'));

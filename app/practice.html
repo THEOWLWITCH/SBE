@@ -2345,12 +2345,13 @@ function renderCommFeedback(box, r){
       // אחרי המשוב: חוזרים למסלול עם התרגול (התמליל, המשוב ומספר הניסיונות)
       const fb = document.getElementById("screen-feedback");
       const box = el("div", { class: "ts-next", style: "margin:22px 0 6px;padding:16px 18px;border:1px solid #dbe4ea;border-top:2px solid #317c7a;border-radius:12px;background:#fff" },
-        el("p", { style: "margin:0 0 10px" }, "אפשר לתרגל שוב, או לחזור את הרגע המאתגר. כשמסיימים, ממשיכים לשאלון המסכם ולרפלקציה."));
-      const go = el("button", { type: "button", class: "primary" }, "המשך: שאלון מסכם ←");
+        el("p", { style: "margin:0 0 10px" }, (H.rounds > 1 ? "במפגש הזה מתרגלים פעמיים: \"תרגול נוסף\" למטה, ועוד משוב. " : "אפשר לתרגל שוב, או לחזור לרגע המאתגר. ") + "כשמסיימים:"));
+      const go = el("button", { type: "button", class: "primary" }, H.next || "המשך ←");
       const note = el("p", { class: "fb-note", hidden: "" });
       go.addEventListener("click", () => {
-        if (!state.commFb && !state.commFbFailed && !go.dataset.ok) { go.dataset.ok = "1"; note.hidden = false; note.textContent = "המשוב על התקשורת עוד נכתב. אפשר לחכות לו, או ללחוץ שוב כדי להמשיך בלעדיו."; return; }
         let n = 0; try { n = Number(sessionStorage.getItem("sbe.ts.tries") || 0); } catch (e) {}
+        if (!state.commFb && !state.commFbFailed && !go.dataset.ok) { go.dataset.ok = "1"; note.hidden = false; note.textContent = "המשוב על התקשורת עוד נכתב. אפשר לחכות לו, או ללחוץ שוב כדי להמשיך בלעדיו."; return; }
+        if (n < (H.rounds || 1) && !go.dataset.ok2) { go.dataset.ok2 = "1"; note.hidden = false; note.textContent = "במפגש הזה יש עוד תרגול ומשוב: \"תרגול נוסף\" למטה. אפשר גם ללחוץ שוב ולהמשיך."; return; }
         const data = { scenario: SCENARIO && SCENARIO.name, subtitle: SCENARIO && SCENARIO.subtitle, actor: SCENARIO && SCENARIO.actor && SCENARIO.actor.roleLabel,
           transcript: commTranscript().slice(0, 60000), feedback: state.commFb || null, endingType: state.endingType || null, turns: state.turn, tries: n, model: H.modelNames || [] };
         try { localStorage.setItem("sbe.ts.result", JSON.stringify({ code: H.code, pid: H.pid, session: H.session, data })); sessionStorage.removeItem("sbe.ts.tries"); localStorage.removeItem(KEY + ".draft"); } catch (e) {}
@@ -2358,7 +2359,7 @@ function renderCommFeedback(box, r){
       });
       box.append(go, note); fb.append(box);
       const _show = window.showFeedback;
-      if (typeof _show === "function") window.showFeedback = function(){ try { sessionStorage.setItem("sbe.ts.tries", String(Number(sessionStorage.getItem("sbe.ts.tries") || 0) + 1)); } catch (e) {} delete go.dataset.ok; note.hidden = true; return _show.apply(this, arguments); };
+      if (typeof _show === "function") window.showFeedback = function(){ try { sessionStorage.setItem("sbe.ts.tries", String(Number(sessionStorage.getItem("sbe.ts.tries") || 0) + 1)); } catch (e) {} delete go.dataset.ok; delete go.dataset.ok2; note.hidden = true; return _show.apply(this, arguments); };
     }
   }
 
