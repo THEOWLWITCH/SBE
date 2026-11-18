@@ -285,7 +285,7 @@
     const go = el('button', '', 'שמירה וסיום המסלול'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = async () => {
       const data = Object.fromEntries(Object.entries(f).map(([k, i]) => [k, i.value.trim()]));
-      if (T.REFLECTION.main.some(([k]) => !data[k])) return say(c, 'נשמח לכמה מילים בכל אחת משלוש השאלות הראשונות.', true);
+      if (T.REFLECTION.main.some(([k]) => !data[k])) return say(c, 'נשמח לכמה מילים בכל אחת מהשאלות.', true);
       busy(go, true);
       try { me = (await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part: 'reflection', data })).participant; store.del(draftKey(n, 'reflection')); doneView(n); }
       catch (e) { busy(go, false); say(c, e.message, true); }
