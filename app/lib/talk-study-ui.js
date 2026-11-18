@@ -180,8 +180,9 @@
     const p = {};
     for (const [k, label] of T.CASE.prep) { const l = el('label', 'f', label), i = el('textarea'); i.value = d['prep_' + k] || ''; i.style.minHeight = '60px'; p[k] = i; c2.append(l, i); }
 
-    const c3 = card('בחירת מודל לשיחה', ['אפשר לבחור מודל אחד, או לשלב שניים או שלושה. המודל הוא מסגרת חשיבה, לא תסריט.']);
-    const picked = new Set(d.ids || []);
+    const prevModel = me.sessions?.[n - 1]?.model;
+    const c3 = card('בחירת מודל לשיחה', ['אפשר לבחור מודל אחד, או לשלב שניים או שלושה. המודל הוא מסגרת חשיבה, לא תסריט.'].concat(prevModel?.names?.length ? ['במפגש הקודם בחרת: ' + prevModel.names.join(' + ') + '. אפשר להמשיך באותו מודל או להחליף. שתי האפשרויות טובות, כשיש להן נימוק.'] : []));
+    const picked = new Set(d.ids || prevModel?.ids || []);
     const box = el('div', 'models');
     for (const m of T.MODELS) {
       const mc = el('div', 'model' + (picked.has(m.id) ? ' on' : '')); mc.tabIndex = 0; mc.setAttribute('role', 'checkbox'); mc.setAttribute('aria-checked', String(picked.has(m.id)));
@@ -193,7 +194,7 @@
       box.append(mc);
     }
     c3.append(box);
-    const rL = el('label', 'f', 'למה בחרתי במודל הזה? משפט או שניים'), r = el('textarea'); r.value = d.reason || ''; r.placeholder = 'למשל: כי אצטרך למסור מידע קשה, ולתת מקום לכעס'; c3.append(rL, r);
+    const rL = el('label', 'f', prevModel?.ids?.length ? 'למה ממשיכים באותו מודל, או למה מחליפים? משפט או שניים' : 'למה בחרתי במודל הזה? משפט או שניים'), r = el('textarea'); r.value = d.reason || ''; r.placeholder = 'למשל: כי אצטרך למסור מידע קשה, ולתת מקום לכעס'; c3.append(rL, r);
 
     function read() { const o = { ids: [...picked], reason: r.value.trim(), me: meS.value, type: tS.value, difficulty: Number(dS.value) || null }; for (const k in f) o[k] = f[k].value.trim(); for (const k in p) o['prep_' + k] = p[k].value.trim(); return o; }
     function save() { store.set(draftKey(n, 'model'), read()); }
@@ -212,11 +213,40 @@
       try {
         const fields = Object.fromEntries(T.CASE.fields.map((x) => [x[0], o[x[0]]]));
         await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part: 'case', data: { fields, me: o.me, type: o.type, difficulty: o.difficulty, prep: Object.fromEntries(T.CASE.prep.map((x) => [x[0], o['prep_' + x[0]]])) } });
-        me = (await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part: 'model', data: { ids: o.ids, names: T.MODELS.filter((m) => o.ids.includes(m.id)).map((m) => m.name), reason: o.reason } })).participant;
+        me = (await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part: 'model', data: { ids: o.ids, names: T.MODELS.filter((m) => o.ids.includes(m.id)).map((m) => m.name), reason: o.reason, ...(prevModel?.ids ? { prevIds: prevModel.ids, kept: sameIds(prevModel.ids, o.ids) } : {}) } })).participant;
         store.del(draftKey(n, 'model')); render(); window.scrollTo(0, 0);
       } catch (e) { busy(go, false); say(c3, e.message, true); }
     };
     root.append(c1, c2, c3);
+  }
+
+  function sameIds(a, b) { return a.length === b.length && a.every((x) => b.includes(x)); }
+
+  // החלפת מודל לפני תרגול (גם בין שני הסבבים של מפגש 2), עם נימוק
+  function switchModelBox(n, md) {
+    const det = el('details'); det.append(el('summary', '', 'להחליף מודל לפני התרגול?'));
+    det.append(el('p', '', 'אפשר להמשיך באותו מודל או להחליף. שתי האפשרויות טובות, כשיש להן נימוק.'));
+    const picked = new Set(md.ids || []);
+    for (const m of T.MODELS) {
+      const l = el('label', 'f'), cb = el('input'); cb.type = 'checkbox'; cb.checked = picked.has(m.id);
+      cb.onchange = () => { cb.checked ? picked.add(m.id) : picked.delete(m.id); };
+      l.append(cb, document.createTextNode(' ' + m.name)); det.append(l);
+    }
+    const rL = el('label', 'f', 'למה מחליפים, או למה ממשיכים? משפט או שניים'), r = el('textarea');
+    const go = el('button', 'soft', 'שמירת המודל'), b = el('div', 'btns'); b.append(go);
+    det.append(rL, r, b);
+    go.onclick = async () => {
+      const ids = [...picked], reason = r.value.trim();
+      if (!ids.length) return say(det, 'כדי להמשיך, אפשר לבחור מודל אחד לפחות.', true);
+      if (!reason) return say(det, 'נשמח למשפט קצר: למה המודל הזה.', true);
+      busy(go, true);
+      try {
+        const history = (md.history || []).concat([{ ids: md.ids, names: md.names, reason: md.reason, at: md.at }]);
+        me = (await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part: 'model', data: { ids, names: T.MODELS.filter((m) => ids.includes(m.id)).map((m) => m.name), reason, prevIds: md.ids, kept: sameIds(md.ids || [], ids), switchedInSession: true, history } })).participant;
+        render();
+      } catch (e) { busy(go, false); say(det, e.message, true); }
+    };
+    return det;
   }
 
   // ── תרגול: בכלי התרגול, ומשם חוזרים לכאן ──
@@ -225,6 +255,7 @@
     const rounds = T.ROUNDS[n] || 1;
     const c = card('תרגול ומשוב', ['הכלי בונה מהתיאור שלך דמות, ואפשר לדבר איתה. אחרי כל שיחה מקבלים משוב, ואפשר לחזור לרגע המאתגר ולנסות שוב. כפתור "עצירה" זמין בכל רגע.'].concat(rounds > 1 ? ['במפגש הזה מתרגלים פעמיים: תרגול ומשוב, ואחר כך "תרגול נוסף" ועוד משוב.'] : []));
     c.append(el('p', '', 'השיחה: ' + (cs.fields?.other || '') + ' · ' + (cs.type || '')), el('p', '', 'המודל: ' + (md.names || []).join(' + ')));
+    c.append(switchModelBox(n, md));
     const go = el('button', '', '▶ פתיחת התרגול'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = () => {
       store.set('sbe.ts.cred', { c: code, p: cred.pid, key: cred.key });
