@@ -25,6 +25,17 @@
   to = "/practice.html"
   status = 200
 
+# מחקר שיחות מאתגרות (18/11/2026): התרגול במסלול של הסטודנטיות (talk-study.html), אותו קובץ במצב מחקר
+[[redirects]]
+  from = "/talk-practice.html"
+  to = "/practice.html"
+  status = 200
+
+[[redirects]]
+  from = "/talk-practice"
+  to = "/practice.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]

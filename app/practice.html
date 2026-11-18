@@ -8,6 +8,11 @@
 // ונפתח ישר על התרחיש המוכן, בלי מסך הבחירה ובלי "מקרה משלך".
 window.SBE_SOLO_READY = /(^|\/)quick-practice(\.html)?$/.test(location.pathname);
 if (window.SBE_SOLO_READY) document.title = "התנסות קצרה בשיחה מאתגרת";
+// מחקר שיחות מאתגרות (18/11/2026): talk-practice.html מוגש מאותו קובץ (rewrite ב-netlify.toml) ונפתח מהמסלול של הסטודנטיות
+// (talk-study.html): המקרה שתואר שם, המודל שנבחר נכנס למשוב, ובסוף "המשך: שאלון מסכם" מחזיר את התרגול למסלול.
+window.SBE_TS_MODE = /(^|\/)talk-practice(\.html)?$/.test(location.pathname);
+window.SBE_TS_HANDOFF = null;
+if (window.SBE_TS_MODE) { document.title = "תרגול · הכנה לשיחות מאתגרות"; try { window.SBE_TS_HANDOFF = JSON.parse(localStorage.getItem("sbe.ts.handoff") || "null"); } catch (e) {} }
 </script>
 <script src="lib/access-guard.js"></script>
 <script src="lib/example-peek.js" data-tool="practice,practice-own" defer></script>
@@ -1181,7 +1186,7 @@ function resetAll(){
 
 // "לבחור תרחיש אחר" — חזרה למסך הבחירה, לא תרגול חוזר על אותו תרחיש.
 function backToSelect(){
-  if (window.SBE_SOLO_READY) return resetAll(); // בהתנסות הקצרה יש רק את התרחיש המוכן
+  if (window.SBE_SOLO_READY || window.SBE_TS_MODE) return resetAll(); // בהתנסות הקצרה ובמחקר יש רק תרחיש אחד
   clearSessionState();
   SCENARIO = null;
   show("screen-select");
@@ -2208,8 +2213,9 @@ function commSystem(){
     "כללים: התייחסי לפעולות ולמשפטים, לא לאדם. בלי ציון ובלי דירוג. כל נקודה עם ציטוט מדויק מדברי המתנסה (quote). בהצעות לשיפור: ניסוח חלופי לדוגמה שאפשר לומר בפעם הבאה (tryInstead). שפה של הזמנה (\"אפשר לנסות\", \"כדאי\"). " + (male ? "פני למתנסה בלשון זכר." : "פני למתנסה בלשון נקבה."),
     "החזירי אך ורק JSON: {\"summary\":\"שניים או שלושה משפטים על השיחה\",\"strengths\":[{\"what\":\"מה עבד\",\"quote\":\"ציטוט\",\"why\":\"למה זה עובד\",\"basis\":\"על מה זה נשען (מודל או תיאוריה)\"}],\"growth\":[{\"what\":\"מה אפשר לחזק\",\"quote\":\"ציטוט\",\"tryInstead\":\"ניסוח לדוגמה\",\"why\":\"למה\",\"basis\":\"על מה זה נשען\"}],\"next\":[\"שלושה צעדים לתרגול הבא\"],\"tips\":[\"שלושה עד חמישה טיפים כלליים לשיחות כאלה\"],\"skills\":[{\"n\":1,\"found\":true,\"quote\":\"ציטוט מדויק מדברי המתנסה, או ריק\",\"note\":\"משפט קצר\"}],\"moments\":[{\"n\":1,\"happened\":\"משפט שלם\"}]}. strengths: שתיים עד ארבע. growth: שתיים עד ארבע.",
     commSkillsRule(),
-    commMomentsRule()
-  ].join("\n\n");
+    commMomentsRule(),
+    (window.SBE_TS_MODE && window.SBE_TS_HANDOFF && window.SBE_TS_HANDOFF.modelNote) || ""
+  ].filter(Boolean).join("\n\n");
 }
 // המיומנויות נבדקות בידי המודל (14/10/2026: "הטבלה לא נכונה. כן היתה שאלה פתוחה"): התאמת מילות מפתח
 // פספסה שאלות פתוחות וניסוחים אחרים, ולכן היא לא משמשת עוד לטבלת המיומנויות.
@@ -2289,7 +2295,7 @@ function renderCommFeedback(box, r){
 (function(){
   const PC = window.SBE_PCUSTOM; if (!PC) return;
   const $ = (id) => document.getElementById(id);
-  const KEY = window.sbeUserKey ? sbeUserKey("sbe.practice.custom.v1") : "sbe.practice.custom.v1";
+  const KEY = window.SBE_TS_MODE ? "sbe.ts.practice.v1" : window.sbeUserKey ? sbeUserKey("sbe.practice.custom.v1") : "sbe.practice.custom.v1";
   let mine = []; try { mine = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) {}
   const saveMine = () => { try { localStorage.setItem(KEY, JSON.stringify(mine)); } catch (e) {} };
   const draft = { form: {}, questions: [], answers: {}, scenario: null };
@@ -2318,6 +2324,43 @@ function renderCommFeedback(box, r){
     "אין כרגע חיבור למודל, ולכן הסיפור לא נוצר. מה שכתבת נשמר, ואפשר לנסות שוב בעוד דקה."; $("ownErr").hidden = false; };
   const answersList = () => draft.questions.map((q, i) => ({ q: q.q, a: draft.answers[i] || "" }));
   const caseText = () => PC.caseText(Object.assign({}, draft.form, { answers: answersList() }));
+
+  // ── מצב מחקר (talk-practice.html): המקרה מגיע מהמסלול, בלי מסך הבחירה, בלי שיתוף ובלי מעבר לתרחישים אחרים ──
+  if (window.SBE_TS_MODE) {
+    const H = window.SBE_TS_HANDOFF;
+    document.head.append(el("style", {}, ".sbe-peek,#ownCancel,.own-share,#bBackToSelect,#bAgainOther,#fbSave,[data-study-tool],#myCases{display:none!important}"));
+    if (!H || !H.fields || !H.back) {
+      $("scenarioName").classList.remove("hero-banner"); $("scenarioName").textContent = "התרגול נפתח מהמסלול של המחקר";
+      $("scenarioSubtitle").textContent = "אפשר לחזור לקישור של הקבוצה ולפתוח את התרגול משם.";
+      [1, 2, 3].forEach(i => { $("own" + i).hidden = true; }); show("screen-custom");
+    } else {
+      const sig = JSON.stringify([H.code, H.pid, H.session, H.fields, H.me]);
+      if (draft.tsSig !== sig) Object.assign(draft, { tsSig: sig, questions: [], answers: {}, scenario: null, fromReady: false });
+      draft.form = Object.assign({}, H.fields, { me: H.me || "נקבה" }); saveDraft();
+      Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
+      setTimeout(() => {
+        step(draft.scenario ? 3 : 1);
+        $("scenarioSubtitle").textContent = "המודל שבחרת: " + (H.modelNames || []).join(" + ") + ". אפשר לדייק את המקרה, ואז להמשיך.";
+      }, 0);
+      // אחרי המשוב: חוזרים למסלול עם התרגול (התמליל, המשוב ומספר הניסיונות)
+      const fb = document.getElementById("screen-feedback");
+      const box = el("div", { class: "ts-next", style: "margin:22px 0 6px;padding:16px 18px;border:1px solid #dbe4ea;border-top:2px solid #317c7a;border-radius:12px;background:#fff" },
+        el("p", { style: "margin:0 0 10px" }, "אפשר לתרגל שוב, או לחזור את הרגע המאתגר. כשמסיימים, ממשיכים לשאלון המסכם ולרפלקציה."));
+      const go = el("button", { type: "button", class: "primary" }, "המשך: שאלון מסכם ←");
+      const note = el("p", { class: "fb-note", hidden: "" });
+      go.addEventListener("click", () => {
+        if (!state.commFb && !state.commFbFailed && !go.dataset.ok) { go.dataset.ok = "1"; note.hidden = false; note.textContent = "המשוב על התקשורת עוד נכתב. אפשר לחכות לו, או ללחוץ שוב כדי להמשיך בלעדיו."; return; }
+        let n = 0; try { n = Number(sessionStorage.getItem("sbe.ts.tries") || 0); } catch (e) {}
+        const data = { scenario: SCENARIO && SCENARIO.name, subtitle: SCENARIO && SCENARIO.subtitle, actor: SCENARIO && SCENARIO.actor && SCENARIO.actor.roleLabel,
+          transcript: commTranscript().slice(0, 60000), feedback: state.commFb || null, endingType: state.endingType || null, turns: state.turn, tries: n, model: H.modelNames || [] };
+        try { localStorage.setItem("sbe.ts.result", JSON.stringify({ code: H.code, pid: H.pid, session: H.session, data })); sessionStorage.removeItem("sbe.ts.tries"); localStorage.removeItem(KEY + ".draft"); } catch (e) {}
+        location.href = H.back;
+      });
+      box.append(go, note); fb.append(box);
+      const _show = window.showFeedback;
+      if (typeof _show === "function") window.showFeedback = function(){ try { sessionStorage.setItem("sbe.ts.tries", String(Number(sessionStorage.getItem("sbe.ts.tries") || 0) + 1)); } catch (e) {} delete go.dataset.ok; note.hidden = true; return _show.apply(this, arguments); };
+    }
+  }
 
   $("bOwnCase").addEventListener("click", () => {
     // מקרה משלך: אם הטופס מולא מהתרחיש המוכן ועוד לא נוצר סיפור, מתחילים מטופס ריק
@@ -2486,7 +2529,7 @@ function renderCommFeedback(box, r){
 
 renderFilters();
 renderScenarioList();
-if (!window.SBE_SOLO_READY) show("screen-select");
+if (!window.SBE_SOLO_READY && !window.SBE_TS_MODE) show("screen-select");
 </script>
 
 <!-- ── כפתור דיווח גלובלי — אותו רכיב שבכל 17 מסכי app/, ראו entry.html (09/09/2026) ── -->

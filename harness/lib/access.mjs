@@ -9,6 +9,7 @@ import { handleHlRooms, roomModelGate } from './hl-rooms.mjs';
 import { handleOrgSuite } from './org-suite.mjs';
 import { handleDilemma, dlmModelGate } from './dilemma.mjs';
 import { handleCredibility, crdModelGate } from './credibility.mjs';
+import { handleTalkStudy, tsModelGate } from './talk-study.mjs';
 import { handlePartnerDocs } from './partner-docs.mjs';
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 const JOURNEY_WORKSPACE = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.js');
@@ -425,7 +426,7 @@ export function modelPage(page) {
 }
 export const MODEL_ROUTES = {
   '/api/complete': null,
-  '/api/character-turn': ['practice.html', 'quick-practice.html'],
+  '/api/character-turn': ['practice.html', 'quick-practice.html', 'talk-practice.html'],
   '/api/pipeline': ['input-screen.html'],
 };
 export function modelIdentity(actor, credential) {
@@ -452,6 +453,12 @@ export async function authorizeModel(store, auth, route = '/api/complete') {
   if (a.dlm && route === '/api/complete') {
     const g = await dlmModelGate(store, a, page);
     if (g) return { ok: true, who: 'dlm', page, route, ...modelIdentity({ k: 'dlm', c: g.principal, inst: g.institution }, g.principal), institutionId: null, space: 'edu' };
+    return { ok: false };
+  }
+  // מחקר שיחות מאתגרות: סטודנטיות בלי קוד Begood, עם המפתח האישי, רק בתרגול של המסלול ורק כשהקבוצה פתוחה.
+  if (a.ts && !a.token) {
+    const g = await tsModelGate(store, a, page);
+    if (g) return { ok: true, who: 'ts', page, route, ...modelIdentity({ k: 'ts', c: g.principal, inst: g.institution }, g.principal), institutionId: null, space: 'edu' };
     return { ok: false };
   }
   // בדיקת אמינות של מקורות: צוותים בלי קוד Begood, עם מפתח הצוות, רק בדף הצוות ורק כשהפעילות פתוחה.
@@ -1873,6 +1880,8 @@ export async function handleAccess(store, body) {
     const t = token ? await authorizePermission(store, token, ['dilemma']) : null;
     return t ? { principal: modelIdentity(t, token).principal, inst: t.inst || null, sys: t.k === 'sys' } : null;
   } });
+  // מחקר שיחות מאתגרות: מסלול הסטודנטיות (18/11/2026). מרכז המחקר: מנהלת המערכת; סטודנטיות: קוד הקבוצה והמפתח האישי
+  if (action === 'tsCall') { const tt = body.token ? await verifyToken(store, body.token) : null; return handleTalkStudy(store, body, { isSys: !!tt && tt.k === 'sys' }); }
   // בדיקת אמינות של מקורות (17/11/2026): המרצות לפי הרשאה חיה (credibility או dilemma); צוותים לפי מפתח הצוות
   if (action === 'crdCall') return handleCredibility(store, body, { who: async (token) => {
     const t = token ? await authorizePermission(store, token, ['credibility', 'dilemma']) : null;
