@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta name="robots" content="noindex">
+<title>הכנה לשיחות מאתגרות · Begood</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Assistant:wght@400;600;700&display=swap">
+<style>
+:root{--ink:#25394a;--blue:#1d3f63;--teal:#317c7a;--line:#dbe4ea;--sun:#e0a92d;--paper:#f5f8f7;--muted:#5d6d79}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.7 Assistant,Arial,sans-serif}
+.wrap{max-width:780px;margin:0 auto;padding:18px 16px 70px}
+header.top{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:10px}
+header.top img{height:42px}
+header.top .who{font-size:14px;color:var(--muted);text-align:left}
+h1{font:600 27px/1.3 Fredoka,Assistant,sans-serif;color:var(--blue);margin:6px 0 2px}
+h2{font:500 21px/1.35 Fredoka,Assistant,sans-serif;color:var(--blue);margin:0 0 8px}
+h3{font:500 18px/1.4 Fredoka,Assistant,sans-serif;color:var(--blue);margin:14px 0 6px}
+.sub{color:var(--muted);margin:0 0 14px}
+.steps{display:flex;gap:4px;list-style:none;padding:0;margin:12px 0 16px;flex-wrap:wrap}
+.steps li{flex:1 1 0;min-width:84px;text-align:center;font-size:14px;padding:6px 4px;border-top:2px solid var(--line);color:var(--muted)}
+.steps li.done{border-color:#8fc1b5;color:var(--teal)}
+.steps li.now{border-color:var(--teal);color:var(--blue);font-weight:700}
+.card{background:#fff;border:1px solid var(--line);border-top:2px solid var(--teal);border-radius:12px;padding:20px 22px;margin:0 0 14px}
+.card.soft{border-top-color:var(--sun)}
+.card p{margin:0 0 10px}
+label.f{display:block;font-weight:600;margin:12px 0 4px}
+input[type=text],input[type=email],textarea,select{width:100%;font:inherit;border:1px solid #c3d0da;border-radius:9px;padding:9px 12px;background:#fff;color:var(--ink)}
+textarea{min-height:84px;resize:vertical}
+input:focus,textarea:focus,select:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px #317c7a22}
+.check{display:flex;gap:10px;align-items:flex-start;margin:8px 0}
+.check input{width:20px;height:20px;margin-top:4px;accent-color:var(--teal);flex:0 0 auto}
+.btns{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;align-items:center}
+button,.btn{font:inherit;font-weight:600;cursor:pointer;border-radius:999px;padding:9px 22px;border:1px solid var(--blue);background:var(--blue);color:#fff;text-decoration:none;display:inline-block}
+button.soft,.btn.soft{background:#fff;color:var(--blue)}
+button:disabled{opacity:.55;cursor:wait}
+.link{background:none;border:0;padding:0;color:var(--blue);text-decoration:underline;text-underline-offset:4px;font-weight:600}
+.status{margin:10px 0 0;font-size:16px}
+.status.bad{color:#9b2d31}
+.models{display:grid;gap:12px}
+.model{border:1px solid var(--line);border-radius:12px;padding:14px 16px;background:#fff;cursor:pointer}
+.model.on{border-color:var(--teal);box-shadow:0 0 0 2px #317c7a33}
+.model .hd{display:flex;gap:10px;align-items:center;justify-content:space-between}
+.model b{color:var(--blue);font-size:18px}
+.model .tag{font-size:13px;color:var(--teal);border:1px solid #b9d3d2;border-radius:999px;padding:1px 10px;white-space:nowrap}
+.model ol{margin:8px 0;padding-inline-start:20px}
+.model li{margin:2px 0}
+.model .k{display:inline-block;min-width:22px;font-weight:700;color:var(--teal)}
+.model small{display:block;color:var(--muted)}
+.q{border-top:1px solid var(--line);padding:10px 0}
+.q:first-child{border-top:0}
+.scale{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.scale label{display:flex;flex-direction:column;align-items:center;font-size:12px;color:var(--muted);min-width:54px;cursor:pointer}
+.scale input{width:20px;height:20px;accent-color:var(--teal)}
+.scale .dec{min-width:auto;flex-direction:row;gap:6px;font-size:13px}
+.anchors{display:flex;justify-content:space-between;font-size:13px;color:var(--muted);max-width:340px}
+.pocket{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.pocket .ico{font-size:30px}
+details summary{cursor:pointer;color:var(--blue);font-weight:600}
+.foot{margin-top:26px;font-size:14px;color:var(--muted);text-align:center}
+.foot .link{font-weight:400;color:var(--muted)}
+.pill{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:2px 12px;font-size:14px;color:var(--muted);background:#fff}
+dialog{border:1px solid var(--line);border-radius:12px;padding:20px;max-width:420px}
+:focus-visible{outline:3px solid var(--sun);outline-offset:3px}
+@media screen and (max-width:640px){body{font-size:16px}.card{padding:16px}.steps li{font-size:12px;min-width:56px}h1{font-size:23px}.scale label{min-width:44px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top"><img src="assets/begood-edu.webp" alt="Be good בחינוך"><div class="who" id="who"></div></header>
+  <main id="root" aria-live="polite"><p class="sub">טעינה…</p></main>
+  <footer class="foot" id="foot"></footer>
+</div>
+<script src="lib/begood-study.js"></script>
+<script src="lib/talk-study-model.js"></script>
+<script src="lib/talk-study-ui.js"></script>
+</body>
+</html>
