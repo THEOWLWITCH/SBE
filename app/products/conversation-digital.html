@@ -33,7 +33,17 @@
   function quickGuest(){
     try { var g = localStorage.getItem("sbe.quick.g"); if (!/^[a-f0-9]{16}$/.test(g || "")) { g = ""; for (var i = 0; i < 16; i++) g += "0123456789abcdef".charAt(Math.floor(Math.random() * 16)); localStorage.setItem("sbe.quick.g", g); } return g; } catch(e){ return ""; }
   }
-  window.SBE_QUICK_OPEN = quickOpen();
+  // מחקר שיחות מאתגרות (18/11/2026): talk-practice.html (= practice.html במצב מחקר) פתוח בלי קוד Begood
+  // למי שהצטרף/ה למסלול בקישור הקבוצה (talk-study.html, sbe.ts.cred). השרת בודק את הקוד והמפתח (tsModelGate).
+  function tsStudy(){
+    try {
+      if (!/^talk-practice(\.html)?$/.test(location.pathname.split("/").pop() || "") || ss("sbe.session.token")) return null;
+      var c = JSON.parse(localStorage.getItem("sbe.ts.cred") || "null");
+      return c && /^[A-Z2-9]{8}$/.test(c.c) && /^[A-Z2-9]{6}$/.test(c.p) && /^[a-f0-9]{48}$/.test(c.key) ? c : null;
+    } catch(e){ return null; }
+  }
+  window.SBE_TS_STUDY = tsStudy();
+  window.SBE_QUICK_OPEN = quickOpen() || !!window.SBE_TS_STUDY;
   // מכשיר מוכר למנהלת המערכת (28/10/2026): בלי כניסה בלשונית, עוברים לדף הכניסה שנכנס לבד וחוזר לדף הזה.
   function sysDeviceKey(){ try { var d = JSON.parse(localStorage.getItem("sbe.sys.device") || "null"); return d && d.key && Date.parse(d.exp) > Date.now() ? d.key : ""; } catch(e){ return ""; } }
   // להישאר מחוברים במכשיר (13/11/2026: "אני, כמנהלת מערכת וכל אחד אחר אוכל להשאיר את המערכת מחוברת במכשיר שלי
@@ -96,6 +106,7 @@
             var hlRoom = (location.search.match(/[?&]room=([a-f0-9]{24})(?:&|$)/) || [])[1];
             if (hlRoom) { b._auth.room = hlRoom; try { b._auth.g = localStorage.getItem("sbe.hl.g") || ""; } catch(e){} }
             if (!token && quickOpen()) b._auth.quick = quickGuest();
+            if (!token && window.SBE_TS_STUDY) { b._auth.ts = window.SBE_TS_STUDY; b._auth.page = "talk-practice.html"; }
             opts = Object.assign({}, opts, { body: JSON.stringify(b) });
           }
         } catch(e){}
@@ -375,6 +386,7 @@
   if (page === "org-suite.html" && /[?&](join=\d{6}|observe=1)(&|$)/.test(location.search)) return;
   // התנסות קצרה פתוחה בלי כניסה, עד QUICK_OPEN_UNTIL (ראו למעלה)
   if (quickOpen()) return;
+  if (window.SBE_TS_STUDY) return;
   // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
   // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.
   if (ALL_USERS.indexOf(page) === -1) {
