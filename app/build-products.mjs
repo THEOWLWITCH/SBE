@@ -99,7 +99,7 @@ for (const g of manifest.groups) {
 }
 body += `<footer>${esc(manifest.footer || '')}</footer>`;
 
-const index = `<!doctype html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+const index = `<!doctype html><html lang="he" dir="rtl"><head><meta charset="UTF-8"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><link rel="manifest" href="/site.webmanifest"><meta name="theme-color" content="#1d3f63"><meta name="apple-mobile-web-app-title" content="Begood"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>תוצרי המערכת — Begood</title>${GUARD}${FONTS}<style>${css}</style></head><body><div class="wrap">${body}</div>${PRINT_HIDE}${NAV_WIDGET}${REPORT_WIDGET}</body></html>`;
 writeFileSync(join(OUT, 'index.html'), index, 'utf8');
 // הקישורים שנבנו, לפי שם התוצר — משמש את מסך הבדיקה (לשונית "תוצרים לפי מסכים")
