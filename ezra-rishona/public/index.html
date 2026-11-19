@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>עזרה ראשונה חינוכית · אב-טיפוס</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700&family=Noto+Sans+Arabic:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#ffffff; --ink:#1e2a30; --muted:#6a767c; --line:#e3ded4;
+    --accent:#24535f; --accent-soft:#e8efef; --gold:#b89a5e; --user:#24535f; --warn:#8a5a1f;
+    --radius:14px; --shadow:0 1px 2px rgba(30,42,48,.06),0 4px 16px rgba(30,42,48,.05);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Heebo,"Noto Sans Arabic",system-ui,sans-serif;font-size:16px;line-height:1.6;display:flex;flex-direction:column}
+  body[data-lang="ar"]{font-family:"Noto Sans Arabic",Heebo,system-ui,sans-serif}
+  button{font:inherit;cursor:pointer}
+  a{color:var(--accent)}
+
+  header{background:var(--card);border-bottom:1px solid var(--line);padding:12px 16px 10px}
+  .top{display:flex;align-items:center;gap:8px 12px;max-width:860px;margin:0 auto;flex-wrap:wrap}
+  a[href^="tel"]{white-space:nowrap;direction:ltr;unicode-bidi:isolate}
+  .brand{flex:1;min-width:0}
+  .brand h1{margin:0;font-size:1.15rem;font-weight:700;letter-spacing:.2px;white-space:nowrap}
+  .brand p{margin:0;color:var(--muted);font-size:.86rem}
+  .tools{display:flex;gap:6px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+  .ghost{background:transparent;border:1px solid var(--line);color:var(--ink);border-radius:999px;padding:5px 12px;font-size:.85rem}
+  .ghost:hover{border-color:var(--accent);color:var(--accent)}
+  select.ghost{appearance:none;padding-inline:12px}
+  .pilot{max-width:860px;margin:8px auto 0;font-size:.8rem;color:var(--warn);display:flex;gap:6px;align-items:center}
+  .pilot::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--gold);flex:none}
+
+  main{flex:1;overflow-y:auto;padding:18px 16px 8px}
+  #chat{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+  .msg{max-width:88%;padding:12px 15px;border-radius:var(--radius);box-shadow:var(--shadow);word-wrap:break-word}
+  .bot{background:var(--card);align-self:flex-start;border:1px solid var(--line)}
+  .me{background:var(--user);color:#fff;align-self:flex-end;white-space:pre-wrap}
+  .bot p{margin:.35em 0}
+  .bot ol,.bot ul{margin:.35em 0;padding-inline-start:1.4em}
+  .bot li{margin:.2em 0}
+  .bot blockquote{margin:.4em 0;padding:.3em .8em;border-inline-start:3px solid var(--gold);background:#faf8f3;border-radius:6px}
+  .bot h3,.bot h4{margin:.6em 0 .2em;font-size:1rem}
+  .bot table{border-collapse:collapse;margin:.5em 0;font-size:.9rem;width:100%}
+  .bot td,.bot th{border:1px solid var(--line);padding:4px 7px;vertical-align:top;text-align:start}
+  .meta{font-size:.72rem;color:var(--muted);margin-top:6px}
+  .typing{display:inline-flex;gap:4px}
+  .typing i{width:6px;height:6px;border-radius:50%;background:var(--muted);opacity:.4;animation:b 1.2s infinite}
+  .typing i:nth-child(2){animation-delay:.2s}.typing i:nth-child(3){animation-delay:.4s}
+  @keyframes b{0%,80%,100%{opacity:.25}40%{opacity:.9}}
+  .modes{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+  .mode{background:var(--accent-soft);border:1px solid transparent;color:var(--ink);border-radius:12px;padding:10px 12px;text-align:start}
+  .mode b{color:var(--accent)}
+  .mode:hover{border-color:var(--accent)}
+  .chips{display:flex;gap:6px;flex-wrap:wrap;align-self:flex-start;margin-top:-4px}
+  .chip{background:transparent;border:1px solid var(--line);border-radius:999px;padding:3px 11px;font-size:.82rem;color:var(--muted)}
+  .chip:hover{color:var(--accent);border-color:var(--accent)}
+  .err{align-self:center;background:#fff4ec;border:1px solid #f0d4bd;color:#7a3f12;font-size:.88rem;padding:8px 12px;border-radius:10px;max-width:92%}
+
+  footer{background:var(--card);border-top:1px solid var(--line);padding:10px 16px calc(10px + env(safe-area-inset-bottom))}
+  .composer{max-width:860px;margin:0 auto;display:flex;gap:8px;align-items:flex-end}
+  textarea{flex:1;resize:none;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font:inherit;min-height:46px;max-height:160px;background:#fdfcfa;color:var(--ink)}
+  textarea:focus{outline:2px solid var(--accent-soft);border-color:var(--accent)}
+  .send{background:var(--accent);color:#fff;border:0;border-radius:12px;padding:0 18px;height:46px;font-weight:500}
+  .send:disabled{opacity:.45;cursor:default}
+  .credit{max-width:860px;margin:6px auto 0;font-size:.74rem;color:var(--muted);text-align:center}
+
+  /* מגירת תרחישי בדיקה */
+  #panel{position:fixed;inset-block:0;inset-inline-end:0;width:min(420px,100%);background:var(--card);border-inline-start:1px solid var(--line);box-shadow:-8px 0 30px rgba(0,0,0,.06);transform:translateX(-105%);transition:transform .25s ease;z-index:20;display:flex;flex-direction:column}
+  html[dir="ltr"] #panel{transform:translateX(105%)}
+  #panel.open{transform:none!important}
+  .ph{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--line)}
+  .ph h2{margin:0;font-size:1rem}
+  .pb{overflow-y:auto;padding:12px 14px;flex:1}
+  .sc{border:1px solid var(--line);border-radius:10px;padding:8px 10px;margin-bottom:8px}
+  .sc.active{border-color:var(--accent);background:#fbfdfd}
+  .sc-h{display:flex;gap:8px;align-items:center;justify-content:space-between}
+  .sc-h b{font-size:.92rem}
+  .badge{font-size:.75rem;border-radius:999px;padding:1px 8px;border:1px solid var(--line);color:var(--muted)}
+  .badge.pass{background:#e9f4ec;border-color:#bcdcc5;color:#1f6b3a}
+  .badge.fail{background:#fbecea;border-color:#ecc3bd;color:#9b2c1f}
+  .badge.part{background:#fbf3e4;border-color:#ecd7ad;color:#7a5413}
+  .sc-d{font-size:.84rem;margin-top:6px;display:none}
+  .sc.active .sc-d{display:block}
+  .sc-d h4{margin:.5em 0 .1em;font-size:.82rem;color:var(--muted)}
+  .verdict{display:flex;gap:6px;margin-top:8px}
+  .verdict button{flex:1;border:1px solid var(--line);background:#fff;border-radius:8px;padding:4px 0;font-size:.85rem}
+  .sc-d textarea{width:100%;min-height:52px;margin-top:6px;font-size:.84rem}
+  .pf{padding:10px 14px;border-top:1px solid var(--line);display:flex;gap:8px}
+  .pf button{flex:1}
+  .general{font-size:.82rem;color:var(--muted);background:#faf8f3;border-radius:8px;padding:8px 10px;margin-bottom:10px}
+  .general ul{margin:.2em 0;padding-inline-start:1.2em}
+
+  /* קוד גישה */
+  #gate{position:fixed;inset:0;background:rgba(246,244,239,.96);display:none;align-items:center;justify-content:center;z-index:30;padding:20px}
+  #gate.show{display:flex}
+  .gbox{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:22px;max-width:340px;width:100%;box-shadow:var(--shadow);text-align:center}
+  .gbox input{width:100%;font:inherit;font-size:1.2rem;text-align:center;letter-spacing:.3em;border:1px solid var(--line);border-radius:10px;padding:10px;margin:12px 0}
+  @media (max-width:560px){.msg{max-width:94%}.brand p{display:none}.brand{flex-basis:100%}.tools{justify-content:flex-start}.ghost{padding:4px 10px;font-size:.8rem}}
+</style>
+</head>
+<body data-lang="he">
+<header>
+  <div class="top">
+    <div class="brand">
+      <h1 id="t-title">עזרה ראשונה חינוכית</h1>
+      <p id="t-sub">שותף חשיבה לאנשי ונשות חינוך ברגע של משבר</p>
+    </div>
+    <div class="tools">
+      <select id="lang" class="ghost" aria-label="שפה">
+        <option value="he">עברית</option>
+        <option value="ar">العربية</option>
+        <option value="en">English</option>
+      </select>
+      <button id="newchat" class="ghost">שיחה חדשה</button>
+      <button id="testbtn" class="ghost">תרחישי בדיקה</button>
+    </div>
+  </div>
+  <div class="pilot" id="t-pilot"></div>
+</header>
+
+<main><div id="chat" aria-live="polite"></div></main>
+
+<footer>
+  <div class="composer">
+    <textarea id="input" rows="1"></textarea>
+    <button id="send" class="send">שליחה</button>
+  </div>
+  <div class="credit" id="t-credit"></div>
+</footer>
+
+<aside id="panel" aria-label="תרחישי בדיקה">
+  <div class="ph"><h2>תרחישי בדיקה</h2><button class="ghost" id="closepanel">סגירה</button></div>
+  <div class="pb" id="plist"></div>
+  <div class="pf"><button class="ghost" id="copyres">העתקת התוצאות</button><button class="ghost" id="clearres">איפוס</button></div>
+</aside>
+
+<div id="gate"><div class="gbox">
+  <b id="g-title">קוד גישה לאב-הטיפוס</b>
+  <input id="g-input" inputmode="numeric" autocomplete="off">
+  <button class="send" id="g-ok" style="width:100%">כניסה</button>
+  <div id="g-err" style="color:#9b2c1f;font-size:.85rem;margin-top:8px;min-height:1.2em"></div>
+</div></div>
+
+<script>
+(function(){
+"use strict";
+const T = {
+  he:{dir:"rtl",title:"עזרה ראשונה חינוכית",sub:"שותף חשיבה לאנשי ונשות חינוך ברגע של משבר",
+      pilot:'גרסת פיילוט · למשוב או לדיווח על תקלות: ד״ר יעל שדה, <a href="tel:0523969417">052-3969417</a>',
+      credit:"פיתוח: פרופ׳ אורית חזן, ד״ר יעל שדה וד״ר עינת שושן־רפאלי",
+      ph:"כתבו כאן מה קורה…",send:"שליחה",newchat:"שיחה חדשה",tests:"תרחישי בדיקה",
+      hello:'שלום, כאן "עזרה ראשונה חינוכית".<br>מה מתאים עכשיו?',
+      m1:"<b>1. דחוף</b> – משהו קורה עכשיו ואני צריך/ה צעד ראשון.",m1t:"1. דחוף",
+      m2:"<b>2. חשיבה ותכנון</b> – יש לי זמן לחשוב על המצב לבד או עם הצוות.",m2t:"2. חשיבה ותכנון",
+      chips:["הרחבה","לא הבנתי","למה?"],
+      e_code:"קוד הגישה לא נכון.",e_key:"מפתח ה-API לא הוגדר ב-Netlify (ANTHROPIC_API_KEY).",e_net:"לא הצלחנו להתחבר. בדקו את החיבור ונסו שוב.",e_up:"המודל לא החזיר תשובה. נסו שוב בעוד רגע.",e_len:"השיחה ארוכה מדי לאב-הטיפוס. פתחו שיחה חדשה.",
+      g_title:"קוד גישה לאב-הטיפוס",g_ok:"כניסה"},
+  ar:{dir:"rtl",title:"الإسعاف الأولي التربوي",sub:"شريك تفكير للمربين والمربيات في لحظة الأزمة",
+      pilot:'نسخة تجريبية · للملاحظات أو للإبلاغ عن أعطال: د. ياعيل ساديه، <a href="tel:0523969417">052-3969417</a>',
+      credit:"تطوير: بروفيسور أوريت حزان، د. ياعيل ساديه، د. عينات شوشان رفائيلي",
+      ph:"اكتبوا هنا ما يحدث…",send:"إرسال",newchat:"محادثة جديدة",tests:"سيناريوهات الفحص",
+      hello:'مرحبًا، هنا "الإسعاف الأولي التربوي".<br>ما المناسب الآن؟',
+      m1:"<b>1. عاجل</b> – شيء يحدث الآن وأحتاج إلى خطوة أولى.",m1t:"1. عاجل",
+      m2:"<b>2. تفكير وتخطيط</b> – لديّ وقت للتفكير في الوضع وحدي أو مع الطاقم.",m2t:"2. تفكير وتخطيط",
+      chips:["توسيع","لم أفهم","لماذا؟"],
+      e_code:"رمز الدخول غير صحيح.",e_key:"مفتاح API غير معرَّف في Netlify.",e_net:"تعذّر الاتصال. تحققوا من الاتصال وحاولوا مرة أخرى.",e_up:"لم يصل ردّ من النموذج. حاولوا بعد قليل.",e_len:"المحادثة طويلة جدًا للنموذج التجريبي. افتحوا محادثة جديدة.",
+      g_title:"رمز الدخول للنموذج التجريبي",g_ok:"دخول"},
+  en:{dir:"ltr",title:"Educational First Aid",sub:"A thinking partner for educators in a moment of crisis",
+      pilot:'Pilot version · For feedback or to report a problem: Dr. Yael Sade, <a href="tel:0523969417">052-3969417</a>',
+      credit:"Developed by Prof. Orit Hazzan, Dr. Yael Sade and Dr. Einat Shoshan-Refaeli",
+      ph:"Write here what is happening…",send:"Send",newchat:"New conversation",tests:"Test scenarios",
+      hello:'Hi, this is "Educational First Aid".<br>What fits right now?',
+      m1:"<b>1. Urgent</b> – something is happening now and I need a first step.",m1t:"1. Urgent",
+      m2:"<b>2. Think and plan</b> – I have time to think it through, alone or with my team.",m2t:"2. Think and plan",
+      chips:["Expand","I didn't understand","Why?"],
+      e_code:"Wrong access code.",e_key:"The API key is not set in Netlify (ANTHROPIC_API_KEY).",e_net:"Could not connect. Check your connection and try again.",e_up:"The model did not respond. Please try again shortly.",e_len:"This conversation is too long for the prototype. Start a new one.",
+      g_title:"Prototype access code",g_ok:"Enter"}
+};
+
+const $ = id => document.getElementById(id);
+const chat=$("chat"), input=$("input"), sendBtn=$("send"), main=document.querySelector("main");
+const store = {
+  get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch{return d}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}}
+};
+let lang = store.get("efa_lang","he");
+let code = (()=>{try{return sessionStorage.getItem("efa_code")||""}catch{return ""}})();
+let messages = [];   // {role, content}
+let busy = false;
+let scenarios = {general:[],scenarios:[]};
+let results = store.get("efa_results",{});
+let activeScenario = null;
+
+/* ---------- עיצוב טקסט (Markdown פשוט) ---------- */
+function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function inline(s){
+  s=esc(s);
+  s=s.replace(/\*\*(.+?)\*\*/g,"<b>$1</b>");
+  s=s.replace(/(^|[\s(])(https?:\/\/[^\s<)]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>');
+  return s;
+}
+function md(src){
+  const lines=src.replace(/\r/g,"").split("\n"); let out=[], list=null, i=0;
+  const close=()=>{if(list){out.push(`</${list}>`);list=null}};
+  while(i<lines.length){
+    const l=lines[i];
+    if(/^\s*\|.*\|\s*$/.test(l)){
+      close(); const rows=[];
+      while(i<lines.length && /^\s*\|.*\|\s*$/.test(lines[i])){ if(!/^\s*\|[\s:|-]+\|\s*$/.test(lines[i])) rows.push(lines[i]); i++; }
+      out.push("<table>"+rows.map((r,ri)=>"<tr>"+r.trim().slice(1,-1).split("|").map(c=>ri===0?`<th>${inline(c.trim())}</th>`:`<td>${inline(c.trim())}</td>`).join("")+"</tr>").join("")+"</table>");
+      continue;
+    }
+    let m;
+    if((m=l.match(/^\s*(\d+)[.)]\s+(.*)$/))){ if(list!=="ol"){close();out.push("<ol>");list="ol"} out.push(`<li value="${m[1]}">${inline(m[2])}</li>`); }
+    else if((m=l.match(/^\s*[-•*]\s+(.*)$/))){ if(list!=="ul"){close();out.push("<ul>");list="ul"} out.push(`<li>${inline(m[1])}</li>`); }
+    else if((m=l.match(/^\s*#{1,4}\s+(.*)$/))){ close(); out.push(`<h4>${inline(m[1])}</h4>`); }
+    else if((m=l.match(/^\s*>\s?(.*)$/))){ close(); out.push(`<blockquote>${inline(m[1])}</blockquote>`); }
+    else if(!l.trim()){ close(); }
+    else { close(); out.push(`<p>${inline(l)}</p>`); }
+    i++;
+  }
+  close(); return out.join("");
+}
+
+/* ---------- תצוגה ---------- */
+function applyLang(){
+  const t=T[lang]; document.documentElement.lang=lang; document.documentElement.dir=t.dir; document.body.dataset.lang=lang;
+  $("t-title").textContent=t.title; $("t-sub").textContent=t.sub; $("t-pilot").innerHTML=t.pilot; $("t-credit").textContent=t.credit;
+  input.placeholder=t.ph; sendBtn.textContent=t.send; $("newchat").textContent=t.newchat; $("testbtn").textContent=t.tests;
+  $("g-title").textContent=t.g_title; $("g-ok").textContent=t.g_ok; $("lang").value=lang;
+}
+function scrollDown(){ main.scrollTop=main.scrollHeight; }
+function addBubble(cls,html){ const d=document.createElement("div"); d.className="msg "+cls; d.innerHTML=html; chat.appendChild(d); scrollDown(); return d; }
+function removeChips(){ chat.querySelectorAll(".chips,.modes").forEach(e=>e.remove()); }
+function showOpening(){
+  const t=T[lang];
+  const b=addBubble("bot",`<p>${t.hello}</p>`);
+  const box=document.createElement("div"); box.className="modes";
+  [[t.m1,t.m1t],[t.m2,t.m2t]].forEach(([h,txt])=>{const btn=document.createElement("button");btn.className="mode";btn.innerHTML=h;btn.onclick=()=>send(txt);box.appendChild(btn)});
+  b.appendChild(box);
+}
+function addChips(){
+  const box=document.createElement("div"); box.className="chips";
+  T[lang].chips.forEach(c=>{const b=document.createElement("button");b.className="chip";b.textContent=c;b.onclick=()=>send(c);box.appendChild(b)});
+  chat.appendChild(box); scrollDown();
+}
+function error(msg){ const d=document.createElement("div"); d.className="err"; d.textContent=msg; chat.appendChild(d); scrollDown(); }
+function reset(){ messages=[]; chat.innerHTML=""; showOpening(); input.focus(); }
+
+/* ---------- שליחה וזרימת תשובה ---------- */
+async function send(text){
+  text=(text||"").trim(); if(!text||busy) return;
+  removeChips(); busy=true; sendBtn.disabled=true;
+  messages.push({role:"user",content:text}); addBubble("me",esc(text));
+  input.value=""; autosize();
+  const bubble=addBubble("bot",'<span class="typing"><i></i><i></i><i></i></span>');
+  let acc="", usage={};
+  try{
+    const res=await fetch("/api/chat",{method:"POST",headers:{"content-type":"application/json","x-access-code":code},body:JSON.stringify({messages,lang})});
+    if(!res.ok){
+      let e={}; try{e=await res.json()}catch{}
+      bubble.remove(); messages.pop();
+      if(e.error==="code"){ askCode(T[lang].e_code); }
+      else if(e.error==="missing_key") error(T[lang].e_key);
+      else if(e.error==="length") error(T[lang].e_len);
+      else error(T[lang].e_up+(e.status?` (${e.status})`:""));
+      return;
+    }
+    const reader=res.body.getReader(), dec=new TextDecoder(); let buf="";
+    while(true){
+      const {value,done}=await reader.read(); if(done) break;
+      buf+=dec.decode(value,{stream:true});
+      let idx;
+      while((idx=buf.indexOf("\n\n"))>=0){
+        const evt=buf.slice(0,idx); buf=buf.slice(idx+2);
+        const line=evt.split("\n").find(l=>l.startsWith("data:")); if(!line) continue;
+        let d; try{d=JSON.parse(line.slice(5))}catch{continue}
+        if(d.type==="content_block_delta"&&d.delta&&d.delta.type==="text_delta"){ acc+=d.delta.text; bubble.innerHTML=md(acc); scrollDown(); }
+        else if(d.type==="message_start"&&d.message&&d.message.usage){ Object.assign(usage,d.message.usage); }
+        else if(d.type==="message_delta"&&d.usage){ Object.assign(usage,d.usage); }
+        else if(d.type==="error"){ throw new Error("stream"); }
+      }
+    }
+    if(!acc){ bubble.remove(); messages.pop(); error(T[lang].e_up); return; }
+    messages.push({role:"assistant",content:acc});
+    if(document.body.classList.contains("testing")){
+      const m=document.createElement("div"); m.className="meta";
+      m.textContent=`קלט: ${usage.input_tokens??"?"} · מהמטמון: ${usage.cache_read_input_tokens??0} · נכתב למטמון: ${usage.cache_creation_input_tokens??0} · פלט: ${usage.output_tokens??"?"}`;
+      bubble.appendChild(m);
+    }
+    addChips();
+  }catch(e){
+    if(!acc){ bubble.remove(); messages.pop(); }
+    error(T[lang].e_net);
+  }finally{ busy=false; sendBtn.disabled=false; input.focus(); }
+}
+
+/* ---------- קוד גישה ---------- */
+function askCode(msg){ $("g-err").textContent=msg||""; $("gate").classList.add("show"); $("g-input").value=""; $("g-input").focus(); }
+$("g-ok").onclick=()=>{ code=$("g-input").value.trim(); try{sessionStorage.setItem("efa_code",code)}catch{} $("gate").classList.remove("show"); };
+$("g-input").addEventListener("keydown",e=>{ if(e.key==="Enter") $("g-ok").click(); });
+
+/* ---------- תרחישי בדיקה ---------- */
+const VERD={pass:["עבר","pass"],part:["חלקי","part"],fail:["נכשל","fail"]};
+function renderPanel(){
+  const pl=$("plist"); pl.innerHTML="";
+  const g=document.createElement("div"); g.className="general";
+  g.innerHTML="<b>בכל תרחיש בודקים גם:</b><ul>"+scenarios.general.map(x=>`<li>${esc(x)}</li>`).join("")+"</ul>";
+  pl.appendChild(g);
+  scenarios.scenarios.forEach(s=>{
+    const r=results[s.n]||{};
+    const el=document.createElement("div"); el.className="sc"+(activeScenario===s.n?" active":"");
+    const badge=r.v?`<span class="badge ${VERD[r.v][1]}">${VERD[r.v][0]}</span>`:'<span class="badge">טרם</span>';
+    el.innerHTML=`<div class="sc-h"><b>${s.n}. ${esc(s.title)}</b>${badge}</div>
+      <div class="sc-d">
+        <h4>הפנייה</h4><div>${esc(s.q)}</div>
+        <h4>חייב לקרות</h4><div>${esc(s.must)}</div>
+        <h4>אסור שיקרה</h4><div>${esc(s.mustnt)}</div>
+        <button class="ghost run" style="margin-top:8px;width:100%">הרצה בשיחה חדשה</button>
+        <div class="verdict"><button data-v="pass">✓ עבר</button><button data-v="part">~ חלקי</button><button data-v="fail">✗ נכשל</button></div>
+        <textarea placeholder="הערות">${esc(r.note||"")}</textarea>
+      </div>`;
+    el.querySelector(".sc-h").onclick=()=>{ activeScenario=(activeScenario===s.n?null:s.n); renderPanel(); };
+    el.querySelector(".run").onclick=()=>{ reset(); send(s.q); if(window.innerWidth<700) $("panel").classList.remove("open"); };
+    el.querySelectorAll(".verdict button").forEach(b=>b.onclick=()=>{ results[s.n]={...(results[s.n]||{}),v:b.dataset.v}; store.set("efa_results",results); renderPanel(); });
+    el.querySelector("textarea").oninput=e=>{ results[s.n]={...(results[s.n]||{}),note:e.target.value}; store.set("efa_results",results); };
+    pl.appendChild(el);
+  });
+}
+$("testbtn").onclick=()=>{ document.body.classList.add("testing"); $("panel").classList.toggle("open"); renderPanel(); };
+$("closepanel").onclick=()=>$("panel").classList.remove("open");
+$("clearres").onclick=()=>{ results={}; store.set("efa_results",results); renderPanel(); };
+$("copyres").onclick=async()=>{
+  const lines=scenarios.scenarios.map(s=>{const r=results[s.n]||{};return `${s.n}. ${s.title}: ${r.v?VERD[r.v][0]:"טרם נבדק"}${r.note?" – "+r.note:""}`});
+  const txt="תוצאות בדיקה – עזרה ראשונה חינוכית ("+new Date().toLocaleDateString("he-IL")+")\n"+lines.join("\n");
+  try{ await navigator.clipboard.writeText(txt); $("copyres").textContent="הועתק ✓"; setTimeout(()=>$("copyres").textContent="העתקת התוצאות",1500);}catch{ prompt("העתיקו:",txt); }
+};
+
+/* ---------- אירועים ---------- */
+function autosize(){ input.style.height="auto"; input.style.height=Math.min(input.scrollHeight,160)+"px"; }
+input.addEventListener("input",autosize);
+input.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){ e.preventDefault(); send(input.value); }});
+sendBtn.onclick=()=>send(input.value);
+$("newchat").onclick=reset;
+$("lang").onchange=e=>{ lang=e.target.value; store.set("efa_lang",lang); applyLang(); reset(); };
+
+applyLang(); reset();
+fetch("scenarios.json").then(r=>r.json()).then(d=>{scenarios=d}).catch(()=>{});
+fetch("/api/chat").then(r=>r.json()).then(d=>{ if(d.needsCode&&!code) askCode(); }).catch(()=>{});
+})();
+</script>
+</body>
+</html>
