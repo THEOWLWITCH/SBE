@@ -7,6 +7,8 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function (root) {
   'use strict';
   const GROUPS = ['ייעוץ חינוכי', 'חינוך', 'אחר'];
+  // התיקייה המשותפת של צוות המחקר ב־Google Drive (ד״ר עינת שושן־רפאלי וד״ר יעל שדה, 19/11/2026)
+  const TEAM_FOLDER = 'https://drive.google.com/drive/folders/1jifxe6Id8J2moFq7a0zN-spcKpdrtCNp';
   const PARTS = [['pre', 'שאלון עמדות'], ['model', 'בחירת מודל'], ['practice', 'תרגול ומשוב'], ['post', 'שאלון עמדות מסכם'], ['reflection', 'רפלקציה']];
   const endpoint = () => (typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) ? '/api/access' : 'https://sbe-server.onrender.com/api/access';
   const token = () => { try { return sessionStorage.getItem('sbe.session.token') || ''; } catch (_) { return ''; } };
@@ -53,6 +55,11 @@
     const links = node('p', 'r-muted');
     const a2 = node('a', '', 'פנקס הכיס'); a2.href = 'pocket-talk.html'; a2.target = '_blank'; a2.rel = 'noopener';
     links.append(a2); box.append(links);
+    const team = node('div', 'r-card-inner');
+    team.append(node('h3', '', '📁 התיקייה המשותפת של צוות המחקר'));
+    team.append(node('p', 'r-muted', 'חומרי המחקר המשותפים לד״ר עינת שושן־רפאלי ולד״ר יעל שדה.'));
+    const fa = node('a', 'r-secondary', 'פתיחת התיקייה ב־Google Drive'); fa.href = TEAM_FOLDER; fa.target = '_blank'; fa.rel = 'noopener';
+    team.append(fa); box.append(team);
     const form = node('div', 'r-card-inner');
     const gl = node('label', '', 'הקבוצה'), gs = node('select'); for (const g of GROUPS) gs.append(new Option(g, g)); gl.append(gs);
     const ll = node('label', '', 'שם לקישור (רשות)'), li = node('input'); li.placeholder = 'למשל: קורס שיחות מאתגרות, סמסטר א׳'; ll.append(li);
