@@ -25,6 +25,21 @@
 
   // ── כניסה ──
   async function start() {
+    // 7777: בדיקה של מנהלת המערכת בלבד (sys-test-7777.js, זמני)
+    if (CLASS === '7777' && window.SBE_SYS7777) {
+      app.innerHTML = msg('פותחים את פעילות הבדיקה…');
+      try {
+        const code = await SBE_SYS7777.run({ page: 'dilemma-join.html', api: U.api, setup: async (f, title) => {
+          const a = ((await f('f.mine')).activities || []).find((x) => x.title === title);
+          let act = a ? (await f('f.get', { id: a.id })).activity : (await f('f.create', { title, template: (M.TEMPLATES[0] || {}).id, research: false })).activity;
+          if (!act.classes.length) act = (await f('f.classAdd', { id: act.id, name: 'כיתת בדיקה' })).activity;
+          if (act.status !== 'open') await f('f.status', { id: act.id, status: 'open' });
+          return act.classes[0].code;
+        } });
+        if (code) location.replace('dilemma-join.html?c=' + code);
+      } catch (e) { app.innerHTML = '<div class="dlm-card">' + msg(e.message, 'err') + '</div>'; }
+      return;
+    }
     if (!CLASS) return resumeView('');
     const saved = LS.get(sessKey(CLASS));
     if (saved && saved.a && saved.p && saved.key) {

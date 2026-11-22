@@ -30,6 +30,21 @@
       $('#go').onclick = () => { classCode = $('#cc').value.toUpperCase().trim(); if (classCode) { history.replaceState(null, '', '?c=' + classCode); start(); } };
       return;
     }
+    // 7777: בדיקה של מנהלת המערכת בלבד (sys-test-7777.js, זמני)
+    if (classCode === '7777' && window.SBE_SYS7777) {
+      app.innerHTML = msg('פותחים את פעילות הבדיקה…');
+      try {
+        const code = await SBE_SYS7777.run({ page: 'credibility-join.html', api: U.api, setup: async (f, title) => {
+          let a = ((await f('f.mine')).activities || []).find((x) => x.title === title);
+          let act = a ? (await f('f.get', { id: a.id })).activity : (await f('f.create', { title, dilemma: 'דילמה לבדיקה של מנהלת המערכת', research: false })).activity;
+          if (!act.classes.length) act = (await f('f.classAdd', { id: act.id, name: 'כיתת בדיקה' })).activity;
+          if (act.status !== 'open') await f('f.status', { id: act.id, status: 'open' });
+          return act.classes[0].code;
+        } });
+        if (!code) return;
+        classCode = code; history.replaceState(null, '', '?c=' + code);
+      } catch (e) { app.innerHTML = msg(e.message, 'err'); return; }
+    }
     const c = loadCred(classCode);
     if (c) { S.cred = c; return load(); }
     let info;
