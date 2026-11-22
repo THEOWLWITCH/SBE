@@ -74,8 +74,8 @@
       I.claims.length ? 'טענות:\n' + I.claims.map((c, i) => (i + 1) + '. ' + (c.text || '') + (c.state ? ' (' + c.state + ')' : '')).join('\n') : '',
       I.evidence.length ? 'ראיות:\n' + I.evidence.map((e, i) => (i + 1) + '. ' + (e.what || '') + (e.found ? ': ' + e.found : '')).join('\n') : ''].filter(Boolean).join('\n'));
   }
-  const chatOpts = (n) => ({ history: () => (I.chats[n] = I.chats[n] || []), save: () => save(), context, system: () => M.stageSystem(n) });
-  const fbOpts = { context, log: (x) => { I.feedback.push(x); save(); } };
+  const chatOpts = (n) => ({ history: () => (I.chats[n] = I.chats[n] || []), save: () => save(), context, anon, system: () => M.stageSystem(n) });
+  const fbOpts = { context, anon, log: (x) => { I.feedback.push(x); save(); } };
   function withRefs(root, build) {
     if (window.SBE_REFS) SBE_REFS.begin(SRC, 'resilience-advisor-sources.html');
     build(root);

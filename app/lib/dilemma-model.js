@@ -372,7 +372,7 @@
     return '<section class="dlm-about">'
       + '<h2>מהו בירור דילמות?</h2><p>' + esc(CARD_DESC) + '</p><p class="dlm-gq">' + esc(GUIDING_QUESTION) + '</p>'
       + '<p>העיקרון המרכזי: ה־AI מסייע בבירור, אך אינו מחליף את החשיבה העצמאית או את הדיון האנושי. מטרה נוספת: שימוש מושכל וביקורתי ב־AI. לא מקבלים תשובה בלי בדיקה, מבינים את דירוג האמינות, פותחים מקורות, מזהים מגבלות ומדווחים על טעויות.</p>'
-      + '<h3>איך זה עובד</h3>' + ol(STEPS.map((s) => s.t + (s.k === 'personal' ? ': נשמרת בנפרד, ואינה נחשפת לקבוצה' : s.k === 'reflection' ? ': אינה גלויה לחברי הקבוצה' : '')))
+      + '<h3>תהליך הלמידה</h3>' + ol(STEPS.map((s) => s.t + (s.k === 'personal' ? ': נשמרת בנפרד, ואינה נחשפת לקבוצה' : s.k === 'reflection' ? ': אינה גלויה לחברי הקבוצה' : '')))
       + '<h2>כיצד עובדים עם הלוח הקבוצתי?</h2><p><b>' + esc(PROTOCOL.lead) + '</b></p>' + ol(PROTOCOL.steps) + '<p>' + esc(PROTOCOL.rolesNote) + ' לדוגמה: ' + esc(PROTOCOL.roles.join(', ')) + '.</p><p>' + esc(PROTOCOL.noSummary) + '</p>'
       + '<p>ששת אזורי הלוח: ' + esc(ZONES.map((z) => z.t).join(' · ')) + '. קשרים בין כרטיסים: ' + esc(RELATIONS.map((r) => r.t).join(' · ')) + '.</p>'
       + '<h2>כיצד מעריכים אמינות מקורות?</h2>' + infographicHTML()
