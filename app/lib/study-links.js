@@ -47,7 +47,7 @@
   const CSS = '.sbe-study{margin:14px 0;padding:12px 14px;border:1px solid var(--hair,#d9dde0);border-top:2px solid #2a9d8f;border-radius:12px;background:#fff}' +
     '.sbe-study b{display:block;margin-bottom:4px}.sbe-study p{margin:0 0 8px;font-size:.92rem}' +
     '.sbe-study .row{display:flex;flex-wrap:wrap;gap:8px}.sbe-study a{display:inline-block;padding:7px 14px;border-radius:999px;border:1px solid #1d3f63;color:#1d3f63;text-decoration:none;font-weight:600}' +
-    '.sbe-study a.go{background:#1d3f63;color:#fff}.sbe-study a.done{border-color:#9aa5ae;color:#55606a}@media print{.sbe-study{display:none}}';
+    '.sbe-study a.go{background:#1d3f63;color:#fff}.sbe-study a.done{border-color:#9aa5ae;color:#55606a}.sbe-study.team{border-top-color:#1d3f63;background:#f7fafc}@media print{.sbe-study{display:none}}';
 
   function style() {
     if (document.getElementById('sbeStudyCss')) return;
@@ -79,11 +79,37 @@
       a.className = r.done ? 'done' : (rows.filter(x => !x.done)[0] === r ? 'go' : '');
       row.append(a);
     }
+    const pk = document.createElement('a'); pk.href = 'pocket-talk.html'; pk.target = '_blank'; pk.rel = 'noopener'; pk.textContent = '📒 פנקס הכיס'; row.append(pk);
     box.append(b, p, row); el.append(box); el.hidden = false;
   }
 
+  // צוות המחקר (מנהלת המערכת, וקודי צוות או מנהל/ת מוסד, כמו בכניסה למרכז המחקר): קישורים למרכז המחקר.
+  // לא למשתתפים: הסטודנטיות נכנסות בקישור הקבוצה, בלי קוד.
+  function isTeam() {
+    try {
+      const t = token(); if (!t) return false;
+      const raw = Uint8Array.from(atob(t.split('.')[0].replace(/-/g, '+').replace(/_/g, '/')), c => c.charCodeAt(0));
+      const s = JSON.parse(new TextDecoder().decode(raw));
+      if (!(s.exp > Date.now())) return false;
+      return s.k === 'sys' || (s.k === 'code' && s.c !== 'LEGACY' && ['staff', 'instadmin'].indexOf(s.kind) !== -1);
+    } catch (_) { return false; }
+  }
+
+  function team(el) {
+    if (!el || el.dataset.studyPlace !== 'before' || !isTeam() || document.getElementById('sbeStudyTeam')) return;
+    style();
+    const box = document.createElement('div'); box.className = 'sbe-study team'; box.id = 'sbeStudyTeam';
+    const b = document.createElement('b'); b.textContent = '🔬 לצוות המחקר';
+    const p = document.createElement('p'); p.textContent = 'רק לצוות המחקר. השאלונים, הרפלקציה ומסלול הסטודנטיות נמצאים במרכז המחקר.';
+    const row = document.createElement('div'); row.className = 'row';
+    [['research-management.html', '🔬 מרכז המחקר', 'go'], ['pocket-talk.html', '📒 פנקס הכיס', '']].forEach(([h, t, c]) => {
+      const a = document.createElement('a'); a.href = h; a.textContent = t; if (c) a.className = c; row.append(a);
+    });
+    box.append(b, p, row); el.before(box);
+  }
+
   function auto() {
-    for (const el of document.querySelectorAll('[data-study-place]')) mount(el, { tool: el.dataset.studyTool, place: el.dataset.studyPlace });
+    for (const el of document.querySelectorAll('[data-study-place]')) { team(el); mount(el, { tool: el.dataset.studyTool, place: el.dataset.studyPlace }); }
   }
 
   root.SBE_STUDYLINK = Object.freeze({ mount, load, refresh: () => { cache = null; auto(); } });
