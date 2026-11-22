@@ -2380,14 +2380,18 @@ function renderCommFeedback(box, r){
   // ── מצב מחקר (talk-practice.html): המקרה מגיע מהמסלול, בלי מסך הבחירה, בלי שיתוף ובלי מעבר לתרחישים אחרים ──
   if (window.SBE_TS_MODE) {
     const H = window.SBE_TS_HANDOFF;
-    document.head.append(el("style", {}, ".sbe-peek,#ownCancel,.own-share,#bBackToSelect,#bAgainOther,#fbSave,[data-study-tool],#myCases{display:none!important}"));
+    document.head.append(el("style", {}, ".sbe-peek,#ownCancel,.own-share,#bBackToSelect,#bAgainOther,#fbSave,[data-study-tool],#myCases,#ownSteps,#own2>p:first-child,#ownBack1,#ownBack2{display:none!important}"));
     if (!H || !H.fields || !H.back) {
       $("scenarioName").classList.remove("hero-banner"); $("scenarioName").textContent = "התרגול נפתח מהמסלול של המחקר";
       $("scenarioSubtitle").textContent = "אפשר לחזור לקישור של הקבוצה ולפתוח את התרגול משם.";
       [1, 2, 3].forEach(i => { $("own" + i).hidden = true; }); show("screen-custom");
     } else {
-      const sig = JSON.stringify([H.code, H.pid, H.session, H.fields, H.me]);
+      // 22/11/2026 ("הכלי מבקש פעמיים את פרטי הסיפור"): הסיפור נבנה פעם אחת מהמקרה שבמסלול, ונשמר
+      // לתרגולים הבאים כל עוד המקרה לא השתנה. התדריך נכתב מחדש בכל מפגש ובכל החלפת מודל.
+      const sig = JSON.stringify([H.code, H.pid, H.fields, H.me]);
       if (draft.tsSig !== sig) Object.assign(draft, { tsSig: sig, questions: [], answers: {}, scenario: null, fromReady: false });
+      const bsig = JSON.stringify([H.session, H.modelNames || [], H.modelSteps || []]);
+      if (draft.tsBriefSig !== bsig) Object.assign(draft, { tsBriefSig: bsig, briefing: "", briefingRead: false });
       draft.form = Object.assign({}, H.fields, { me: H.me || "נקבה" }); saveDraft();
       Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
       // 22/11/2026 ("זה כלי נפרד שיש לקשר כחלק מהכלי הזה"): פס עליון של המסלול, עם המפגש והשלב, וחזרה למסלול
@@ -2398,8 +2402,10 @@ function renderCommFeedback(box, r){
       // ── תדריך הכנה לפי המודל (22/11/2026: "הן יקראו את התדריך לפי המודל שבחרו ואז יתרגלו") ──
       const bc = el("div", { class: "card", id: "own0" });
       $("own1").before(bc);
-      const goOn = () => { draft.briefingRead = true; saveDraft(); bc.hidden = true; $("ownSteps").hidden = false; step(draft.scenario ? 3 : 1);
-        $("scenarioSubtitle").textContent = "המודל שבחרת: " + (H.modelNames || []).join(" + ") + ". אפשר לדייק את המקרה, ואז להמשיך."; };
+      // המקרה כבר תואר במסלול, ולכן לא שואלים עליו שוב: ישר לכתיבת הסיפור, ואחריה אישור והתחלה
+      const goOn = () => { draft.briefingRead = true; saveDraft(); bc.hidden = true; $("ownSteps").hidden = false;
+        if (draft.scenario) step(3); else { draft.questions = []; draft.answers = {}; saveDraft(); step(2); $("ownQs").textContent = ""; build(false); }
+        $("scenarioSubtitle").textContent = "המודל שבחרת: " + (H.modelNames || []).join(" + ") + ". הסיפור נבנה מהמקרה שתיארת במסלול."; };
       function briefSystem(){
         const male = (H.me || "נקבה") === "זכר";
         return ["את מנחה מנוסה של אנשי ונשות חינוך. כתבי תדריך הכנה אישי וקצר לשיחה מאתגרת שהמתנסה עומד/ת לתרגל, לפי המודל שבחר/ה. התדריך נקרא פעם אחת לפני התרגול.",
@@ -2559,7 +2565,7 @@ function renderCommFeedback(box, r){
     const content = caseText() + (revise && draft.scenario ? "\n\nהתרחיש הנוכחי (JSON):\n" + JSON.stringify(draft.scenario) + "\n\nמה לשנות: " + $("ownChange").value.trim() : "");
     try { r = await sbeCallAIJson(AI_SERVER, { system: revise ? PC.reviseSystem() : PC.buildSystem(), messages: [{ role: "user", content }], maxTokens: 10000, fast: true }, 240000, PC.valid); }
     catch (e) { bad = e; } finally { stop(); b.disabled = false; }
-    if (!PC.valid(r)) { if (!revise) step(draft.questions.length ? 2 : 1); return fail(bad); }
+    if (!PC.valid(r)) { if (!revise) step(window.SBE_TS_MODE || draft.questions.length ? 2 : 1); return fail(bad); }
     draft.scenario = PC.normalize(r); if (draft.scenario && draft.scenario.trainee) draft.scenario.trainee.gender = draft.form.me || "נקבה"; saveDraft(); $("ownChange").value = ""; preview(); step(3);
   }
   function preview(){
