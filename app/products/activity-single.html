@@ -58,7 +58,7 @@
   // המרחב שבו נמצא/ת מי שנכנס/ה (28/10/2026): 'org' (ארגוני) או 'edu' (חינוכי).
   // מהשרת בכניסה (המרחב שסומן למוסד), למנהלת המערכת לפי הבחירה במרחב שלי, ובמעבדת הדמו ?space=org.
   // כלים משותפים משתמשים בזה כדי להציג דוגמאות ומילים מהעולם הארגוני; השרת קובע בעצמו לפי הקוד.
-  var MOVED_PERMS = ["leadership", "routines", "continuity"], SHARED_PERMS = ["horizon", "journey", "teamthink", "writer", "studies"].concat(MOVED_PERMS), ORG_PERMS = ["orgsuite"];
+  var MOVED_PERMS = ["leadership", "routines", "continuity", "readiness"], SHARED_PERMS = ["horizon", "journey", "teamthink", "writer", "studies"].concat(MOVED_PERMS), ORG_PERMS = ["orgsuite"];
   window.sbeSpace = function(){
     try {
       var q = (location.search.match(/[?&]space=(org|edu)(?:&|$)/) || [])[1];
@@ -237,15 +237,29 @@
       return dt.getMonth() === mo - 1 && dt.getDate() === d ? y + "-" + p2(mo) + "-" + p2(d) : null;
     };
     var desc = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value");
+    // ערבית (05/11/2026, מערך המוכנות): הטקסטים של השדה לפי השפה הקרובה ([lang]), ומתעדכנים כשהשפה של הדף מתחלפת.
+    var DSTR = {
+      he: { ph: "יום.חודש.שנה", label: "תאריך", cal: "פתיחת לוח שנה", calT: "לוח שנה", msg: "כדי לשמור, אפשר לכתוב תאריך תקין כמו 25.10.26" },
+      ar: { ph: "يوم.شهر.سنة", label: "تاريخ", cal: "فتح التقويم", calT: "التقويم", msg: "للحفظ، يمكن كتابة تاريخ صحيح مثل 25.10.26" }
+    };
+    var dLang = function(el){ var n = el && el.closest && el.closest("[lang]"); var l = (n ? n.getAttribute("lang") : document.documentElement.getAttribute("lang")) || ""; return /^ar\b/i.test(l) ? "ar" : "he"; };
     var dateIL = function(inp){
       if (inp.getAttribute("data-il") || inp.closest("[data-native-date]")) return; inp.setAttribute("data-il", "1");
       var t = document.createElement("input"); t.type = "text"; t.inputMode = "numeric"; t.className = "sbe-date " + (inp.className || "");
       t.dir = inp.getAttribute("dir") === "rtl" ? "rtl" : "ltr";
-      t.placeholder = "יום.חודש.שנה"; t.setAttribute("aria-label", inp.getAttribute("aria-label") || (inp.id && document.querySelector('label[for="' + inp.id + '"]') ? document.querySelector('label[for="' + inp.id + '"]').textContent : "תאריך"));
+      var ownLabel = inp.getAttribute("aria-label") || (inp.id && document.querySelector('label[for="' + inp.id + '"]') ? document.querySelector('label[for="' + inp.id + '"]').textContent : "");
+      if (ownLabel) t.setAttribute("aria-label", ownLabel);
       t.style.cssText = "width:7.5em;direction:" + t.dir + ";text-align:right";
-      var cal = document.createElement("button"); cal.type = "button"; cal.textContent = "📅"; cal.title = "לוח שנה"; cal.setAttribute("aria-label", "פתיחת לוח שנה");
+      var cal = document.createElement("button"); cal.type = "button"; cal.textContent = "📅";
       cal.style.cssText = "font:inherit;border:1px solid #CDD3D8;border-radius:6px;background:transparent;cursor:pointer;padding:.2rem .4rem;margin-inline-start:.25rem";
-      var message = "כדי לשמור, אפשר לכתוב תאריך תקין כמו 25.10.26";
+      var message = "";
+      var applyLang = function(){
+        var L = DSTR[dLang(inp)]; message = L.msg;
+        t.placeholder = L.ph; if (!ownLabel) t.setAttribute("aria-label", L.label);
+        cal.title = L.calT; cal.setAttribute("aria-label", L.cal);
+        if (t.getAttribute("aria-invalid") === "true") { t.setCustomValidity(message); inp.setCustomValidity(message); t.title = message; }
+      };
+      applyLang(); t._sbeDateLang = applyLang;
       var validity = function(valid){ t.setCustomValidity(valid ? "" : message); inp.setCustomValidity(valid ? "" : message); t.setAttribute("aria-invalid", String(!valid)); t.style.borderColor = valid ? "" : "#B3261E"; t.title = valid ? "" : message; return valid; };
       var sync = function(){ t.value = window.sbeDateIL(desc.get.call(inp)); validity(true); };
       var locked = function(){ return inp.disabled || inp.readOnly; };
@@ -277,6 +291,7 @@
       new MutationObserver(syncLock).observe(inp, {attributes:true, attributeFilter:["disabled", "readonly"]});
     };
     var scanDates = function(){ [].forEach.call(document.querySelectorAll('input[type="date"]:not([data-il])'), dateIL); };
+    try { new MutationObserver(function(){ [].forEach.call(document.querySelectorAll("input.sbe-date"), function(t){ if (t._sbeDateLang) t._sbeDateLang(); }); }).observe(document.documentElement, {attributes: true, attributeFilter: ["lang"]}); } catch(e){}
     var dPending = 0;
     document.addEventListener("DOMContentLoaded", function(){ scanDates(); try { new MutationObserver(function(){ if (dPending) return; dPending = setTimeout(function(){ dPending = 0; scanDates(); }, 0); }).observe(document.body, {childList: true, subtree: true}); } catch(e){} });
   } catch(e){}
@@ -320,7 +335,7 @@
     games: ["games.html", "memory-game.html", "board-game.html", "no-panic.html", "story-maker.html", "statement-sort.html", "riddles.html", "bingo.html", "twenty-q.html", "truth-dare.html", "trail-signs.html", "readiness-train.html", "idea-garden.html"], // מחיצת המשחקים (21/10/2026)
     orgsuite: ["org-suite.html", "org-library.html"], // תרגול צוותים (המרחב הארגוני, 28/10/2026)
     horizon: ["horizon-lab.html", "hl-voice.html", "hl-radar.html", "hl-futures.html", "hl-circles.html", "hl-horizons.html", "hl-collage.html", "hl-roadmap.html", "hl-game.html", "hl-stress.html"], // מעבדת האופק (אושר 28/10/2026)
-    bridge: ["family-bridge.html", "resilience-advisor-sources.html"], routines: ["routines-hub.html", "resilience-advisor-sources.html"], continuity: ["continuity-kit.html", "resilience-advisor-sources.html"], // אושרו 28/10/2026
+    bridge: ["family-bridge.html", "resilience-advisor-sources.html"], routines: ["routines-hub.html", "resilience-advisor-sources.html"], continuity: ["continuity-kit.html", "resilience-advisor-sources.html"], readiness: ["readiness.html", "resilience-advisor-sources.html"], // אושרו 28/10/2026
     dilemma: ["dilemma-inquiry.html", "credibility-check.html"], quickpractice: ["quick-practice.html"], credibility: ["credibility-check.html"], // בדיקת אמינות של מקורות (17/11/2026; גם עם הרשאת בירור דילמות) // התנסות קצרה (16/11/2026) // בירור דילמות (12/11/2026); המשתתפים ב-dilemma-join.html בלי קוד
   };
   var SIM_DOCS = ["doc-trainee.html", "doc-actor.html", "card-actor.html", "doc-facilitator.html"];
@@ -373,6 +388,8 @@
     home = "";
   }
 
+  // אילו דפים פתוחים לקוד הזה: כדי שקישור בתוך כלי לא יוביל לדף שנסגר בפני המשתמש/ת (מערך המוכנות, 04/11/2026)
+  window.sbeCanOpen = function(p){ return allowed === null || (!!home && ALL_USERS.indexOf(p) !== -1) || allowed.indexOf(p) !== -1 || p === "yesh-ma-laasot.html"; };
   // טופס המשוב מקישור/QR של סדנה (?w=) — פתוח גם בלי כניסה: המשתתפות סורקות בטלפון בסוף התחקיר.
   // השרת מקבל משוב רק לסדנה שנפתחה (wfSubmit), ולא חושף משובים של אחרים.
   // ספריית התוצרים לדוגמה — פתוחה לכל מי שמתעניין/ת, גם בלי כניסה (רק מה שמנהלת המערכת סימנה להצגה).

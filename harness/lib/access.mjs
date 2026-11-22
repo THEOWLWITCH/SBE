@@ -11,6 +11,7 @@ import { handleDilemma, dlmModelGate } from './dilemma.mjs';
 import { handleCredibility, crdModelGate } from './credibility.mjs';
 import { handleTalkStudy, tsModelGate } from './talk-study.mjs';
 import { handlePartnerDocs } from './partner-docs.mjs';
+import { handleReadiness } from './readiness.mjs';
 const QUOTES = createRequire(import.meta.url)('../../app/lib/quotes.js');
 const JOURNEY_WORKSPACE = createRequire(import.meta.url)('../../app/lib/journey-workspace-model.js');
 const JOURNEY_ANALYSIS = createRequire(import.meta.url)('../../app/lib/journey-analysis-model.js');
@@ -22,7 +23,7 @@ const MIN_PASSWORD = 8;
 // ההרשאות במערכת. לכל מוסד יש "תקרה" (modules:<מוסד>) — מה שמנהלת המערכת פתחה
 // לו; ברירת המחדל: שום דבר. קודי הצוות שמנהל/ת המוסד מפיק/ה מקבלים רק צירוף
 // מתוך התקרה.
-export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer', 'nana', 'studio', 'dialogue', 'teamthink', 'studies', 'games', 'horizon', 'bridge', 'routines', 'continuity', 'orgsuite', 'dilemma', 'quickpractice', 'credibility'];
+export const PERMS = ['fac_trainee', 'fac_parent', 'fac_youth', 'conv', 'activity', 'academic', 'lecturer', 'resilience', 'leadership', 'practi', 'journey', 'writer', 'nana', 'studio', 'dialogue', 'teamthink', 'studies', 'games', 'horizon', 'bridge', 'routines', 'continuity', 'orgsuite', 'dilemma', 'quickpractice', 'credibility', 'readiness'];
 const DEFAULT_MODULES = Object.fromEntries(PERMS.map((p) => [p, false]));
 const CODE_ALPHABET = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 
@@ -76,7 +77,7 @@ async function getInstitutions(store) {
 // נוגי, מרכז השגרות ותיק הרציפות משותפים לשני המרחבים (29/10/2026, "לבצע"). הם היו חינוכיים, ולכן בלי סימון של המוסד
 // הם לא מעבירים קוד למרחב הארגוני (MOVED_PERMS): קוד שיש בו אחד מהם הוא ארגוני רק כשיש בו גם כלי ארגוני (orgsuite).
 // מוסד ארגוני מסמנים בהגדרות המוסד, ואז הכלים האלה מוצגים במילים של ארגון.
-export const MOVED_PERMS = ['leadership', 'routines', 'continuity'];
+export const MOVED_PERMS = ['leadership', 'routines', 'continuity', 'readiness'];
 export const SHARED_PERMS = ['horizon', 'journey', 'teamthink', 'writer', 'studies', ...MOVED_PERMS];
 export const ORG_PERMS = ['orgsuite']; // כלים של המרחב הארגוני בלבד
 export const SPACES = ['edu', 'org'];
@@ -398,7 +399,8 @@ export const MODEL_PAGES = {
   'family-bridge.html': ['bridge'], 'routines-hub.html': ['routines'], 'continuity-kit.html': ['continuity'], // אושרו 28/10/2026
   'quick-practice.html': ['quickpractice'], // התנסות קצרה (16/11/2026): התרגול על התרחיש המוכן ככלי עצמאי
   'dilemma-inquiry.html': ['dilemma'], // בירור דילמות (12/11/2026); המשתתפים ב-dilemma-join.html דרך dlmModelGate
-  'credibility-check.html': ['credibility', 'dilemma'] // בדיקת אמינות של מקורות (17/11/2026; גם למי שיש בירור דילמות: איבנה ועינת); הצוותים ב-credibility-join.html דרך crdModelGate
+  'credibility-check.html': ['credibility', 'dilemma'], // בדיקת אמינות של מקורות (17/11/2026; גם למי שיש בירור דילמות: איבנה ועינת); הצוותים ב-credibility-join.html דרך crdModelGate
+  'readiness.html': ['readiness'] // מערך המוכנות (03/11/2026)
 };
 export const WORKSHOP_MODEL_PAGES = ['practice.html', 'conversation-planner.html', 'activity-planner.html', 'academic-review.html', 'parent-input-screen.html'];
 const WORKSHOP_HOURS = 48;
@@ -1885,6 +1887,11 @@ export async function handleAccess(store, body) {
   // בדיקת אמינות של מקורות (17/11/2026): המרצות לפי הרשאה חיה (credibility או dilemma); צוותים לפי מפתח הצוות
   if (action === 'crdCall') return handleCredibility(store, body, { who: async (token) => {
     const t = token ? await authorizePermission(store, token, ['credibility', 'dilemma']) : null;
+    return t ? { principal: modelIdentity(t, token).principal, inst: t.inst || null, sys: t.k === 'sys' } : null;
+  } });
+  // מערך המוכנות (03/11/2026): המערך נשמר בשרת תחת הקוד של המוסד; ההקלטה בטלפון עם מפתח בלבד.
+  if (/^rdy[A-Z]/.test(action || '')) return handleReadiness(store, body, { who: async (token) => {
+    const t = token ? await authorizePermission(store, token, ['readiness']) : null;
     return t ? { principal: modelIdentity(t, token).principal, inst: t.inst || null, sys: t.k === 'sys' } : null;
   } });
   if (/^hl(RoomCreate|Poll|Write|RoomClose)$/.test(action || '')) return handleHlRooms(store, body, { authorize: async (token) => {

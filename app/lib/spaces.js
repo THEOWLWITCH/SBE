@@ -26,7 +26,9 @@
     shared: [...HORIZON, 'journey.html', 'journey-cert.html', 'team-thinking.html', 'message-writer.html', 'communication-continuity.html',
       'yesh-ma-laasot.html', 'social-resilience-studies.html', 'sources-library.html', 'org-library.html', 'resilience-advisor-sources.html',
       // עברו מהמרחב החינוכי (29/10/2026, "לבצע"): במרחב הארגוני הם מציגים מילים ודוגמאות מהעולם הארגוני (lib/org-words.js)
-      'leadership-advisor.html', 'routines-hub.html', 'continuity-kit.html'],
+      'leadership-advisor.html', 'routines-hub.html', 'continuity-kit.html',
+      // מערך המוכנות (03/11/2026): בית הספר במרחב החינוכי, והגרסה לקהילה, לרשות ולארגון במרחב הארגוני. readiness-rec.html: ההקלטה בטלפון
+      'readiness.html', 'readiness-rec.html'],
     edu: ['resilience-team.html', 'resilience-fill.html', 'resilience-advisor.html', 'facilitation-advisor.html',
       'activity-planner.html', 'conversation-planner.html', 'resilience-studio.html',
       'input-screen.html', 'parent-input-screen.html', 'student-input-screen.html', 'search.html', 'facilitator-screen.html',

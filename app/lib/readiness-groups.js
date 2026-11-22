@@ -22,7 +22,7 @@
     act: ['activity-planner.html', 'resilience-studio.html', 'message-writer.html',
       'horizon-lab.html', 'hl-voice.html', 'hl-radar.html', 'hl-futures.html', 'hl-circles.html', 'hl-horizons.html', 'hl-collage.html', 'hl-roadmap.html', 'hl-game.html', 'hl-stress.html'],
     learn: ['org-library.html', 'social-resilience-studies.html', 'academic-review.html', 'feedback.html', 'feedback-results.html'],
-    anchor: ['routines-hub.html', 'continuity-kit.html', 'journey.html']
+    anchor: ['readiness.html', 'routines-hub.html', 'continuity-kit.html', 'journey.html']
   };
   const title = (g) => g.i + ' ' + (GROUPS.indexOf(g) + 1) + '. ' + g.n + ': ' + g.q;
   function groupOf(page) {
