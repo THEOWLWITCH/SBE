@@ -45,13 +45,25 @@ export async function tsModelGate(store, auth, page) {
 }
 
 // isSys: מנהלת המערכת (מרכז המחקר). notify(subject, text): הודעה למנהלת המערכת (רשות)
-export async function handleTalkStudy(store, body, { isSys = false } = {}) {
+// tester: מי שמותר לו/ה קוד הבדיקה 7777 (מנהלת המערכת, ועינת ואיבנה לפי הרשאת dilemma או credibility). רק f.test.
+export async function handleTalkStudy(store, body, { isSys = false, tester = false } = {}) {
   try {
     if (body.action !== 'tsCall') throw new TsError('פעולה אינה נתמכת', 405);
     if (JSON.stringify(body.input || {}).length > 400_000) throw new TsError('הבקשה גדולה מדי', 413);
     const op = String(body.op || ''), d = body.input && typeof body.input === 'object' ? body.input : {};
 
     // ═══ מרכז המחקר ═══
+    // קוד הבדיקה 7777 (22/11/2026, זמני): מוצא או פותח את קבוצת הבדיקה הקבועה, מחוץ לכל מחקר, ומחזיר רק את הקוד שלה
+    if (op === 'f.test') {
+      if (!isSys && !tester) { await pause(); throw new TsError('אין הרשאה', 403); }
+      let c = (await store.list('tsc:')).map((r) => r.value).find((x) => x && x.studyId === 'sys-test' && x.status === 'open');
+      if (!c) {
+        let code = genCode(8); while (await store.get('tsc:' + code)) code = genCode(8);
+        c = { code, studyId: 'sys-test', studyTitle: 'פעילות בדיקה', group: 'בדיקה', label: 'כניסת בדיקה 7777', status: 'open', createdAt: now() };
+        await store.set('tsc:' + code, c);
+      }
+      return [200, { class: { code: c.code } }];
+    }
     if (op.startsWith('f.')) {
       if (!isSys) { await pause(); throw new TsError('אין הרשאה', 403); }
       if (op === 'f.create') {

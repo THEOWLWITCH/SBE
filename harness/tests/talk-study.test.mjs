@@ -73,3 +73,24 @@ test('the student flow page stands alone: no login, no navigation to other tools
   const model = readFileSync(new URL('../../app/lib/talk-study-model.js', import.meta.url), 'utf8').replace(/\/\/.*$/gm, '');
   for (const w of ['צריך', 'חייב', '—', 'פסיכולוג', 'איש מקצוע', 'אשת מקצוע']) assert.ok(!model.includes(w), w);
 });
+
+// 22/11/2026: "הרחב את ההרשאה לקוד 7777 גם לעינת ולאיבנה" — f.test גם לקוד עם בירור דילמות או בדיקת אמינות, ורק f.test
+test('7777 test group: system owner and dilemma/credibility codes, nothing else', async () => {
+  const store = memoryStore(); await seedOwnerPassword(store);
+  const [, sys] = await handleAccess(store, { action: 'login', kind: 'sys', secret: SYNTHETIC_OWNER_PASSWORD });
+  await handleAccess(store, { action: 'addInstitution', token: sys.token, name: 'מכללה' });
+  await handleAccess(store, { action: 'setModules', token: sys.token, inst: 'מכללה', modules: { dilemma: true, credibility: true, writer: true } });
+  const codeWith = async (perms) => {
+    const [, c] = await handleAccess(store, { action: 'codeCreate', token: sys.token, kind: 'staff', inst: 'מכללה', perms, label: perms.join() });
+    return (await handleAccess(store, { action: 'login', kind: 'code', secret: c.code.code }))[1].token;
+  };
+  const [s1, a] = await call(store, 'f.test', {}, { token: sys.token });
+  assert.equal(s1, 200);
+  const einat = await codeWith(['dilemma']), ivana = await codeWith(['credibility']), other = await codeWith(['writer']);
+  assert.equal((await call(store, 'f.test', {}, { token: einat }))[1].class.code, a.class.code, 'same test group');
+  assert.equal((await call(store, 'f.test', {}, { token: ivana }))[1].class.code, a.class.code);
+  assert.equal((await call(store, 'f.test', {}, { token: other }))[0], 403);
+  assert.equal((await call(store, 'f.test', {}))[0], 403);
+  assert.equal((await call(store, 'f.list', {}, { token: einat }))[0], 403, 'no research center access');
+  assert.equal((await call(store, 'f.create', { studyId: 'x' }, { token: ivana }))[0], 403);
+});

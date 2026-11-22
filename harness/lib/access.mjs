@@ -1883,7 +1883,13 @@ export async function handleAccess(store, body) {
     return t ? { principal: modelIdentity(t, token).principal, inst: t.inst || null, sys: t.k === 'sys' } : null;
   } });
   // מחקר שיחות מאתגרות: מסלול הסטודנטיות (18/11/2026). מרכז המחקר: מנהלת המערכת; סטודנטיות: קוד הקבוצה והמפתח האישי
-  if (action === 'tsCall') { const tt = body.token ? await verifyToken(store, body.token) : null; return handleTalkStudy(store, body, { isSys: !!tt && tt.k === 'sys' }); }
+  if (action === 'tsCall') {
+    const tt = body.token ? await verifyToken(store, body.token) : null;
+    const isSys = !!tt && tt.k === 'sys';
+    // קוד הבדיקה 7777 גם לעינת ולאיבנה (22/11/2026): הרשאה חיה ל-dilemma או credibility, ורק לפעולה f.test
+    const tester = !isSys && body.op === 'f.test' && !!body.token && !!(await authorizePermission(store, body.token, ['dilemma', 'credibility']));
+    return handleTalkStudy(store, body, { isSys, tester });
+  }
   // בדיקת אמינות של מקורות (17/11/2026): המרצות לפי הרשאה חיה (credibility או dilemma); צוותים לפי מפתח הצוות
   if (action === 'crdCall') return handleCredibility(store, body, { who: async (token) => {
     const t = token ? await authorizePermission(store, token, ['credibility', 'dilemma']) : null;

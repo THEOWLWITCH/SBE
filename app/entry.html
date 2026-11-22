@@ -323,7 +323,7 @@ function renderEntry(){
   const submit = async () => {
     const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();
     if (!c) { err.textContent = "אפשר להקליד את הקוד כדי להיכנס."; err.hidden = false; return; }
-    // 7777: מסלול הסטודנטיות לבדיקה של מנהלת המערכת (22/11/2026; זמני). talk-study.html בודק שזו כניסת מנהלת המערכת.
+    // 7777: כניסות הבדיקה של מנהלת המערכת, עינת ואיבנה (22/11/2026; זמני). הדפים בודקים בשרת את ההרשאה.
     if (c === "7777") { err.hidden = true; const alt = $("altField"); alt.hidden = false; alt.textContent = "";
       alt.append(el("p",{},"כניסת בדיקה לגרסת הסטודנטיות. לאיזה כלי?"),
         el("p",{}, el("a",{href:"talk-study.html?c=7777"},"שיחות מאתגרות (מסלול הסטודנטיות)"), " · ",
