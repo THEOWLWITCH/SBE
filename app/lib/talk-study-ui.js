@@ -274,13 +274,13 @@
   function practiceView(n) {
     const s = me.sessions[n], cs = s.case || {}, md = s.model || {};
     const rounds = T.ROUNDS[n] || 1;
-    const c = card('תרגול ומשוב', ['הכלי בונה מהתיאור שלך דמות, ואפשר לדבר איתה. אחרי כל שיחה מקבלים משוב, ואפשר לחזור לרגע המאתגר ולנסות שוב. כפתור "עצירה" זמין בכל רגע.'].concat(rounds > 1 ? ['במפגש הזה מתרגלים פעמיים: תרגול ומשוב, ואחר כך "תרגול נוסף" ועוד משוב.'] : []));
+    const c = card('תרגול ומשוב', ['קודם קוראים תדריך הכנה קצר לשיחה שלך, לפי המודל שבחרת. אחר כך הכלי בונה מהתיאור שלך דמות, ומדברים איתה. אחרי כל שיחה מקבלים משוב, ואפשר לבחור כל רגע בשיחה ולנסות אותו שוב. כפתור "עצירה" זמין בכל רגע.'].concat(rounds > 1 ? ['במפגש הזה מתרגלים פעמיים: תרגול ומשוב, ואחר כך "תרגול נוסף" ועוד משוב.'] : []));
     c.append(el('p', '', 'השיחה: ' + (cs.fields?.other || '') + ' · ' + (cs.type || '')), el('p', '', 'המודל: ' + (md.names || []).join(' + ')));
     c.append(switchModelBox(n, md));
-    const go = el('button', '', '▶ פתיחת התרגול'), b = el('div', 'btns'); b.append(go); c.append(b);
+    const go = el('button', '', '▶ לתדריך ולתרגול'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = () => {
       store.set('sbe.ts.cred', { c: code, p: cred.pid, key: cred.key });
-      store.set('sbe.ts.handoff', { code, pid: cred.pid, session: n, rounds, next: n === 1 ? 'סיום המפגש ←' : n === 2 ? 'המשך: שאלון עמדות ←' : 'המשך: שאלון עמדות מסכם ←', fields: cs.fields || {}, me: cs.me || 'נקבה', modelNote: T.modelNote(md), modelNames: md.names || [], back: location.pathname.split('/').pop() + '?c=' + code });
+      store.set('sbe.ts.handoff', { code, pid: cred.pid, session: n, rounds, next: n === 1 ? 'סיום המפגש ←' : n === 2 ? 'המשך: שאלון עמדות ←' : 'המשך: שאלון עמדות מסכם ←', fields: cs.fields || {}, me: cs.me || 'נקבה', prep: cs.prep || {}, type: cs.type || '', modelNote: T.modelNote(md), modelNames: md.names || [], modelSteps: T.MODELS.filter((m) => (md.ids || []).includes(m.id)).map((m) => m.name + ': ' + m.steps.map((x) => x[1] + ' (' + x[2] + ')').join(' · ')), back: location.pathname.split('/').pop() + '?c=' + code });
       location.href = 'talk-practice.html';
     };
     const pending = store.get('sbe.ts.result');

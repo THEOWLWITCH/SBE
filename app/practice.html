@@ -344,7 +344,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="transcript" id="transcript"></div>
 </section>
 
-<style>.fb-st{font-weight:600;font-size:.9rem}.fb-st.reached{color:#4A6B5A}.fb-st.missed{color:#8C3A34}.fb-st.held{color:#7A5A12}.fb-said{font-size:.85rem;color:var(--muted,#555);margin-top:4px}.fb-lead{margin:.2rem 0 .6rem}.fb-save{margin-top:18px;padding:12px 14px;border:1px solid var(--hair,#d9dde0);border-radius:12px}@media print{.fb-save{display:none}}</style>
+<style>.fb-st{font-weight:600;font-size:.9rem}.fb-st.reached{color:#4A6B5A}.fb-st.missed{color:#8C3A34}.fb-st.held{color:#7A5A12}.fb-said{font-size:.85rem;color:var(--muted,#555);margin-top:4px}.fb-lead{margin:.2rem 0 .6rem}.fb-pick button{display:block;width:100%;text-align:start;margin:6px 0;padding:9px 12px;border:1px solid var(--hair,#d9dde0);border-radius:10px;background:#fff;font:inherit;cursor:pointer}.fb-pick button small{display:block;color:var(--muted,#555);font-size:.85rem}.fb-pick button:hover{border-color:#317c7a}.fb-save{margin-top:18px;padding:12px 14px;border:1px solid var(--hair,#d9dde0);border-radius:12px}@media print{.fb-save{display:none}}</style>
 <section id="screen-feedback" hidden>
   <h2 style="font-family:'Frank Ruhl Libre',Georgia,serif;">מה קרה בתרגול</h2>
   <div id="fbComm"></div>
@@ -356,6 +356,10 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <h3 class="fb-h" id="fbAlmostH">רגע שאפשר לנסות שוב</h3>
   <div class="fb-note" id="fbAlmost"></div>
   <button type="button" class="primary" id="bRetrySecond" hidden style="margin-top:8px;">ניסיון שני: לנסות שוב את הרגע הזה</button>
+  <!-- 22/11/2026: חזרה לכל רגע בשיחה, לא רק לרגע שהמערכת זיהתה -->
+  <h3 class="fb-h" id="fbPickH" hidden>לחזור לרגע בשיחה ולנסות שוב</h3>
+  <p class="fb-lead" id="fbPickLead" hidden>אפשר לבחור כל משפט שאמרת בשיחה. חוזרים לנקודה שלפניו, ומנסים תגובה אחרת, עד שלושה תורים. השיחה המקורית נשמרת כמו שהיא.</p>
+  <div id="fbPick" class="fb-pick"></div>
   <h3 class="fb-h">איך השיחה נסגרה</h3>
   <div class="fb-note" id="fbEnding"></div>
   <details class="log">
@@ -1083,6 +1087,8 @@ document.getElementById("bRecall").addEventListener("click", () => {
   const body = document.getElementById("recallBody");
   body.textContent = "";
   SCENARIO.trainee.opening.forEach(p => body.append(el("p", {}, p)));
+  const brief = window.SBE_TS_BRIEF && window.SBE_TS_BRIEF();
+  if (brief) body.append(el("h4", {}, "התדריך שלך"), SBE_DOC.sections(brief) || SBE_DOC.rich(brief));
   document.getElementById("recallDlg").showModal();
 });
 document.getElementById("recallClose").addEventListener("click", () => {
@@ -1171,7 +1177,7 @@ function clearSessionState(){
     trustConditionMet:false, lastCharacterTs:null, ended:false, endingType:null,
     endingIndex:null, closingLine:null, closingNote:null, commFb:null, commFbFailed:false, savedTalk:null, crossings:[], injectionAttempts:[],
     responseTimesSec:[], holdIndexNeutral:0, holdIndexCool:0, holdIndexApproach:0,
-    holdIndexInjection:0, harshCount:0, manipulationCount:0, turnLog:[], retry:null,
+    holdIndexInjection:0, harshCount:0, manipulationCount:0, turnLog:[], retry:null, retryBase:null, retries:[],
   });
   document.getElementById("transcript").textContent = "";
   document.getElementById("composerInput").value = "";
@@ -1865,6 +1871,22 @@ function pickEnding(){
   return 1;
 }
 
+// ── בחירת רגע לניסיון שני (22/11/2026: "אמרת שהן יוכלו לחזור לרגע הקשה - איך זה יקרה?") ──
+function renderMomentPicker(){
+  const box = document.getElementById("fbPick"); box.textContent = "";
+  const base = state.retryBase ? state.retryBase.transcript : state.transcript;
+  const list = state.turnLog.filter(e => e.traineeText);
+  ["fbPickH", "fbPickLead"].forEach(id => { document.getElementById(id).hidden = !list.length; });
+  list.forEach(e => {
+    const before = base.slice(0, e.transcriptIndexBeforeTrainee).filter(t => t.who === "character").pop();
+    const b = el("button", { type: "button" }, "↩ " + e.traineeText);
+    if (before) b.prepend(el("small", {}, (SCENARIO.actor.name || "הדמות") + ": " + before.line));
+    b.addEventListener("click", () => startRetry(null, e));
+    box.append(b);
+  });
+  if (state.retries.length) box.append(el("p", { class: "fb-note" }, "ניסיונות שנשמרו בתרגול הזה: " + state.retries.length + "."));
+}
+
 // ── "ניסיון שני" (19/09/2026) ────────────────────────────────────────
 // הכרעת המשתמשת: המערכת מציעה רגע ("מחזיק"), המתרגלת בוחרת אם לנסות
 // שוב; רלוונטי רק לתרגול העצמי מול AI, לא לסדנה חיה עם שחקנית אמיתית.
@@ -1872,6 +1894,9 @@ function pickEnding(){
 // שלפני התור שהחזיק, ונותנת לאותו getCharacterTurn/handleSend-כמו-לוגיקה
 // לרוץ שוב על הקשר קצר וממוקד (עד שלושה תורים), לא על כל חמש הדקות.
 function startRetry(tp, logEntry){
+  // 22/11/2026: השיחה המקורית נשמרת (retryBase), וכל ניסיון נשמר בנפרד (state.retries)
+  if (!state.retryBase) state.retryBase = { transcript: state.transcript.slice(), firedTPs: JSON.parse(JSON.stringify(state.firedTPs)), trustConditionMet: state.trustConditionMet };
+  state.transcript = state.retryBase.transcript.slice();
   const logIndex = state.turnLog.indexOf(logEntry);
   const priorSnapshot = logIndex > 0 ? state.turnLog[logIndex - 1] : null;
 
@@ -1883,13 +1908,15 @@ function startRetry(tp, logEntry){
   state.activeTP = null; state.activeTPRetries = 0;
   state.harshCount = 0; state.manipulationCount = 0; state.pressCount = 0;
 
-  state.retry = { targetTP: tp.n, active:true, retryTurn:0, maxRetryTurns:3, originalEffect: "מחזיק" };
+  state.retry = { targetTP: tp ? tp.n : null, active:true, retryTurn:0, maxRetryTurns:3, originalEffect: tp ? "מחזיק" : null, moment: logEntry.traineeText, cut: logEntry.transcriptIndexBeforeTrainee };
 
   show("screen-chat");
   document.getElementById("barWrap").hidden = true; // אין תור/התקדמות/יציאה בחלון הקצר הזה
   renderFullTranscript(state.transcript.length);
-  addSystemNote("ניסיון שני",
-    `הזדמנות קצרה וממוקדת לנסות שוב את הרגע ב"${tp.name}", עד שלושה תורים, לא כל השיחה מחדש.`);
+  addSystemNote("ניסיון שני", tp
+    ? `הזדמנות קצרה וממוקדת לנסות שוב את הרגע ב"${tp.name}", עד שלושה תורים, לא כל השיחה מחדש.`
+    : `חוזרים לרגע שלפני המשפט "${logEntry.traineeText}". אפשר לנסות תגובה אחרת, עד שלושה תורים. אפשר לסיים קודם בכפתור "סיום הניסיון".`);
+  retryStopBtn().hidden = false;
   document.getElementById("composerActive").hidden = false;
   document.getElementById("composerEnded").hidden = true;
   document.getElementById("composerRetryEnded").hidden = true;
@@ -1937,13 +1964,24 @@ async function handleRetrySend(){
   else if (state.retry.retryTurn >= state.retry.maxRetryTurns) endRetry(null);
 }
 
+function retryStopBtn(){
+  let b = document.getElementById("bRetryStop");
+  if (!b) { b = el("button", { type: "button", id: "bRetryStop", hidden: "" }, "סיום הניסיון"); b.addEventListener("click", () => { if (state.retry && state.retry.active) endRetry(null); }); document.getElementById("composerActive").append(b); }
+  return b;
+}
 function endRetry(newEffect){
   const tp = SCENARIO.turningPoints.find(t => t.n === state.retry.targetTP);
   state.retry.active = false;
   state.retry.newEffect = newEffect;
+  retryStopBtn().hidden = true;
 
   let compareText;
-  if (newEffect && newEffect !== "מחזיק") {
+  if (!tp) {
+    const mine = state.transcript.slice(state.retry.cut).filter(t => t.who === "trainee").map(t => t.line);
+    compareText = mine.length
+      ? `בפעם הראשונה אמרת: "${state.retry.moment}". בניסיון הזה אמרת: "${mine[0]}". אפשר להשוות איך הדמות הגיבה בכל פעם.`
+      : "הניסיון הסתיים לפני שנכתבה תגובה חדשה. אפשר לבחור רגע ולנסות שוב.";
+  } else if (newEffect && newEffect !== "מחזיק") {
     compareText = `בפעם הראשונה התגובה שלך החזיקה את התפנית "${tp.name}" במקום לקדם אותה. ` +
       `עכשיו, באותו רגע בדיוק, היא נפתחה בפועל ("${newEffect}"). זה בדיוק ההבדל שניסיון שני נועד להראות.`;
   } else {
@@ -1957,6 +1995,13 @@ function endRetry(newEffect){
 }
 document.getElementById("bBackToFeedback").addEventListener("click", () => {
   document.getElementById("composerRetryEnded").hidden = true;
+  // הניסיון נשמר בנפרד, והשיחה המקורית חוזרת (למשוב, לשמירה ולניסיון נוסף)
+  if (state.retry && state.retryBase) {
+    const tr = state.transcript.slice(state.retry.cut).filter(t => t.who === "trainee" || t.who === "character").map(t => ({ who: t.who, line: t.line, stage: t.stage || null }));
+    state.retries.push({ moment: state.retry.moment, tp: state.retry.targetTP, effect: state.retry.newEffect || null, attempt: tr });
+    state.transcript = state.retryBase.transcript.slice(); state.firedTPs = JSON.parse(JSON.stringify(state.retryBase.firedTPs)); state.trustConditionMet = state.retryBase.trustConditionMet;
+    state.retry = null;
+  }
   show("screen-feedback");
 });
 
@@ -2184,6 +2229,7 @@ function showFeedback(){
     retryBtn.hidden = true;
   }
 
+  renderMomentPicker();
   document.getElementById("fbEnding").textContent =
     [state.closingLine, state.closingNote].filter(Boolean).join(" ");
 
@@ -2342,10 +2388,59 @@ function renderCommFeedback(box, r){
       if (draft.tsSig !== sig) Object.assign(draft, { tsSig: sig, questions: [], answers: {}, scenario: null, fromReady: false });
       draft.form = Object.assign({}, H.fields, { me: H.me || "נקבה" }); saveDraft();
       Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
+      // 22/11/2026 ("זה כלי נפרד שיש לקשר כחלק מהכלי הזה"): פס עליון של המסלול, עם המפגש והשלב, וחזרה למסלול
+      const bar = el("div", { class: "ts-bar", style: "margin:0 0 14px;padding:10px 14px;border:1px solid #dbe4ea;border-radius:12px;background:#fff;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between" },
+        el("span", {}, el("b", {}, "הכנה לשיחות מאתגרות"), " · מפגש " + (H.session || 1) + " מתוך 3 · תדריך, תרגול ומשוב"),
+        el("a", { href: H.back }, "→ חזרה למסלול"));
+      const main = document.querySelector("main") || document.body; main.prepend(bar);
+      // ── תדריך הכנה לפי המודל (22/11/2026: "הן יקראו את התדריך לפי המודל שבחרו ואז יתרגלו") ──
+      const bc = el("div", { class: "card", id: "own0" });
+      $("own1").before(bc);
+      const goOn = () => { draft.briefingRead = true; saveDraft(); bc.hidden = true; $("ownSteps").hidden = false; step(draft.scenario ? 3 : 1);
+        $("scenarioSubtitle").textContent = "המודל שבחרת: " + (H.modelNames || []).join(" + ") + ". אפשר לדייק את המקרה, ואז להמשיך."; };
+      function briefSystem(){
+        const male = (H.me || "נקבה") === "זכר";
+        return ["את מנחה מנוסה של אנשי ונשות חינוך. כתבי תדריך הכנה אישי וקצר לשיחה מאתגרת שהמתנסה עומד/ת לתרגל, לפי המודל שבחר/ה. התדריך נקרא פעם אחת לפני התרגול.",
+          "המודל שנבחר ושלביו:\n" + (H.modelSteps || []).join("\n"),
+          "חמישה חלקים, כל אחד בכותרת מודגשת בשורה משלה: **מה המטרה** (משפט אחד) · **השיחה שלך לפי המודל** (לכל שלב במודל: מה עושים בו בשיחה הזאת, ומשפט לדוגמה במרכאות) · **איך לפתוח** (ברכת שלום ומשהו טוב לומר, ומשפט פתיחה במרכאות) · **אם השיחה מסתבכת** (שתיים או שלוש שורות שמתחילות ב-\"- \", לפי מה שמאתגר את המתנסה) · **איך לסיים** (צעד המשך מוסכם).",
+          "המודל הוא מסגרת ולא תסריט: כתבי כך שיהיה ברור שאפשר לסטות ממנו לפי מה שקורה. השתמשי בהכנה העצמית של המתנסה (המטרה, החשש, מה הוא/היא מקווה), בלי להעתיק אותה.",
+          "עד 380 מילים. גוף שני, " + (male ? "בלשון זכר" : "בלשון נקבה") + ". בלי שמות אמיתיים: במקום שם כותבים [שם]. בלי סימני #. החזירי רק את טקסט התדריך."].join("\n\n");
+      }
+      function briefInput(){
+        const f = H.fields || {}, pr = H.prep || {};
+        return ["סוג השיחה: " + (H.type || ""), "מה קרה: " + (f.story || ""), "התפקיד שלי: " + (f.role || ""), "מי מולי: " + (f.other || ""), "מה הייתי רוצה שיקרה בסוף: " + (f.goal || ""), "מה מאתגר אותי: " + (f.hard || ""),
+          "הכנה עצמית · מטרת השיחה: " + (pr.aim || ""), "הכנה עצמית · ממה אני חושש/ת: " + (pr.fear || ""), "הכנה עצמית · מה אני מקווה שהאימון יתרום לי: " + (pr.hope || "")].join("\n");
+      }
+      function paintBrief(){
+        bc.textContent = "";
+        bc.append(el("h3", {}, "התדריך שלך לפני התרגול"), el("p", { class: "who" }, "לפי המודל: " + (H.modelNames || []).join(" + ") + ". אפשר לקרוא בשקט, ולחזור אליו גם בזמן השיחה (\"הסיפור והתדריך\")."));
+        if (draft.briefing) bc.append(SBE_DOC.sections(draft.briefing) || SBE_DOC.rich(draft.briefing));
+        const acts = el("div", { class: "own-acts" });
+        if (draft.briefing) { const ok = el("button", { type: "button", class: "primary" }, "קראתי, ממשיכים לתרגול ←"); ok.addEventListener("click", goOn); acts.append(ok); }
+        else {
+          const w = el("p", { class: "fb-note" }, "כתיבת התדריך נמשכת כ־30 שניות."); bc.append(w);
+          (async () => {
+            const t0 = Date.now(), iv = setInterval(() => { w.textContent = "כתיבת התדריך נמשכת כ־30 שניות. חלפו " + Math.round((Date.now() - t0) / 1000) + " שניות."; }, 1000);
+            let txt = null;
+            try { const r = await sbeCallAI(AI_SERVER, { system: briefSystem(), messages: [{ role: "user", content: briefInput() }], maxTokens: 3000, fast: true }, 150000); txt = String((r && r.text) || r || "").trim(); }
+            catch (e) { console.warn("התדריך לא נכתב:", e && e.message); }
+            finally { clearInterval(iv); }
+            if (txt && txt.length > 120) { draft.briefing = txt; saveDraft(); return paintBrief(); }
+            w.textContent = "אין כרגע חיבור למודל, ולכן התדריך לא נכתב. אפשר לנסות שוב, או להמשיך לתרגול בלעדיו.";
+            const again = el("button", { type: "button", class: "primary" }, "לנסות שוב"); again.addEventListener("click", paintBrief);
+            const skip = el("button", { type: "button" }, "להמשיך לתרגול בלי התדריך"); skip.addEventListener("click", goOn);
+            acts.append(again, skip);
+          })();
+        }
+        bc.append(acts);
+      }
       setTimeout(() => {
-        step(draft.scenario ? 3 : 1);
-        $("scenarioSubtitle").textContent = "המודל שבחרת: " + (H.modelNames || []).join(" + ") + ". אפשר לדייק את המקרה, ואז להמשיך.";
+        if (draft.briefingRead) return goOn();
+        [1, 2, 3].forEach(i => { $("own" + i).hidden = true; }); $("ownSteps").hidden = true; show("screen-custom");
+        $("scenarioName").classList.remove("hero-banner"); $("scenarioName").textContent = "תדריך לפני התרגול"; $("scenarioSubtitle").textContent = "";
+        bc.hidden = false; paintBrief(); window.scrollTo(0, 0);
       }, 0);
+      window.SBE_TS_BRIEF = () => draft.briefing || "";
       // אחרי המשוב: חוזרים למסלול עם התרגול (התמליל, המשוב ומספר הניסיונות)
       const fb = document.getElementById("screen-feedback");
       const box = el("div", { class: "ts-next", style: "margin:22px 0 6px;padding:16px 18px;border:1px solid #dbe4ea;border-top:2px solid #317c7a;border-radius:12px;background:#fff" },
@@ -2356,12 +2451,22 @@ function renderCommFeedback(box, r){
         let n = 0; try { n = Number(sessionStorage.getItem("sbe.ts.tries") || 0); } catch (e) {}
         if (!state.commFb && !state.commFbFailed && !go.dataset.ok) { go.dataset.ok = "1"; note.hidden = false; note.textContent = "המשוב על התקשורת עוד נכתב. אפשר לחכות לו, או ללחוץ שוב כדי להמשיך בלעדיו."; return; }
         if (n < (H.rounds || 1) && !go.dataset.ok2) { go.dataset.ok2 = "1"; note.hidden = false; note.textContent = "במפגש הזה יש עוד תרגול ומשוב: \"תרגול נוסף\" למטה. אפשר גם ללחוץ שוב ולהמשיך."; return; }
+        const rounds = loadRounds().concat(state.turn ? [roundNow()] : []);
+        const last = rounds[rounds.length - 1] || {};
         const data = { scenario: SCENARIO && SCENARIO.name, subtitle: SCENARIO && SCENARIO.subtitle, actor: SCENARIO && SCENARIO.actor && SCENARIO.actor.roleLabel,
-          transcript: commTranscript().slice(0, 60000), feedback: state.commFb || null, endingType: state.endingType || null, turns: state.turn, tries: n, model: H.modelNames || [] };
-        try { localStorage.setItem("sbe.ts.result", JSON.stringify({ code: H.code, pid: H.pid, session: H.session, data })); sessionStorage.removeItem("sbe.ts.tries"); localStorage.removeItem(KEY + ".draft"); } catch (e) {}
+          transcript: last.transcript || "", feedback: last.feedback || null, endingType: last.endingType || null, turns: last.turns || 0, tries: n, model: H.modelNames || [],
+          briefing: (draft.briefing || "").slice(0, 6000), rounds, retries: last.retries || [] };
+        try { localStorage.setItem("sbe.ts.result", JSON.stringify({ code: H.code, pid: H.pid, session: H.session, data })); sessionStorage.removeItem("sbe.ts.tries"); sessionStorage.removeItem(RK); localStorage.removeItem(KEY + ".draft"); } catch (e) {}
         location.href = H.back;
       });
       box.append(go, note); fb.append(box);
+      // 22/11/2026: כל סבב נשמר (במפגש 2 שני סבבים), עם התמליל, המשוב והניסיונות החוזרים
+      const RK = "sbe.ts.rounds." + H.code + "." + H.pid + "." + H.session;
+      const loadRounds = () => { try { return JSON.parse(sessionStorage.getItem(RK) || "[]"); } catch (e) { return []; } };
+      const roundNow = () => { const keep = state.retryBase ? state.retryBase.transcript : state.transcript; const tx = keep.filter(t => t.who === "trainee" || t.who === "character").map(t => (t.who === "trainee" ? "המתנסה: " : (SCENARIO.actor.name || "הדמות") + ": ") + t.line + (t.stage ? " (" + t.stage + ")" : "")).join("\n");
+        return { transcript: tx.slice(0, 50000), feedback: state.commFb || null, endingType: state.endingType || null, turns: state.turn, retries: (state.retries || []).slice(0, 10) }; };
+      const saveRound = () => { if (state.ended && state.turn) { const r = loadRounds(); r.push(roundNow()); try { sessionStorage.setItem(RK, JSON.stringify(r.slice(-4))); } catch (e) {} } };
+      document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest("#bAgain,#bEndedAgain")) saveRound(); }, true);
       const _show = window.showFeedback;
       if (typeof _show === "function") window.showFeedback = function(){ try { sessionStorage.setItem("sbe.ts.tries", String(Number(sessionStorage.getItem("sbe.ts.tries") || 0) + 1)); } catch (e) {} delete go.dataset.ok; delete go.dataset.ok2; note.hidden = true; return _show.apply(this, arguments); };
     }
