@@ -282,7 +282,7 @@
     const go = el('button', '', '▶ פתיחת התרגול'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = () => {
       store.set('sbe.ts.cred', { c: code, p: cred.pid, key: cred.key });
-      store.set('sbe.ts.handoff', { code, pid: cred.pid, session: n, rounds, next: n < 3 ? 'סיום המפגש ←' : 'המשך: שאלון עמדות מסכם ←', fields: cs.fields || {}, me: cs.me || 'נקבה', modelNote: T.modelNote(md), modelNames: md.names || [], back: location.pathname.split('/').pop() + '?c=' + code });
+      store.set('sbe.ts.handoff', { code, pid: cred.pid, session: n, rounds, next: n === 1 ? 'סיום המפגש ←' : n === 2 ? 'המשך: שאלון עמדות ←' : 'המשך: שאלון עמדות מסכם ←', fields: cs.fields || {}, me: cs.me || 'נקבה', modelNote: T.modelNote(md), modelNames: md.names || [], back: location.pathname.split('/').pop() + '?c=' + code });
       location.href = 'talk-practice.html';
     };
     const pending = store.get('sbe.ts.result');
