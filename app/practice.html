@@ -937,6 +937,8 @@ const state = {
   manipulationCount: 0,
   turnLog: [],          // {turn, transcriptIndexBeforeTrainee, traineeText, firedTPsSnapshot, trustConditionMet} — ל"ניסיון שני"
   retry: null,          // {targetTP, active:bool, done:bool, originalEffect, newEffect} כשבניסיון שני
+  retryBase: null,      // השיחה המקורית, לפני ניסיון שני
+  retries: [],          // הניסיונות שנשמרו (22/11/2026)
 };
 
 const el = (t, a={}, ...kids) => {
@@ -2197,7 +2199,7 @@ function renderMomentsTable(){
     const what = m && String(m.happened || "").trim() ? String(m.happened).trim()
       : fired ? ({"פותח":"✓ הרגע הזה קרה בשיחה, והתגובה שלך קידמה אותה.","מחזיק":"הרגע הזה קרה בשיחה, והשיחה נשארה במקום.","סוגר":"הרגע הזה קרה בשיחה, ואחריו הדמות שיתפה פחות."}[fired.effect] || "✓ הרגע הזה קרה בשיחה.")
       : (state.commFbFailed || state.commFb) ? "הדמות לא אמרה את המשפט הזה בשיחה." : "בודקים מה קרה בשיחה.";
-    return [String(tp.n), el("div", {}, el("b", {}, "\"" + tp.name + "\""), said), tp.trigger || "", el("span", { class:"fb-st " + (!fired ? "missed" : fired.effect === "פותח" ? "reached" : "held") }, what)];
+    return [String(tp.n), el("div", {}, el("b", {}, "\"" + String(tp.name || "").replace(/^["״“”']+|["״“”']+$/g, "") + "\""), said), tp.trigger || "", el("span", { class:"fb-st " + (!fired ? "missed" : fired.effect === "פותח" ? "reached" : "held") }, what)];
   }), "fb-tp-table"));
 }
 
