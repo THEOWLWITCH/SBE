@@ -323,6 +323,8 @@ function renderEntry(){
   const submit = async () => {
     const c = fixCodeKeys(code.value.replace(/[‎‏؜]/g, "")).trim();
     if (!c) { err.textContent = "אפשר להקליד את הקוד כדי להיכנס."; err.hidden = false; return; }
+    // 7777: מסלול הסטודנטיות לבדיקה של מנהלת המערכת (22/11/2026; זמני). talk-study.html בודק שזו כניסת מנהלת המערכת.
+    if (c === "7777") { location.href = "talk-study.html?c=7777"; return; }
     // קוד לקבוצה של סדנה (6 ספרות, 05/10/2026): אותו שדה — ממשיכים לבחירת תפקיד ושם
     if (/^\d{6}$/.test(c)) { err.hidden = true; const alt = $("altField"); alt.hidden = false; alt.textContent = ""; alt.append(buildWorkshopPicker(c)); alt.scrollIntoView({ behavior:"smooth", block:"center" }); return; }
     btn.disabled = true; btn.textContent = "הבדיקה נמשכת לפעמים עד דקה...";

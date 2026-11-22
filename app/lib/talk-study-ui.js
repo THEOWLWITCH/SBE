@@ -31,7 +31,30 @@
   function busy(btn, on, label) { btn.disabled = on; if (on) { btn.dataset.l = btn.textContent; btn.textContent = label || 'שומרים…'; } else if (btn.dataset.l) btn.textContent = btn.dataset.l; }
 
   // ── התחלה ──
+  // 7777: כניסה לבדיקה של מנהלת המערכת בלבד (22/11/2026: "תאפשר לי כניסה לגירסת הסטודנטיות עם הקוד 7777... אבטל זאת בהמשך").
+  // רק עם כניסת מנהלת המערכת: נפתחת (או נמצאת) קבוצת בדיקה קבועה, מחוץ לכל מחקר (studyId: sys-test), ועוברים אליה.
+  // לביטול: למחוק את הבלוק הזה ואת השורה של 7777 ב-entry.html.
+  async function sysTest() {
+    let token = '';
+    try { token = sessionStorage.getItem('sbe.session.token') || ''; if (!token) { const m = JSON.parse(localStorage.getItem('sbe.session.mirror') || 'null'); token = (m && m.data && m.data['sbe.session.token']) || ''; } } catch (e) {}
+    let dev = null; try { dev = JSON.parse(localStorage.getItem('sbe.sys.device') || 'null'); } catch (e) {}
+    const relogin = () => location.replace('entry.html?' + (dev ? '' : 'expired=1&who=sys&') + 'next=' + encodeURIComponent('talk-study.html?c=7777'));
+    if (!token) { if (dev) return relogin(); root.replaceChildren(card('הקישור לא שלם', ['אפשר לבקש מהמרצה את הקישור לקבוצה שלכם.'])); return; }
+    root.replaceChildren(el('p', 'sub', 'פותחים את קבוצת הבדיקה…'));
+    const call = async (op, input) => { const r = await fetch(SERVER + '/api/access', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'tsCall', op, input, token }) }); const j = await r.json().catch(() => ({})); if (!r.ok) { const e = new Error(j.error || 'הפעולה לא הושלמה'); e.status = r.status; throw e; } return j; };
+    try {
+      const list = await call('f.list', { studyId: 'sys-test' });
+      let c = (list.classes || []).find((x) => x.status === 'open');
+      if (!c) c = (await call('f.create', { studyId: 'sys-test', studyTitle: 'בדיקה של מנהלת המערכת', group: 'בדיקה', label: 'כניסת בדיקה 7777' })).class;
+      location.replace('talk-study.html?c=' + c.code);
+    } catch (e) {
+      if (e.status === 403) { if (dev) return relogin(); root.replaceChildren(card('הקוד 7777 פתוח רק אחרי כניסה כמנהלת המערכת', ['אפשר להיכנס כמנהלת המערכת ולנסות שוב.'])); return; }
+      root.replaceChildren(card('לא הצלחנו לפתוח את קבוצת הבדיקה', [e.message]));
+    }
+  }
+
   async function start() {
+    if (code === '7777') return sysTest();
     if (!code) { root.replaceChildren(card('הקישור לא שלם', ['אפשר לבקש מהמרצה את הקישור לקבוצה שלכם.'])); return; }
     const m = /[#&]p=([A-Z2-9]{6})\.([a-f0-9]{48})/.exec(location.hash || '');
     if (m) { store.set(KEY, { pid: m[1], key: m[2] }); history.replaceState(null, '', location.pathname + location.search); }
