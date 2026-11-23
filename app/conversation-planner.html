@@ -639,7 +639,7 @@ function downloadText(filename, text) {
 }
 
 const GROUPS = [
-  { id:"env", art:"frame", title:"מסגרת התרגול", note:"מי ממלא/ת, באיזה תאריך, איזה תוצר רוצים לקבל ובאיזו גישה.", open:true, fields:[
+  { id:"env", art:"frame", title:"מסגרת התרגול", open:true, fields:[
     { k:"creator",  l:"השם שלך", hint:"לצורך תיעוד וקרדיט" },
     { k:"date",     l:"תאריך", placeholder:"לדוגמה: 06.10.26", hint:"התאריך של היום: אפשר לשנות" },
     { k:"productType", l:"סוג התוצר", type:"select", opts:PRODUCT_TYPE_OPTS,
