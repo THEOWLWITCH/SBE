@@ -389,7 +389,7 @@ export async function authorizePermission(store, token, permissions) {
 // כלי חדש שקורא למודל: מוסיפים כאן את הדף ואת ההרשאה (כמו PAGES_BY_PERM ב-access-guard.js). דף שאינו כאן: מנהלת המערכת בלבד.
 export const MODEL_PAGES = {
   'input-screen.html': ['fac_trainee'], 'parent-input-screen.html': ['fac_parent'], 'student-input-screen.html': ['fac_youth'],
-  'practice.html': ['fac_trainee', 'fac_parent', 'fac_youth'], 'facilitator-screen.html': ['fac_trainee', 'fac_parent', 'fac_youth'],
+  'practice.html': ['fac_trainee', 'fac_parent', 'fac_youth', 'conv'], 'facilitator-screen.html': ['fac_trainee', 'fac_parent', 'fac_youth'],
   'conversation-planner.html': ['conv'], 'activity-planner.html': ['activity'], 'academic-review.html': ['academic'],
   'resilience-team.html': ['resilience'], 'resilience-advisor.html': ['resilience', 'practi'], 'leadership-advisor.html': ['leadership'],
   'resilience-studio.html': ['studio', 'activity', 'resilience', 'practi', 'leadership'], 'journey.html': ['journey'], 'message-writer.html': ['writer'], 'communication-continuity.html': ['writer'], 'facilitation-advisor.html': ['nana'],

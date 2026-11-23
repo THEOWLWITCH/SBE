@@ -13,6 +13,9 @@ if (window.SBE_SOLO_READY) document.title = "התנסות קצרה בשיחה מ
 // (talk-study.html): המקרה שתואר שם, המודל שנבחר נכנס למשוב, ובסוף "המשך: שאלון מסכם" מחזיר את התרגול למסלול.
 window.SBE_TS_MODE = /(^|\/)talk-practice(\.html)?$/.test(location.pathname);
 window.SBE_TS_HANDOFF = null;
+// מתכנון שיחה (23/11/2026): practice.html?from=plan, השיחה שתוכננה, המודל והתדריך (sbe.plan.handoff, עד יומיים)
+window.SBE_PLAN_HANDOFF = null;
+if (new URLSearchParams(location.search).get("from") === "plan") { try { const h = JSON.parse(localStorage.getItem("sbe.plan.handoff") || "null"); if (h && Date.now() - (h.at || 0) < 2 * 864e5) window.SBE_PLAN_HANDOFF = h; } catch (e) {} }
 if (window.SBE_TS_MODE) { document.title = "תרגול · הכנה לשיחות מאתגרות"; try { window.SBE_TS_HANDOFF = JSON.parse(localStorage.getItem("sbe.ts.handoff") || "null"); } catch (e) {} }
 </script>
 <script src="lib/access-guard.js"></script>
@@ -2268,7 +2271,8 @@ function commSystem(){
     "החזירי אך ורק JSON: {\"summary\":\"שניים או שלושה משפטים על השיחה\",\"strengths\":[{\"what\":\"מה עבד\",\"quote\":\"ציטוט\",\"why\":\"למה זה עובד\",\"basis\":\"על מה זה נשען (מודל או תיאוריה)\"}],\"growth\":[{\"what\":\"מה אפשר לחזק\",\"quote\":\"ציטוט\",\"tryInstead\":\"ניסוח לדוגמה\",\"why\":\"למה\",\"basis\":\"על מה זה נשען\"}],\"next\":[\"שלושה צעדים לתרגול הבא\"],\"tips\":[\"שלושה עד חמישה טיפים כלליים לשיחות כאלה\"],\"skills\":[{\"n\":1,\"found\":true,\"quote\":\"ציטוט מדויק מדברי המתנסה, או ריק\",\"note\":\"משפט קצר\"}],\"moments\":[{\"n\":1,\"happened\":\"משפט שלם\"}]}. strengths: שתיים עד ארבע. growth: שתיים עד ארבע.",
     commSkillsRule(),
     commMomentsRule(),
-    (window.SBE_TS_MODE && window.SBE_TS_HANDOFF && window.SBE_TS_HANDOFF.modelNote) || ""
+    (window.SBE_TS_MODE && window.SBE_TS_HANDOFF && window.SBE_TS_HANDOFF.modelNote) || "",
+    (!window.SBE_TS_MODE && SCENARIO && SCENARIO.fromPlan && window.SBE_PLAN_HANDOFF && window.SBE_PLAN_HANDOFF.modelNote) || ""
   ].filter(Boolean).join("\n\n");
 }
 // המיומנויות נבדקות בידי המודל (14/10/2026: "הטבלה לא נכונה. כן היתה שאלה פתוחה"): התאמת מילות מפתח
@@ -2527,6 +2531,16 @@ function renderCommFeedback(box, r){
   }
   $("ownCancel").addEventListener("click", () => { const h = $("scenarioName"); h.classList.add("hero-banner"); h.innerHTML = '<img src="assets/practice-banner.webp" alt="תרגול לפי תרחיש" width="1100" height="216">'; show("screen-select"); });
   $("ownBack1").addEventListener("click", () => step(1));
+  // מתכנון שיחה: המקרה כבר כתוב בטופס, ובוחרים רק את לשון הפנייה וממשיכים (23/11/2026)
+  if (!window.SBE_TS_MODE && window.SBE_PLAN_HANDOFF) {
+    const P = window.SBE_PLAN_HANDOFF;
+    draft.form = Object.assign({}, P.form, { me: draft.form.me || "נקבה" }); draft.questions = []; draft.answers = {}; draft.scenario = null; draft.fromReady = false; draft.fromPlan = true; saveDraft();
+    Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
+    setTimeout(() => { step(1);
+      $("ownStoryLabel").textContent = "השיחה שתכננת כבר כתובה כאן. אפשר לבחור איך לפנות אליך, לשנות פרט ולהמשיך:";
+      $("scenarioName").textContent = "מתאמנים על השיחה שתכננת"; $("scenarioSubtitle").textContent = P.approach ? "לפי המודל: " + P.approach + ". המשוב יתייחס גם למודל." : "המשוב יתייחס לשיחה שתכננת.";
+    }, 0);
+  }
   $("ownBack2").addEventListener("click", () => draft.questions.length ? (renderQs(), step(2)) : step(1));
 
   // 1 → 2: שאלות הבהרה, רק מה שחסר
@@ -2570,7 +2584,7 @@ function renderCommFeedback(box, r){
     try { r = await sbeCallAIJson(AI_SERVER, { system: revise ? PC.reviseSystem() : PC.buildSystem(), messages: [{ role: "user", content }], maxTokens: 10000, fast: true }, 240000, PC.valid); }
     catch (e) { bad = e; } finally { stop(); b.disabled = false; }
     if (!PC.valid(r)) { if (!revise) step(window.SBE_TS_MODE || draft.questions.length ? 2 : 1); return fail(bad); }
-    draft.scenario = PC.normalize(r); if (draft.scenario && draft.scenario.trainee) draft.scenario.trainee.gender = draft.form.me || "נקבה"; saveDraft(); $("ownChange").value = ""; preview(); step(3);
+    draft.scenario = PC.normalize(r); if (draft.scenario && draft.scenario.trainee) draft.scenario.trainee.gender = draft.form.me || "נקבה"; if (draft.scenario) draft.scenario.fromPlan = !!(window.SBE_PLAN_HANDOFF && draft.fromPlan); saveDraft(); $("ownChange").value = ""; preview(); step(3);
   }
   function preview(){
     const sc = draft.scenario, box = $("ownPreview"); box.textContent = "";

@@ -1189,6 +1189,22 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
       body.append(el("div", { class:"banner-mini" }, "אם משהו לא מדויק, אפשר לערוך ישירות כאן, או לשנות שדה למעלה ולבנות מחדש."));
       briefNode = (window.SBE_MODELBRIEF ? SBE_MODELBRIEF.render(briefing) : null) || SBE_DOC.sections(briefing) || SBE_DOC.rich(briefing); // טבלה: חלק בכל שורה (07/10/2026), והמודל בטבלה משלו (23/11/2026)
       body.append(SBE_DOC.editable(briefNode));
+      // מתאמנים על השיחה הזאת (23/11/2026: "התרגול נקטע כאן", ובחרה: "אחרי התדריך אין מעבר"): פרטי השיחה, המודל והתדריך
+      // עוברים לתרגול על מקרה משלך (practice.html?from=plan), והתרגול נפתח עם השיחה הזאת.
+      const goPractice = el("button", { type:"button", class:"dlg-dl primary", id:"bToPractice" }, "▶ מתאמנים על השיחה הזאת");
+      goPractice.addEventListener("click", () => {
+        const join = (...a) => a.filter(x => x && String(x).trim()).join(". ");
+        const M = ((window.SBE_TALKSTUDY && SBE_TALKSTUDY.MODELS) || []).find(m => m.name === d.approach);
+        const form = {
+          story: join(d.eventHistory, d.relationshipHistory && ("הקשר בינינו: " + d.relationshipHistory), d.meetingLogistics && ("איפה ומתי: " + d.meetingLogistics)),
+          role: d.myself || "", other: join(d.otherParty, d.otherPerspective && ("מה חשוב לו/ה: " + d.otherPerspective), traitsLine(d.otherTraits)),
+          goal: join(d.goal, d.desiredAftermath), hard: join(d.challenges, d.riskBranches && ("מה עלול להשתבש: " + d.riskBranches)),
+        };
+        const modelNote = M ? (SBE_TALKSTUDY.modelNote({ ids: [M.id] }) || "") : "";
+        try { localStorage.setItem("sbe.plan.handoff", JSON.stringify({ at: Date.now(), form, approach: d.approach || "", modelNote, briefing: briefing || "" })); } catch (_) {}
+        location.href = "practice.html?from=plan";
+      });
+      body.append(el("p", { class:"to-practice" }, goPractice));
     } else {
       body.append(el("div", { class:"banner-mini" }, "⚠ אין חיבור למודל כרגע: מוצגים כרטיס התזכורת ועץ האפשרויות מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם תדריך רציף."));
     }
