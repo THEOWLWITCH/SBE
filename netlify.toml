@@ -36,6 +36,17 @@
   to = "/practice.html"
   status = 200
 
+# תכנון השיחה במסלול הסטודנטיות (23/11/2026): אותו קובץ של תכנון שיחה, במצב מחקר
+[[redirects]]
+  from = "/talk-plan.html"
+  to = "/conversation-planner.html"
+  status = 200
+
+[[redirects]]
+  from = "/talk-plan"
+  to = "/conversation-planner.html"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]

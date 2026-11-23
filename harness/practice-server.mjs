@@ -535,7 +535,7 @@ const server = createServer(async (req, res) => {
     background = true;
     provider.complete({ system, messages: messages || [{ role: 'user', content: '' }], tools, toolChoice, variation: payload.fast ? 'fast' : 'medium', maxTokens: maxTokens || 220 })
       // הסוכנת-הלקוחה (lib/customer-pass.mjs): רק בקריאות שמפיקות תוצר
-      .then((result) => reviewEnabled(payload) ? customerPass(provider, { system, messages, maxTokens, text: result.text }) : { text: result.text, review: null })
+      .then((result) => reviewEnabled(payload) ? customerPass(provider, { system, messages, maxTokens, text: result.text, fast: !!payload.fast }) : { text: result.text, review: null })
       .then((result) => {
         job.text = result.text; job.review = result.review; job.status = 'done';
         jobSave(jobId,job);
@@ -557,7 +557,7 @@ const server = createServer(async (req, res) => {
       variation: payload.fast ? 'fast' : 'medium',
       maxTokens: maxTokens || 220,
     });
-    const pass = reviewEnabled(payload) ? await customerPass(provider, { system, messages, maxTokens, text: result.text }) : null;
+    const pass = reviewEnabled(payload) ? await customerPass(provider, { system, messages, maxTokens, text: result.text, fast: !!payload.fast }) : null;
     console.log(`complete: הצליח אחרי ${Math.round((Date.now() - t0) / 1000)} שניות (maxTokens ${maxTokens || 220})`);
     finish({ text: pass ? pass.text : result.text, toolCalls: result.toolCalls || [], ...(pass && pass.review ? { review: pass.review } : {}) });
   } catch (e) {

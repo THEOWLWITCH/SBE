@@ -14,7 +14,7 @@
   const STEPS = Object.freeze([
     { id: 'consent', label: 'הסכמה', sessions: [1] },
     { id: 'pre', label: 'שאלון עמדות', sessions: [1] },
-    { id: 'model', label: 'בחירת מודל', sessions: [1, 2, 3] },
+    { id: 'model', label: 'תכנון השיחה', sessions: [1, 2, 3] },
     { id: 'practice', label: 'תרגול ומשוב', sessions: [1, 2, 3] },
     { id: 'post', label: 'שאלון עמדות', sessions: [2, 3] },
     { id: 'reflection', label: 'רפלקציה', sessions: [3] }

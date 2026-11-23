@@ -3,10 +3,13 @@
 // מרכז המחקר (מנהלת המערכת) יוצר קישור לקבוצה (tsc:<קוד>), ולכל מי שנכנס/ה בקישור: קוד משתתף/ת אקראי ומפתח במכשיר,
 // בלי שם ובלי קוד Begood (tsp:<קוד>:<משתתף/ת>). המייל לדו"ח האישי, רק למי שביקש/ה, נשמר בנפרד (tse:).
 // השרת שומר רק את מה שהמשתתף/ת שלח/ה: הסכמה, שאלונים, המקרה, בחירת המודל, תמליל התרגול והמשוב, ורפלקציה.
-// פנייה למודל: רק מ-talk-practice.html, רק כשהקבוצה פתוחה ורק עם המפתח האישי (tsModelGate ב-authorizeModel).
+// פנייה למודל: רק מ-talk-practice.html ומ-talk-plan.html, רק כשהקבוצה פתוחה ורק עם המפתח האישי (tsModelGate ב-authorizeModel).
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 
 export const TS_PRACTICE_PAGE = 'talk-practice.html';
+// תכנון השיחה במסלול (23/11/2026: "המסלול עם טופס תכנון השיחה"): talk-plan.html = conversation-planner.html במצב מחקר
+export const TS_PLAN_PAGE = 'talk-plan.html';
+const TS_PAGES = [TS_PRACTICE_PAGE, TS_PLAN_PAGE];
 const LIM = { classes: 60, participants: 400, part: 220_000, text: 4000 };
 const PARTS = ['pre', 'case', 'model', 'practice', 'post', 'reflection'];
 const ALPH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
@@ -36,7 +39,7 @@ async function participant(store, d) {
 }
 
 export async function tsModelGate(store, auth, page) {
-  if (page !== TS_PRACTICE_PAGE || !auth || typeof auth.ts !== 'object') return null;
+  if (!TS_PAGES.includes(page) || !auth || typeof auth.ts !== 'object') return null;
   try {
     const { c, p } = await participant(store, { code: auth.ts.c, pid: auth.ts.p, key: auth.ts.key });
     if (c.status !== 'open') return null;
@@ -116,7 +119,7 @@ export async function handleTalkStudy(store, body, { isSys = false, tester = fal
       const code = String(d.code || '').toUpperCase();
       const c = okCode(code) ? await store.get('tsc:' + code) : null;
       if (!c) { await pause(); throw new TsError('הקישור לא נמצא. אפשר לבקש קישור חדש מהמרצה.', 404); }
-      return [200, { class: { code: c.code, studyTitle: c.studyTitle, group: c.group, label: c.label, status: c.status } }];
+      return [200, { class: { code: c.code, studyTitle: c.studyTitle, group: c.group, label: c.label, status: c.status, ...(c.studyId === 'sys-test' ? { test: true } : {}) } }];
     }
     if (op === 'p.join') {
       const code = String(d.code || '').toUpperCase();
@@ -140,7 +143,7 @@ export async function handleTalkStudy(store, body, { isSys = false, tester = fal
     }
     if (op === 'p.get') {
       const { c, p } = await participant(store, d);
-      return [200, { class: { code: c.code, studyTitle: c.studyTitle, group: c.group, status: c.status }, participant: participantView(p) }];
+      return [200, { class: { code: c.code, studyTitle: c.studyTitle, group: c.group, status: c.status, ...(c.studyId === 'sys-test' ? { test: true } : {}) }, participant: participantView(p) }];
     }
     if (op === 'p.save') {
       const { c, p } = await participant(store, d);

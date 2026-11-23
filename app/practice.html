@@ -13,6 +13,9 @@ if (window.SBE_SOLO_READY) document.title = "התנסות קצרה בשיחה מ
 // (talk-study.html): המקרה שתואר שם, המודל שנבחר נכנס למשוב, ובסוף "המשך: שאלון מסכם" מחזיר את התרגול למסלול.
 window.SBE_TS_MODE = /(^|\/)talk-practice(\.html)?$/.test(location.pathname);
 window.SBE_TS_HANDOFF = null;
+// מתכנון שיחה (23/11/2026): practice.html?from=plan, השיחה שתוכננה, המודל והתדריך (sbe.plan.handoff, עד יומיים)
+window.SBE_PLAN_HANDOFF = null;
+if (new URLSearchParams(location.search).get("from") === "plan") { try { const h = JSON.parse(localStorage.getItem("sbe.plan.handoff") || "null"); if (h && Date.now() - (h.at || 0) < 2 * 864e5) window.SBE_PLAN_HANDOFF = h; } catch (e) {} }
 if (window.SBE_TS_MODE) { document.title = "תרגול · הכנה לשיחות מאתגרות"; try { window.SBE_TS_HANDOFF = JSON.parse(localStorage.getItem("sbe.ts.handoff") || "null"); } catch (e) {} }
 </script>
 <script src="lib/access-guard.js"></script>
@@ -21,6 +24,8 @@ if (window.SBE_TS_MODE) { document.title = "תרגול · הכנה לשיחות 
 <script src="lib/report-table.js"></script>
 <script src="lib/quotes.js"></script>
 <script src="lib/product-doc.js"></script>
+<script src="lib/talk-study-model.js"></script>
+<script src="lib/model-brief.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/practice-custom.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2266,7 +2271,8 @@ function commSystem(){
     "החזירי אך ורק JSON: {\"summary\":\"שניים או שלושה משפטים על השיחה\",\"strengths\":[{\"what\":\"מה עבד\",\"quote\":\"ציטוט\",\"why\":\"למה זה עובד\",\"basis\":\"על מה זה נשען (מודל או תיאוריה)\"}],\"growth\":[{\"what\":\"מה אפשר לחזק\",\"quote\":\"ציטוט\",\"tryInstead\":\"ניסוח לדוגמה\",\"why\":\"למה\",\"basis\":\"על מה זה נשען\"}],\"next\":[\"שלושה צעדים לתרגול הבא\"],\"tips\":[\"שלושה עד חמישה טיפים כלליים לשיחות כאלה\"],\"skills\":[{\"n\":1,\"found\":true,\"quote\":\"ציטוט מדויק מדברי המתנסה, או ריק\",\"note\":\"משפט קצר\"}],\"moments\":[{\"n\":1,\"happened\":\"משפט שלם\"}]}. strengths: שתיים עד ארבע. growth: שתיים עד ארבע.",
     commSkillsRule(),
     commMomentsRule(),
-    (window.SBE_TS_MODE && window.SBE_TS_HANDOFF && window.SBE_TS_HANDOFF.modelNote) || ""
+    (window.SBE_TS_MODE && window.SBE_TS_HANDOFF && window.SBE_TS_HANDOFF.modelNote) || "",
+    (!window.SBE_TS_MODE && SCENARIO && SCENARIO.fromPlan && window.SBE_PLAN_HANDOFF && window.SBE_PLAN_HANDOFF.modelNote) || ""
   ].filter(Boolean).join("\n\n");
 }
 // המיומנויות נבדקות בידי המודל (14/10/2026: "הטבלה לא נכונה. כן היתה שאלה פתוחה"): התאמת מילות מפתח
@@ -2380,7 +2386,7 @@ function renderCommFeedback(box, r){
   // ── מצב מחקר (talk-practice.html): המקרה מגיע מהמסלול, בלי מסך הבחירה, בלי שיתוף ובלי מעבר לתרחישים אחרים ──
   if (window.SBE_TS_MODE) {
     const H = window.SBE_TS_HANDOFF;
-    document.head.append(el("style", {}, ".sbe-peek,#ownCancel,.own-share,#bBackToSelect,#bAgainOther,#fbSave,[data-study-tool],#myCases,#ownSteps,#own2>p:first-child,#ownBack1,#ownBack2{display:none!important}"));
+    document.head.append(el("style", {}, "#sbeTop,.sbe-peek,#ownCancel,.own-share,#bBackToSelect,#bAgainOther,#fbSave,[data-study-tool],#myCases,#ownSteps,#own2>p:first-child,#ownBack1,#ownBack2{display:none!important}"));
     if (!H || !H.fields || !H.back) {
       $("scenarioName").classList.remove("hero-banner"); $("scenarioName").textContent = "התרגול נפתח מהמסלול של המחקר";
       $("scenarioSubtitle").textContent = "אפשר לחזור לקישור של הקבוצה ולפתוח את התרגול משם.";
@@ -2390,8 +2396,8 @@ function renderCommFeedback(box, r){
       // לתרגולים הבאים כל עוד המקרה לא השתנה. התדריך נכתב מחדש בכל מפגש ובכל החלפת מודל.
       const sig = JSON.stringify([H.code, H.pid, H.fields, H.me]);
       if (draft.tsSig !== sig) Object.assign(draft, { tsSig: sig, questions: [], answers: {}, scenario: null, fromReady: false });
-      const bsig = JSON.stringify([H.session, H.modelNames || [], H.modelSteps || []]);
-      if (draft.tsBriefSig !== bsig) Object.assign(draft, { tsBriefSig: bsig, briefing: "", briefingRead: false });
+      const bsig = JSON.stringify(["model-v2", H.session, H.modelNames || [], H.modelSteps || []]); // model-v2: תדריך עם טבלת המודל (23/11/2026)
+      if (draft.tsBriefSig !== bsig || (H.briefing && draft.tsBriefFrom !== H.briefing.slice(0, 200))) Object.assign(draft, { tsBriefSig: bsig, briefing: H.briefing || "", tsBriefFrom: (H.briefing || "").slice(0, 200), briefingRead: false }); // 23/11/2026: התדריך מטופס התכנון במסלול
       draft.form = Object.assign({}, H.fields, { me: H.me || "נקבה" }); saveDraft();
       Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
       // 22/11/2026 ("זה כלי נפרד שיש לקשר כחלק מהכלי הזה"): פס עליון של המסלול, עם המפגש והשלב, וחזרה למסלול
@@ -2410,9 +2416,11 @@ function renderCommFeedback(box, r){
         const male = (H.me || "נקבה") === "זכר";
         return ["את מנחה מנוסה של אנשי ונשות חינוך. כתבי תדריך הכנה אישי וקצר לשיחה מאתגרת שהמתנסה עומד/ת לתרגל, לפי המודל שבחר/ה. התדריך נקרא פעם אחת לפני התרגול.",
           "המודל שנבחר ושלביו:\n" + (H.modelSteps || []).join("\n"),
-          "חמישה חלקים, כל אחד בכותרת מודגשת בשורה משלה: **מה המטרה** (משפט אחד) · **השיחה שלך לפי המודל** (לכל שלב במודל: מה עושים בו בשיחה הזאת, ומשפט לדוגמה במרכאות) · **איך לפתוח** (ברכת שלום ומשהו טוב לומר, ומשפט פתיחה במרכאות) · **אם השיחה מסתבכת** (שתיים או שלוש שורות שמתחילות ב-\"- \", לפי מה שמאתגר את המתנסה) · **איך לסיים** (צעד המשך מוסכם).",
+          "חמישה חלקים, כל אחד בכותרת מודגשת בשורה משלה, בסדר הזה: **מה המטרה** (משפט אחד) · החלק של המודל (ההנחיה המלאה בהמשך) · **איך לפתוח** (ברכת שלום ומשהו טוב לומר, ומשפט פתיחה במרכאות) · **אם השיחה מסתבכת** (שתיים או שלוש שורות שמתחילות ב-\"- \", לפי מה שמאתגר את המתנסה) · **איך לסיים** (צעד המשך מוסכם).",
+          // לב התדריך (23/11/2026: "קריטי להוסיף לתדריך ניראות למודל - ממש בפירוט"): lib/model-brief.js
+          (window.SBE_MODELBRIEF && window.SBE_TALKSTUDY) ? SBE_MODELBRIEF.rule(SBE_TALKSTUDY.MODELS.filter((m) => (H.modelNames || []).includes(m.name))) : "",
           "המודל הוא מסגרת ולא תסריט: כתבי כך שיהיה ברור שאפשר לסטות ממנו לפי מה שקורה. השתמשי בהכנה העצמית של המתנסה (המטרה, החשש, מה הוא/היא מקווה), בלי להעתיק אותה.",
-          "עד 380 מילים. גוף שני, " + (male ? "בלשון זכר" : "בלשון נקבה") + ". בלי שמות אמיתיים: במקום שם כותבים [שם]. בלי סימני #. החזירי רק את טקסט התדריך."].join("\n\n");
+          "עד 650 מילים, ורובן בחלק של המודל. גוף שני, " + (male ? "בלשון זכר" : "בלשון נקבה") + ". בלי שמות אמיתיים: במקום שם כותבים [שם]. בלי סימני #. החזירי רק את טקסט התדריך."].join("\n\n");
       }
       function briefInput(){
         const f = H.fields || {}, pr = H.prep || {};
@@ -2422,15 +2430,15 @@ function renderCommFeedback(box, r){
       function paintBrief(){
         bc.textContent = "";
         bc.append(el("h3", {}, "התדריך שלך לפני התרגול"), el("p", { class: "who" }, "לפי המודל: " + (H.modelNames || []).join(" + ") + ". אפשר לקרוא בשקט, ולחזור אליו גם בזמן השיחה (\"הסיפור והתדריך\")."));
-        if (draft.briefing) bc.append(SBE_DOC.sections(draft.briefing) || SBE_DOC.rich(draft.briefing));
+        if (draft.briefing) bc.append((window.SBE_MODELBRIEF && SBE_MODELBRIEF.render(draft.briefing)) || SBE_DOC.sections(draft.briefing) || SBE_DOC.rich(draft.briefing));
         const acts = el("div", { class: "own-acts" });
         if (draft.briefing) { const ok = el("button", { type: "button", class: "primary" }, "קראתי, ממשיכים לתרגול ←"); ok.addEventListener("click", goOn); acts.append(ok); }
         else {
-          const w = el("p", { class: "fb-note" }, "כתיבת התדריך נמשכת כ־30 שניות."); bc.append(w);
+          const w = el("p", { class: "fb-note" }, "כתיבת התדריך נמשכת כ־60 שניות."); bc.append(w);
           (async () => {
-            const t0 = Date.now(), iv = setInterval(() => { w.textContent = "כתיבת התדריך נמשכת כ־30 שניות. חלפו " + Math.round((Date.now() - t0) / 1000) + " שניות."; }, 1000);
+            const t0 = Date.now(), iv = setInterval(() => { w.textContent = "כתיבת התדריך נמשכת כ־60 שניות. חלפו " + Math.round((Date.now() - t0) / 1000) + " שניות."; }, 1000);
             let txt = null;
-            try { const r = await sbeCallAI(AI_SERVER, { system: briefSystem(), messages: [{ role: "user", content: briefInput() }], maxTokens: 3000, fast: true }, 150000); txt = String((r && r.text) || r || "").trim(); }
+            try { const r = await sbeCallAI(AI_SERVER, { system: briefSystem(), messages: [{ role: "user", content: briefInput() }], maxTokens: 7000, fast: true }, 150000); txt = String((r && r.text) || r || "").trim(); }
             catch (e) { console.warn("התדריך לא נכתב:", e && e.message); }
             finally { clearInterval(iv); }
             if (txt && txt.length > 120) { draft.briefing = txt; saveDraft(); return paintBrief(); }
@@ -2523,6 +2531,16 @@ function renderCommFeedback(box, r){
   }
   $("ownCancel").addEventListener("click", () => { const h = $("scenarioName"); h.classList.add("hero-banner"); h.innerHTML = '<img src="assets/practice-banner.webp" alt="תרגול לפי תרחיש" width="1100" height="216">'; show("screen-select"); });
   $("ownBack1").addEventListener("click", () => step(1));
+  // מתכנון שיחה: המקרה כבר כתוב בטופס, ובוחרים רק את לשון הפנייה וממשיכים (23/11/2026)
+  if (!window.SBE_TS_MODE && window.SBE_PLAN_HANDOFF) {
+    const P = window.SBE_PLAN_HANDOFF;
+    draft.form = Object.assign({}, P.form, { me: draft.form.me || "נקבה" }); draft.questions = []; draft.answers = {}; draft.scenario = null; draft.fromReady = false; draft.fromPlan = true; saveDraft();
+    Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
+    setTimeout(() => { step(1);
+      $("ownStoryLabel").textContent = "השיחה שתכננת כבר כתובה כאן. אפשר לבחור איך לפנות אליך, לשנות פרט ולהמשיך:";
+      $("scenarioName").textContent = "מתאמנים על השיחה שתכננת"; $("scenarioSubtitle").textContent = P.approach ? "לפי המודל: " + P.approach + ". המשוב יתייחס גם למודל." : "המשוב יתייחס לשיחה שתכננת.";
+    }, 0);
+  }
   $("ownBack2").addEventListener("click", () => draft.questions.length ? (renderQs(), step(2)) : step(1));
 
   // 1 → 2: שאלות הבהרה, רק מה שחסר
@@ -2566,7 +2584,7 @@ function renderCommFeedback(box, r){
     try { r = await sbeCallAIJson(AI_SERVER, { system: revise ? PC.reviseSystem() : PC.buildSystem(), messages: [{ role: "user", content }], maxTokens: 10000, fast: true }, 240000, PC.valid); }
     catch (e) { bad = e; } finally { stop(); b.disabled = false; }
     if (!PC.valid(r)) { if (!revise) step(window.SBE_TS_MODE || draft.questions.length ? 2 : 1); return fail(bad); }
-    draft.scenario = PC.normalize(r); if (draft.scenario && draft.scenario.trainee) draft.scenario.trainee.gender = draft.form.me || "נקבה"; saveDraft(); $("ownChange").value = ""; preview(); step(3);
+    draft.scenario = PC.normalize(r); if (draft.scenario && draft.scenario.trainee) draft.scenario.trainee.gender = draft.form.me || "נקבה"; if (draft.scenario) draft.scenario.fromPlan = !!(window.SBE_PLAN_HANDOFF && draft.fromPlan); saveDraft(); $("ownChange").value = ""; preview(); step(3);
   }
   function preview(){
     const sc = draft.scenario, box = $("ownPreview"); box.textContent = "";

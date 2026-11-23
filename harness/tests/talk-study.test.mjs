@@ -57,6 +57,9 @@ test('research center creates a link; students join with consent only; data save
   const ts = { c: code, p: joined.pid, key: joined.key };
   assert.equal((await authorizeModel(store, { page: 'talk-practice.html', ts }, '/api/character-turn')).ok, true);
   assert.equal((await authorizeModel(store, { page: 'practice.html', ts }, '/api/character-turn')).ok, false);
+  // 23/11/2026: טופס תכנון השיחה במסלול (talk-plan.html) פונה למודל באותו מפתח
+  assert.equal((await authorizeModel(store, { page: 'talk-plan.html', ts }, '/api/complete')).ok, true);
+  assert.equal((await authorizeModel(store, { page: 'conversation-planner.html', ts }, '/api/complete')).ok, false);
   assert.equal((await authorizeModel(store, { page: 'talk-practice.html', ts: { ...ts, key: 'z'.repeat(48) } }, '/api/complete')).ok, false);
   await call(store, 'f.status', { code, status: 'closed' }, { token: sys.token });
   assert.equal((await authorizeModel(store, { page: 'talk-practice.html', ts }, '/api/complete')).ok, false);

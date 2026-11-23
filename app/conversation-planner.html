@@ -9,6 +9,9 @@
 <script src="lib/ai-call.js"></script>
 <script src="lib/quotes.js"></script>
 <script src="lib/product-doc.js"></script>
+<script src="lib/report-table.js"></script>
+<script src="lib/talk-study-model.js"></script>
+<script src="lib/model-brief.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Frank+Ruhl+Libre:wght@700;900&family=Assistant:wght@300;400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -639,7 +642,7 @@ function downloadText(filename, text) {
 }
 
 const GROUPS = [
-  { id:"env", art:"frame", title:"מסגרת התרגול", note:"מי ממלא/ת, באיזה תאריך, איזה תוצר רוצים לקבל ובאיזו גישה.", open:true, fields:[
+  { id:"env", art:"frame", title:"מסגרת התרגול", open:true, fields:[
     { k:"creator",  l:"השם שלך", hint:"לצורך תיעוד וקרדיט" },
     { k:"date",     l:"תאריך", placeholder:"לדוגמה: 06.10.26", hint:"התאריך של היום: אפשר לשנות" },
     { k:"productType", l:"סוג התוצר", type:"select", opts:PRODUCT_TYPE_OPTS,
@@ -647,7 +650,7 @@ const GROUPS = [
     { k:"approach", l:"הגישה שתנחה את התכנון", type:"cards", cards:APPROACH_CARDS,
       hint:"הגישה מוצעת לפי המטרה שבהמשך הטופס, ואפשר לבחור אחרת" },
   ]},
-  { id:"req", art:"me", title:"אני בשיחה", note:"כאן כותבים על עצמך: מי את/ה בשיחה הזאת, ואיך את/ה בדרך כלל.", open:true, fields:[
+  { id:"req", art:"me", title:"אני בשיחה", note:"כתוב/כתבי מי את/ה בשיחה הזאת, ואיך את/ה בדרך כלל.", open:true, fields:[
     { k:"myself",   l:"מי אני בשיחה הזאת", req:1, hint:"התפקיד שלי מול הצד השני, למשל: \"אני המחנכת של הכיתה\"" },
     { k:"myTraits", l:"התכונות והמזג שלי", type:"traits",
       hint:"אפשר לבחור כמה תכונות. לכל תכונה נפתח שדה קצר: איך היא באה לידי ביטוי אצלי" },
@@ -656,7 +659,7 @@ const GROUPS = [
     { k:"myOccupation", l:"העיסוק שלי",
       hint:"מה שנשאר ריק מקבל הצעה בלחיצה על \"מילוי הצעות\"" },
   ]},
-  { id:"other", art:"other", title:"הצד השני בשיחה", note:"כאן כותבים על האדם שמולך בשיחה, ועל הקשר ביניכם.", open:true, fields:[
+  { id:"other", art:"other", title:"הצד השני בשיחה", note:"כתוב/כתבי על האדם שמולך בשיחה ועל הקשר ביניכם.", open:true, fields:[
     { k:"otherParty", l:"מי הצד השני", req:1, hint:"למשל: \"אמא של תלמיד בכיתה\", \"המנהל שלי\"" },
     { k:"otherTraits", l:"התכונות והמזג של הצד השני", type:"traits",
       hint:"התכונות של האדם שמולך. הן עוזרות להתאים את הטיוטה ואת כרטיס התזכורת אליו או אליה" },
@@ -665,7 +668,7 @@ const GROUPS = [
     { k:"relationshipHistory", l:"הקשר בינינו בדרך כלל", tall:1,
       hint:"לא רק הרגע הזה. מה שנשאר ריק מקבל הצעה בלחיצה על \"מילוי הצעות\"" },
   ]},
-  { id:"envelope", art:"talk", title:"השיחה הצפויה", note:"מה קרה עד עכשיו, מה המטרה שלי, ומה עלול להשתבש.", fields:[
+  { id:"envelope", art:"talk", title:"השיחה הצפויה", note:"כתוב/כתבי מה קרה עד עכשיו, מה המטרה שלך ומה עלול להשתבש.", fields:[
     { k:"eventHistory", l:"מה קרה עד כה", tall:1,
       hint:"מה שנשאר ריק מקבל הצעה בלחיצה על \"מילוי הצעות\"" },
     { k:"meetingLogistics", l:"מתי ואיפה תתקיים השיחה",
@@ -690,6 +693,31 @@ const GROUPS = [
       hint:"מה שנשאר ריק מקבל הצעה בלחיצה על \"מילוי הצעות\"" },
   ]},
 ];
+
+// ── מסלול הסטודנטיות במחקר שיחות מאתגרות (talk-plan.html = הדף הזה במצב מחקר; 23/11/2026, נבחר:
+// "המסלול עם טופס תכנון השיחה"). אחרי ההסכמה והשאלון הראשון הסטודנטיות ממלאות כאן את טופס התכנון המלא,
+// בוחרות מודל עם נימוק, מקבלות תדריך שהמודל הוא הלב שלו, וממשיכות ישר לתרגול (talk-practice.html).
+// בלי שם ובלי תאריך, בלי התכתבות דיגיטלית, ובלי מעבר לכלים אחרים. ההקשר מגיע מ-talk-study.html (sbe.ts.planctx).
+const TS_PLAN = /(^|\/)talk-plan(\.html)?$/.test(location.pathname);
+let TS_CTX = null;
+if (TS_PLAN) {
+  try { TS_CTX = JSON.parse(localStorage.getItem("sbe.ts.planctx") || "null"); } catch (e) {}
+  const TSM = window.SBE_TALKSTUDY;
+  const env = GROUPS.find(g => g.id === "env");
+  env.title = "המודל והשיחה";
+  env.fields = env.fields.filter(f => f.k === "approach");
+  env.fields[0].l = "המודל שינחה את השיחה";
+  env.fields[0].req = 1;
+  env.fields[0].hint = "המודל הוא מסגרת חשיבה, לא תסריט. אפשר לקרוא על כל אחד ולבחור";
+  const again = !!(TS_CTX && TS_CTX.prevModel && TS_CTX.prevModel.names && TS_CTX.prevModel.names.length);
+  env.fields.push(
+    { k:"tsReason", l: again ? "למה ממשיכים באותו מודל, או למה מחליפים?" : "למה בחרתי במודל הזה?", req:1,
+      placeholder:"למשל: כי אצטרך למסור מידע קשה, ולתת מקום לכעס" },
+    { k:"tsType", l:"סוג השיחה", type:"select", req:1, opts:[""].concat(TSM ? TSM.CASE.types : []) },
+    { k:"tsDiff", l:"כמה השיחה מאתגרת אותי, מ־1 עד 5", type:"select", req:1, opts:["","1","2","3","4","5"] },
+    { k:"tsMe", l:"איך לפנות אליי", type:"select", opts:["נקבה","זכר"] });
+  if (again) env.note = "במפגש הקודם בחרת: " + TS_CTX.prevModel.names.join(" + ") + ". אפשר להמשיך באותו מודל או להחליף. שתי האפשרויות טובות, כשיש להן נימוק.";
+}
 
 const FIELDS = new Map();
 GROUPS.forEach(g => g.fields.forEach(f => FIELDS.set(f.k, { ...f, group:g.id })));
@@ -755,7 +783,9 @@ function setAIStatus(status){
 async function callAI(system, userText, maxTokens, timeoutMs, review) { // review: תוצר, עובר דרך הסוכנת-הלקוחה (harness/lib/customer-pass.mjs)
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך
   LAST_AI_ERR = null;
-  try { return await sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review }, timeoutMs || 60000); }
+  // fast (23/11/2026: "האם ניתן לקצר את משך הכנת השיחה והפקת התדריך?"): מחכים מול המסך, ולכן effort בינוני (VARIATION.fast),
+  // גם בבדיקת הלקוחה של התדריך (שני הסבבים נשארים)
+  try { return await sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review, fast: true }, timeoutMs || 60000); }
   catch (e) { LAST_AI_ERR = e; throw e; }
 }
 // הסיבה האמיתית לתקלה האחרונה (11/10/2026): ההודעה אומרת מה קרה, ולא תמיד "אין חיבור"
@@ -1147,10 +1177,15 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
       const raw = Object.entries(d).filter(([k, v]) => v && String(v).trim() && !["myTraits","otherTraits"].includes(k))
         .map(([k, v]) => (FIELDS.get(k)?.l || k) + ": " + v).join("\n");
       const traitsNote = [traitsLine(d.myTraits) ? "המאפיינים שלי: " + traitsLine(d.myTraits) : "", traitsLine(d.otherTraits) ? "המאפיינים של הצד השני: " + traitsLine(d.otherTraits) : ""].filter(Boolean).join("\n");
+      // לב התדריך: המודל שנבחר, שלב אחר שלב (23/11/2026; lib/model-brief.js). בלי בחירה: המודל בוחר אחד משלושת המודלים ואומר למה.
+      const ALL_M = (window.SBE_TALKSTUDY && SBE_TALKSTUDY.MODELS) || [];
+      const pickedM = ALL_M.filter(m => m.name === d.approach);
+      const modelRule = window.SBE_MODELBRIEF ? SBE_MODELBRIEF.rule(pickedM.length ? pickedM : ALL_M, { choose: !pickedM.length }) : "";
       const system = [ "אסור לכתוב שם של מחבר, מאמר, ספר, מחקר או שנת פרסום. אפשר להזכיר תיאוריה או גישה במילים. מקורות מגיעים רק מספריית המקורות המאומתת של המערכת.",
         "את כותבת תדריך אישי קצר למי שעומדת לפני שיחה חשובה, בעברית, מתוך שדות שמילאה במסך תכנון השיחה של מערכת Begood. היא תקרא אותו פעם אחת לפני שהיא נכנסת לחדר ותרגיש מוכנה.",
-        "כתבי בגוף שני, בפסקאות קצרות ומרווחות, עם כותרת מודגשת לכל חלק — כדי שיהיה קל לקרוא, במיוחד בנושא רגיש. שמונה חלקים, בכותרות האלה בדיוק. פני בלשון שעולה מ\"מי אני בשיחה\" (אם לא ברור: בלי פנייה, \"אפשר לפתוח ב...\"):",
+        "כתבי בגוף שני, בפסקאות קצרות ומרווחות, עם כותרת מודגשת לכל חלק — כדי שיהיה קל לקרוא, במיוחד בנושא רגיש. תשעה חלקים, בכותרות האלה בדיוק ובסדר הזה. פני בלשון שעולה מ\"מי אני בשיחה\" (אם לא ברור: בלי פנייה, \"אפשר לפתוח ב...\"):",
         "**מה המטרה** — משפט אחד: מה היית רוצה שיקרה בסוף השיחה.",
+        modelRule,
         "**מה חשוב לדעת** — ההקשר האנושי: מי את/ה בשיחה הזאת (לפי השדות), מי הצד השני, מה קרה עד כה ומה באמת חשוב. שתיים-שלוש פסקאות קצרות.",
         "**איפה ומתי** — המקום והזמן שמתאימים לשיחה הזאת (למשל ביחידות, במקום שקט, כשיש זמן ולא בדלת), ולמה.",
         "**איך לפתוח** — ברכת שלום ומשהו טוב לומר לפני גוף העניין, ומשפט פתיחה לדוגמה במרכאות.",
@@ -1158,9 +1193,9 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
         "**אם השיחה מסתבכת** — תבליטים (שורה שמתחילה ב-\"- \"): מה לעשות אם הצד השני מתגונן, מסכים-אבל-לא-משתנה, או לוקח את זה אישית — מתוך \"מה עלול להשתבש\". בכל תבליט: מילת מפתח מודגשת, ומשפט לדוגמה במרכאות.",
         "**איך לסיים**: מה חשוב לשמור עליו, ומה קורה אם המטרה מתממשת. איך מסיימים בכבוד גם בלי הסכמה, עם פתח להמשך.",
         "**אם זה לא מצליח**: תוכנית ב', בשניים או שלושה משפטים.",
-        "הדגשה רק למילות מפתח (**כך**). בלי סימני #, בלי טבלאות.",
+        "הדגשה רק למילות מפתח (**כך**). בלי סימני #, ובלי טבלאות חוץ מהשורות עם | בחלק של המודל.",
         TALK_RULE,
-        "התיאוריה שנבחרה (" + (d.approach || "לא נבחרה") + ") נשמעת בהצעות עצמן, לא כהגדרה. המאפיינים של שני הצדדים (תכונות ומזג) משפיעים על הניסוח: מה יעבוד עם מי שכזה, וממה להיזהר.",
+        "המודל (" + (d.approach || "לא נבחר") + ") הוא לב התדריך: גלוי, שלב אחר שלב, ומחובר לפרטים של השיחה הזאת. המאפיינים של שני הצדדים (תכונות ומזג) משפיעים על הניסוח בכל שלב: מה יעבוד עם מי שכזה, וממה להיזהר.",
         "חוק הספציפיות: מקום, זמן ומשפט במרכאות. שם רק אם נמסר בשדות; אחרת [שם]. אין מניפולציה, מלכודת, התחכמות, סכום אפס או תקשורת אלימה — בשום הצעה.",
         "החזירי רק את טקסט התדריך, בלי JSON ובלי הקדמה.",
       ].join("\n\n");
@@ -1177,8 +1212,25 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
 
     if (briefing) {
       body.append(el("div", { class:"banner-mini" }, "אם משהו לא מדויק, אפשר לערוך ישירות כאן, או לשנות שדה למעלה ולבנות מחדש."));
-      briefNode = SBE_DOC.sections(briefing) || SBE_DOC.rich(briefing); // טבלה: חלק בכל שורה (07/10/2026)
+      briefNode = (window.SBE_MODELBRIEF ? SBE_MODELBRIEF.render(briefing) : null) || SBE_DOC.sections(briefing) || SBE_DOC.rich(briefing); // טבלה: חלק בכל שורה (07/10/2026), והמודל בטבלה משלו (23/11/2026)
       body.append(SBE_DOC.editable(briefNode));
+      // מתאמנים על השיחה הזאת (23/11/2026: "התרגול נקטע כאן", ובחרה: "אחרי התדריך אין מעבר"): פרטי השיחה, המודל והתדריך
+      // עוברים לתרגול על מקרה משלך (practice.html?from=plan), והתרגול נפתח עם השיחה הזאת.
+      const goPractice = el("button", { type:"button", class:"dlg-dl primary", id:"bToPractice" }, "▶ מתאמנים על השיחה הזאת");
+      goPractice.addEventListener("click", async () => {
+        const join = (...a) => a.filter(x => x && String(x).trim()).join(". ");
+        if (TS_PLAN) return tsToPractice(d, briefing || "", goPractice, join);
+        const M = ((window.SBE_TALKSTUDY && SBE_TALKSTUDY.MODELS) || []).find(m => m.name === d.approach);
+        const form = {
+          story: join(d.eventHistory, d.relationshipHistory && ("הקשר בינינו: " + d.relationshipHistory), d.meetingLogistics && ("איפה ומתי: " + d.meetingLogistics)),
+          role: d.myself || "", other: join(d.otherParty, d.otherPerspective && ("מה חשוב לו/ה: " + d.otherPerspective), traitsLine(d.otherTraits)),
+          goal: join(d.goal, d.desiredAftermath), hard: join(d.challenges, d.riskBranches && ("מה עלול להשתבש: " + d.riskBranches)),
+        };
+        const modelNote = M ? (SBE_TALKSTUDY.modelNote({ ids: [M.id] }) || "") : "";
+        try { localStorage.setItem("sbe.plan.handoff", JSON.stringify({ at: Date.now(), form, approach: d.approach || "", modelNote, briefing: briefing || "" })); } catch (_) {}
+        location.href = "practice.html?from=plan";
+      });
+      body.append(el("p", { class:"to-practice" }, goPractice));
     } else {
       body.append(el("div", { class:"banner-mini" }, "⚠ אין חיבור למודל כרגע: מוצגים כרטיס התזכורת ועץ האפשרויות מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם תדריך רציף."));
     }
@@ -1242,6 +1294,42 @@ function show(title, node) {
 }
 document.getElementById("dlgX").addEventListener("click", () => document.getElementById("dlg").close());
 
+// מחקר: שומרים בשרת את השיחה ואת המודל (המפגש הזה במסלול), ועוברים ישר לתרגול עם התדריך שכבר נכתב.
+async function tsToPractice(d, briefing, btn, join) {
+  const TSM = window.SBE_TALKSTUDY;
+  let cred = null; try { cred = JSON.parse(localStorage.getItem("sbe.ts.cred") || "null"); } catch (e) {}
+  const M = TSM.MODELS.find(m => m.name === d.approach);
+  const note = (t) => { let p = document.getElementById("tsSaveNote"); if (!p) { p = el("p", { id:"tsSaveNote", class:"banner-mini", role:"status" }); btn.closest("p").after(p); } p.textContent = t; };
+  if (!cred || !TS_CTX || !M) return note("כדי להמשיך, אפשר לבחור את אחד משלושת המודלים ולחזור למסלול דרך הקישור של הקבוצה.");
+  if (!d.tsType || !d.tsDiff || !d.tsReason) return note("כדי להמשיך, אפשר למלא את סוג השיחה, כמה היא מאתגרת, ולמה המודל הזה.");
+  const fields = {
+    story: join(d.eventHistory, d.relationshipHistory && ("הקשר בינינו: " + d.relationshipHistory), d.meetingLogistics && ("איפה ומתי: " + d.meetingLogistics)),
+    role: d.myself || "", other: join(d.otherParty, d.otherPerspective && ("מה חשוב לו/ה: " + d.otherPerspective), traitsLine(d.otherTraits)),
+    goal: join(d.goal, d.desiredAftermath), hard: join(d.challenges, d.riskBranches && ("מה עלול להשתבש: " + d.riskBranches)),
+  };
+  if (/\b05\d[-\s]?\d{7}\b|@\S+\.\S+|\b\d{9}\b/.test(JSON.stringify(fields))) return note("נראה שבתיאור יש טלפון, מייל או מספר זהות. אפשר להסיר אותם ולנסות שוב.");
+  const prep = { aim: d.goal || "", fear: d.challenges || "", hope: d.desiredAftermath || "" };
+  const pm = TS_CTX.prevModel || null;
+  const SERVER = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) ? "" : AI_SERVER;
+  const call = async (input) => {
+    const r = await fetch(SERVER + "/api/access", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ action:"tsCall", op:"p.save", input }) });
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || "השמירה לא הושלמה"); return j;
+  };
+  btn.disabled = true; const label = btn.textContent; btn.textContent = "שומרים…";
+  try {
+    const base = { code: cred.c, pid: cred.p, key: cred.key, session: TS_CTX.session };
+    const plan = {}; FIELDS.forEach((f, k) => { if (d[k]) plan[k] = d[k]; });
+    await call({ ...base, part:"case", data:{ fields, me: d.tsMe || "נקבה", type: d.tsType, difficulty: Number(d.tsDiff) || null, prep, plan, briefing: briefing.slice(0, 8000) } });
+    await call({ ...base, part:"model", data:{ ids:[M.id], names:[M.name], reason: d.tsReason, ...(pm && pm.ids ? { prevIds: pm.ids, kept: pm.ids.length === 1 && pm.ids[0] === M.id } : {}) } });
+  } catch (e) { btn.disabled = false; btn.textContent = label; return note((e && e.message) || "השמירה לא הושלמה. מה שמולא נשמר במכשיר, ואפשר לנסות שוב."); }
+  try {
+    localStorage.setItem("sbe.ts.handoff", JSON.stringify({ code: cred.c, pid: cred.p, session: TS_CTX.session, rounds: TS_CTX.rounds || 1, next: TS_CTX.next || "",
+      fields, me: d.tsMe || "נקבה", prep, type: d.tsType, modelNote: TSM.modelNote({ ids:[M.id] }), modelNames:[M.name],
+      modelSteps:[M.name + ": " + M.steps.map(x => x[1] + " (" + x[2] + ")").join(" · ")], briefing, back: TS_CTX.back }));
+  } catch (e) {}
+  location.href = "talk-practice.html";
+}
+
 render();
 
 // נבחר מ-system-select.html ("שיחה בעל פה" / "התכתבות דיגיטלית") — ממלא
@@ -1253,6 +1341,45 @@ render();
   if (!p || !map[p]) return;
   const n = document.getElementById("i-productType");
   if (n) { n.value = map[p]; state.productType = "locked"; refresh(); }
+})();
+
+// ── מצב מחקר (talk-plan.html): פס המסלול, שמירה במכשיר תוך כדי, ומילוי מהמפגש הקודם ──
+(function tsPlanInit(){
+  if (!TS_PLAN) return;
+  document.title = "תכנון השיחה · הכנה לשיחות מאתגרות";
+  document.head.append(el("style", {}, "#navBar,#sbeTop,.sbe-peek,[data-study-tool],#bReset,.sbe-sysonly{display:none!important}"));
+  let cred = null; try { cred = JSON.parse(localStorage.getItem("sbe.ts.cred") || "null"); } catch (e) {}
+  const main = document.querySelector("main") || document.body;
+  if (!TS_CTX || !cred || TS_CTX.code !== cred.c || TS_CTX.pid !== cred.p) {
+    const f = document.getElementById("form"); if (f) f.hidden = true;
+    main.prepend(el("div", { class:"banner-mini" }, "טופס התכנון נפתח מהמסלול של המחקר. אפשר לחזור לקישור של הקבוצה ולפתוח אותו משם."));
+    return;
+  }
+  main.prepend(el("div", { class:"ts-bar", style:"margin:0 0 14px;padding:10px 14px;border:1px solid #dbe4ea;border-radius:12px;background:#fff;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between" },
+    el("span", {}, el("b", {}, "הכנה לשיחות מאתגרות"), " · מפגש " + (TS_CTX.session || 1) + " מתוך 3 · תכנון השיחה, ואחריו תדריך ותרגול"),
+    el("a", { href: TS_CTX.back }, "→ חזרה למסלול")));
+  const KEY = "sbe.ts.plan." + TS_CTX.code + "." + TS_CTX.pid + "." + TS_CTX.session;
+  let saved = null; try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
+  // מפגש 2 ו-3: הטופס נפתח עם השיחה מהמפגש הקודם. אפשר לשנות כל פרט, או לכתוב שיחה אחרת.
+  if (!saved && TS_CTX.prevPlan) saved = Object.assign({}, TS_CTX.prevPlan, { tsReason: "" });
+  if (saved && !saved.approach && TS_CTX.prevModel && TS_CTX.prevModel.names && TS_CTX.prevModel.names.length === 1) saved.approach = TS_CTX.prevModel.names[0];
+  const firstChip = document.querySelector(".pk-steps li"); if (firstChip) firstChip.lastChild.textContent = "המודל והשיחה";
+  const lead = document.querySelector(".pk-intro p"); if (lead) lead.textContent = "ממלאים ארבעה חלקים קצרים, ומקבלים תדריך לשיחה לפי המודל שבחרת. מהתדריך ממשיכים לתרגול.";
+  if (!saved && TS_CTX.prevModel && TS_CTX.prevModel.names && TS_CTX.prevModel.names.length === 1) saved = { approach: TS_CTX.prevModel.names[0] };
+  if (saved) {
+    for (const [k, v] of Object.entries(saved)) {
+      const n = document.getElementById("i-" + k);
+      if (!n || v == null || v === "") continue;
+      n.value = v; state[k] = "locked";
+      if (traitFields.has(k)) traitFields.get(k)();
+    }
+    syncAllCardVisuals(); refresh();
+  }
+  const save = () => { const o = {}; FIELDS.forEach((f, k) => { const v = val(k); if (v) o[k] = v; }); try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} };
+  document.getElementById("form").addEventListener("input", save);
+  document.getElementById("form").addEventListener("change", save);
+  setInterval(save, 3000);
+  window.SBE_TS_PLAN_KEY = KEY;
 })();
 </script>
 
