@@ -694,6 +694,31 @@ const GROUPS = [
   ]},
 ];
 
+// ── מסלול הסטודנטיות במחקר שיחות מאתגרות (talk-plan.html = הדף הזה במצב מחקר; 23/11/2026, נבחר:
+// "המסלול עם טופס תכנון השיחה"). אחרי ההסכמה והשאלון הראשון הסטודנטיות ממלאות כאן את טופס התכנון המלא,
+// בוחרות מודל עם נימוק, מקבלות תדריך שהמודל הוא הלב שלו, וממשיכות ישר לתרגול (talk-practice.html).
+// בלי שם ובלי תאריך, בלי התכתבות דיגיטלית, ובלי מעבר לכלים אחרים. ההקשר מגיע מ-talk-study.html (sbe.ts.planctx).
+const TS_PLAN = /(^|\/)talk-plan(\.html)?$/.test(location.pathname);
+let TS_CTX = null;
+if (TS_PLAN) {
+  try { TS_CTX = JSON.parse(localStorage.getItem("sbe.ts.planctx") || "null"); } catch (e) {}
+  const TSM = window.SBE_TALKSTUDY;
+  const env = GROUPS.find(g => g.id === "env");
+  env.title = "המודל והשיחה";
+  env.fields = env.fields.filter(f => f.k === "approach");
+  env.fields[0].l = "המודל שינחה את השיחה";
+  env.fields[0].req = 1;
+  env.fields[0].hint = "המודל הוא מסגרת חשיבה, לא תסריט. אפשר לקרוא על כל אחד ולבחור";
+  const again = !!(TS_CTX && TS_CTX.prevModel && TS_CTX.prevModel.names && TS_CTX.prevModel.names.length);
+  env.fields.push(
+    { k:"tsReason", l: again ? "למה ממשיכים באותו מודל, או למה מחליפים?" : "למה בחרתי במודל הזה?", req:1,
+      placeholder:"למשל: כי אצטרך למסור מידע קשה, ולתת מקום לכעס" },
+    { k:"tsType", l:"סוג השיחה", type:"select", req:1, opts:[""].concat(TSM ? TSM.CASE.types : []) },
+    { k:"tsDiff", l:"כמה השיחה מאתגרת אותי, מ־1 עד 5", type:"select", req:1, opts:["","1","2","3","4","5"] },
+    { k:"tsMe", l:"איך לפנות אליי", type:"select", opts:["נקבה","זכר"] });
+  if (again) env.note = "במפגש הקודם בחרת: " + TS_CTX.prevModel.names.join(" + ") + ". אפשר להמשיך באותו מודל או להחליף. שתי האפשרויות טובות, כשיש להן נימוק.";
+}
+
 const FIELDS = new Map();
 GROUPS.forEach(g => g.fields.forEach(f => FIELDS.set(f.k, { ...f, group:g.id })));
 const state = {};
@@ -1192,8 +1217,9 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
       // מתאמנים על השיחה הזאת (23/11/2026: "התרגול נקטע כאן", ובחרה: "אחרי התדריך אין מעבר"): פרטי השיחה, המודל והתדריך
       // עוברים לתרגול על מקרה משלך (practice.html?from=plan), והתרגול נפתח עם השיחה הזאת.
       const goPractice = el("button", { type:"button", class:"dlg-dl primary", id:"bToPractice" }, "▶ מתאמנים על השיחה הזאת");
-      goPractice.addEventListener("click", () => {
+      goPractice.addEventListener("click", async () => {
         const join = (...a) => a.filter(x => x && String(x).trim()).join(". ");
+        if (TS_PLAN) return tsToPractice(d, briefing || "", goPractice, join);
         const M = ((window.SBE_TALKSTUDY && SBE_TALKSTUDY.MODELS) || []).find(m => m.name === d.approach);
         const form = {
           story: join(d.eventHistory, d.relationshipHistory && ("הקשר בינינו: " + d.relationshipHistory), d.meetingLogistics && ("איפה ומתי: " + d.meetingLogistics)),
@@ -1268,6 +1294,42 @@ function show(title, node) {
 }
 document.getElementById("dlgX").addEventListener("click", () => document.getElementById("dlg").close());
 
+// מחקר: שומרים בשרת את השיחה ואת המודל (המפגש הזה במסלול), ועוברים ישר לתרגול עם התדריך שכבר נכתב.
+async function tsToPractice(d, briefing, btn, join) {
+  const TSM = window.SBE_TALKSTUDY;
+  let cred = null; try { cred = JSON.parse(localStorage.getItem("sbe.ts.cred") || "null"); } catch (e) {}
+  const M = TSM.MODELS.find(m => m.name === d.approach);
+  const note = (t) => { let p = document.getElementById("tsSaveNote"); if (!p) { p = el("p", { id:"tsSaveNote", class:"banner-mini", role:"status" }); btn.closest("p").after(p); } p.textContent = t; };
+  if (!cred || !TS_CTX || !M) return note("כדי להמשיך, אפשר לבחור את אחד משלושת המודלים ולחזור למסלול דרך הקישור של הקבוצה.");
+  if (!d.tsType || !d.tsDiff || !d.tsReason) return note("כדי להמשיך, אפשר למלא את סוג השיחה, כמה היא מאתגרת, ולמה המודל הזה.");
+  const fields = {
+    story: join(d.eventHistory, d.relationshipHistory && ("הקשר בינינו: " + d.relationshipHistory), d.meetingLogistics && ("איפה ומתי: " + d.meetingLogistics)),
+    role: d.myself || "", other: join(d.otherParty, d.otherPerspective && ("מה חשוב לו/ה: " + d.otherPerspective), traitsLine(d.otherTraits)),
+    goal: join(d.goal, d.desiredAftermath), hard: join(d.challenges, d.riskBranches && ("מה עלול להשתבש: " + d.riskBranches)),
+  };
+  if (/\b05\d[-\s]?\d{7}\b|@\S+\.\S+|\b\d{9}\b/.test(JSON.stringify(fields))) return note("נראה שבתיאור יש טלפון, מייל או מספר זהות. אפשר להסיר אותם ולנסות שוב.");
+  const prep = { aim: d.goal || "", fear: d.challenges || "", hope: d.desiredAftermath || "" };
+  const pm = TS_CTX.prevModel || null;
+  const SERVER = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) ? "" : AI_SERVER;
+  const call = async (input) => {
+    const r = await fetch(SERVER + "/api/access", { method:"POST", headers:{ "content-type":"application/json" }, body: JSON.stringify({ action:"tsCall", op:"p.save", input }) });
+    const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || "השמירה לא הושלמה"); return j;
+  };
+  btn.disabled = true; const label = btn.textContent; btn.textContent = "שומרים…";
+  try {
+    const base = { code: cred.c, pid: cred.p, key: cred.key, session: TS_CTX.session };
+    const plan = {}; FIELDS.forEach((f, k) => { if (d[k]) plan[k] = d[k]; });
+    await call({ ...base, part:"case", data:{ fields, me: d.tsMe || "נקבה", type: d.tsType, difficulty: Number(d.tsDiff) || null, prep, plan, briefing: briefing.slice(0, 8000) } });
+    await call({ ...base, part:"model", data:{ ids:[M.id], names:[M.name], reason: d.tsReason, ...(pm && pm.ids ? { prevIds: pm.ids, kept: pm.ids.length === 1 && pm.ids[0] === M.id } : {}) } });
+  } catch (e) { btn.disabled = false; btn.textContent = label; return note((e && e.message) || "השמירה לא הושלמה. מה שמולא נשמר במכשיר, ואפשר לנסות שוב."); }
+  try {
+    localStorage.setItem("sbe.ts.handoff", JSON.stringify({ code: cred.c, pid: cred.p, session: TS_CTX.session, rounds: TS_CTX.rounds || 1, next: TS_CTX.next || "",
+      fields, me: d.tsMe || "נקבה", prep, type: d.tsType, modelNote: TSM.modelNote({ ids:[M.id] }), modelNames:[M.name],
+      modelSteps:[M.name + ": " + M.steps.map(x => x[1] + " (" + x[2] + ")").join(" · ")], briefing, back: TS_CTX.back }));
+  } catch (e) {}
+  location.href = "talk-practice.html";
+}
+
 render();
 
 // נבחר מ-system-select.html ("שיחה בעל פה" / "התכתבות דיגיטלית") — ממלא
@@ -1279,6 +1341,45 @@ render();
   if (!p || !map[p]) return;
   const n = document.getElementById("i-productType");
   if (n) { n.value = map[p]; state.productType = "locked"; refresh(); }
+})();
+
+// ── מצב מחקר (talk-plan.html): פס המסלול, שמירה במכשיר תוך כדי, ומילוי מהמפגש הקודם ──
+(function tsPlanInit(){
+  if (!TS_PLAN) return;
+  document.title = "תכנון השיחה · הכנה לשיחות מאתגרות";
+  document.head.append(el("style", {}, "#navBar,#sbeTop,.sbe-peek,[data-study-tool],#bReset,.sbe-sysonly{display:none!important}"));
+  let cred = null; try { cred = JSON.parse(localStorage.getItem("sbe.ts.cred") || "null"); } catch (e) {}
+  const main = document.querySelector("main") || document.body;
+  if (!TS_CTX || !cred || TS_CTX.code !== cred.c || TS_CTX.pid !== cred.p) {
+    const f = document.getElementById("form"); if (f) f.hidden = true;
+    main.prepend(el("div", { class:"banner-mini" }, "טופס התכנון נפתח מהמסלול של המחקר. אפשר לחזור לקישור של הקבוצה ולפתוח אותו משם."));
+    return;
+  }
+  main.prepend(el("div", { class:"ts-bar", style:"margin:0 0 14px;padding:10px 14px;border:1px solid #dbe4ea;border-radius:12px;background:#fff;display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;justify-content:space-between" },
+    el("span", {}, el("b", {}, "הכנה לשיחות מאתגרות"), " · מפגש " + (TS_CTX.session || 1) + " מתוך 3 · תכנון השיחה, ואחריו תדריך ותרגול"),
+    el("a", { href: TS_CTX.back }, "→ חזרה למסלול")));
+  const KEY = "sbe.ts.plan." + TS_CTX.code + "." + TS_CTX.pid + "." + TS_CTX.session;
+  let saved = null; try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
+  // מפגש 2 ו-3: הטופס נפתח עם השיחה מהמפגש הקודם. אפשר לשנות כל פרט, או לכתוב שיחה אחרת.
+  if (!saved && TS_CTX.prevPlan) saved = Object.assign({}, TS_CTX.prevPlan, { tsReason: "" });
+  if (saved && !saved.approach && TS_CTX.prevModel && TS_CTX.prevModel.names && TS_CTX.prevModel.names.length === 1) saved.approach = TS_CTX.prevModel.names[0];
+  const firstChip = document.querySelector(".pk-steps li"); if (firstChip) firstChip.lastChild.textContent = "המודל והשיחה";
+  const lead = document.querySelector(".pk-intro p"); if (lead) lead.textContent = "ממלאים ארבעה חלקים קצרים, ומקבלים תדריך לשיחה לפי המודל שבחרת. מהתדריך ממשיכים לתרגול.";
+  if (!saved && TS_CTX.prevModel && TS_CTX.prevModel.names && TS_CTX.prevModel.names.length === 1) saved = { approach: TS_CTX.prevModel.names[0] };
+  if (saved) {
+    for (const [k, v] of Object.entries(saved)) {
+      const n = document.getElementById("i-" + k);
+      if (!n || v == null || v === "") continue;
+      n.value = v; state[k] = "locked";
+      if (traitFields.has(k)) traitFields.get(k)();
+    }
+    syncAllCardVisuals(); refresh();
+  }
+  const save = () => { const o = {}; FIELDS.forEach((f, k) => { const v = val(k); if (v) o[k] = v; }); try { localStorage.setItem(KEY, JSON.stringify(o)); } catch (e) {} };
+  document.getElementById("form").addEventListener("input", save);
+  document.getElementById("form").addEventListener("change", save);
+  setInterval(save, 3000);
+  window.SBE_TS_PLAN_KEY = KEY;
 })();
 </script>
 

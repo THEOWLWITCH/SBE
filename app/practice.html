@@ -2386,7 +2386,7 @@ function renderCommFeedback(box, r){
   // ── מצב מחקר (talk-practice.html): המקרה מגיע מהמסלול, בלי מסך הבחירה, בלי שיתוף ובלי מעבר לתרחישים אחרים ──
   if (window.SBE_TS_MODE) {
     const H = window.SBE_TS_HANDOFF;
-    document.head.append(el("style", {}, ".sbe-peek,#ownCancel,.own-share,#bBackToSelect,#bAgainOther,#fbSave,[data-study-tool],#myCases,#ownSteps,#own2>p:first-child,#ownBack1,#ownBack2{display:none!important}"));
+    document.head.append(el("style", {}, "#sbeTop,.sbe-peek,#ownCancel,.own-share,#bBackToSelect,#bAgainOther,#fbSave,[data-study-tool],#myCases,#ownSteps,#own2>p:first-child,#ownBack1,#ownBack2{display:none!important}"));
     if (!H || !H.fields || !H.back) {
       $("scenarioName").classList.remove("hero-banner"); $("scenarioName").textContent = "התרגול נפתח מהמסלול של המחקר";
       $("scenarioSubtitle").textContent = "אפשר לחזור לקישור של הקבוצה ולפתוח את התרגול משם.";
@@ -2397,7 +2397,7 @@ function renderCommFeedback(box, r){
       const sig = JSON.stringify([H.code, H.pid, H.fields, H.me]);
       if (draft.tsSig !== sig) Object.assign(draft, { tsSig: sig, questions: [], answers: {}, scenario: null, fromReady: false });
       const bsig = JSON.stringify(["model-v2", H.session, H.modelNames || [], H.modelSteps || []]); // model-v2: תדריך עם טבלת המודל (23/11/2026)
-      if (draft.tsBriefSig !== bsig) Object.assign(draft, { tsBriefSig: bsig, briefing: "", briefingRead: false });
+      if (draft.tsBriefSig !== bsig || (H.briefing && draft.tsBriefFrom !== H.briefing.slice(0, 200))) Object.assign(draft, { tsBriefSig: bsig, briefing: H.briefing || "", tsBriefFrom: (H.briefing || "").slice(0, 200), briefingRead: false }); // 23/11/2026: התדריך מטופס התכנון במסלול
       draft.form = Object.assign({}, H.fields, { me: H.me || "נקבה" }); saveDraft();
       Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
       // 22/11/2026 ("זה כלי נפרד שיש לקשר כחלק מהכלי הזה"): פס עליון של המסלול, עם המפגש והשלב, וחזרה למסלול

@@ -86,17 +86,20 @@
   let justDone = 0;
 
   function render() {
+    advancePreview();
     who.textContent = me ? 'קוד המשתתף/ת: ' + me.pid : '';
     root.replaceChildren();
     const head = el('div');
     head.append(el('h1', '', cls.studyTitle || 'הכנה לשיחות מאתגרות'));
     if (!me) { head.append(el('p', 'sub', 'מסלול תרגול במחקר' + (cls.group ? ' · ' + cls.group : ''))); root.append(head); return consentView(); }
-    const n = currentSession();
+    if (cls.test) root.append(testBar());
+    const n = preview ? preview.n : currentSession();
     if (n > 3) { head.append(el('p', 'sub', 'שלושת המפגשים הושלמו')); root.append(head, card('תודה רבה!', ['סיימת את כל שלושת המפגשים של המחקר. התרומה שלך חשובה לנו מאוד.', 'פנקס הכיס נשאר אצלך, לכל שיחה מאתגרת שתבוא.']), pocketCard()); return footer(); }
     head.append(el('p', 'sub', 'מפגש ' + n + ' מתוך 3' + (cls.group ? ' · ' + cls.group : '')));
     root.append(head);
-    const step = currentStep(n);
+    const step = preview ? preview.step : currentStep(n);
     root.append(stepper(n, step === 'done' ? 'done' : step));
+    if (step === 'consent') { const C = T.CONSENT, cc = card(C.title, C.intro); const ul = el('ul'); for (const [, t] of C.items) ul.append(el('li', '', t)); cc.append(el('h3', '', 'התיבות לסימון:'), ul, el('p', 'sub', C.report)); root.append(cc, pocketCard()); return footer(); }
     if (cls.status !== 'open') root.append(card('המסלול סגור כרגע', ['אפשר לפנות למרצה. מה שכבר נשמר נשאר שמור.']));
     else if (step === 'pre' || step === 'post') questionnaireView(n, step);
     else if (step === 'model') modelView(n);
@@ -104,6 +107,39 @@
     else if (step === 'reflection') reflectionView(n);
     root.append(pocketCard());
     footer();
+  }
+
+  // ── מצב בדיקה (7777, 23/11/2026: "תאפשר לראות את כל התהליך והשאלונים בקוד 7777"): מעבר חופשי לכל מפגש ולכל שלב,
+  // כולל השאלונים של מפגשים 2 ו-3, והתחלה מחדש מההסכמה. רק בקבוצת הבדיקה (sys-test), מחוץ לכל מחקר.
+  let preview = null;
+  function testBar() {
+    const c = el('section', 'card soft');
+    c.append(el('h2', '', 'מצב בדיקה (7777): כל המסלול'), el('p', 'sub', 'אפשר לפתוח כל שלב בכל מפגש. מה ששומרים כאן נשמר בקבוצת הבדיקה בלבד, ולא נכנס למחקר.'));
+    for (const n of [1, 2, 3]) {
+      const row = el('p'); row.append(el('b', '', 'מפגש ' + n + ': '));
+      T.stepsFor(n).forEach((st, i) => {
+        if (i) row.append(document.createTextNode(' · '));
+        const a = el('button', 'link', st.label + (me.sessions?.[n]?.[st.id] ? ' ✓' : ''));
+        if (preview && preview.n === n && preview.step === st.id) a.style.fontWeight = '700';
+        a.onclick = () => { preview = { n, step: st.id, at: me.sessions?.[n]?.[st.id]?.at || '' }; render(); window.scrollTo(0, 0); };
+        row.append(a);
+      });
+      c.append(row);
+    }
+    const b = el('div', 'btns');
+    const flow = el('button', 'soft', 'המסלול כפי שמשתתף/ת רואה אותו'); flow.onclick = () => { preview = null; render(); };
+    const reset = el('button', 'soft', 'התחלה מחדש מההסכמה');
+    reset.onclick = async () => { busy(reset, true, 'מתחילים מחדש…'); try { await api('p.withdraw', { code, pid: cred.pid, key: cred.key }); } catch (e) {} store.del(KEY); cred = null; me = null; preview = null; render(); window.scrollTo(0, 0); };
+    b.append(flow, reset); c.append(b);
+    return c;
+  }
+  // אחרי שמירה במצב בדיקה: עוברים לשלב הבא באותו מפגש
+  function advancePreview() {
+    if (!preview || !me) return;
+    const at = me.sessions?.[preview.n]?.[preview.step]?.at || '';
+    if (!at || at === preview.at) return;
+    const list = T.stepsFor(preview.n).map((x) => x.id), i = list.indexOf(preview.step);
+    preview = list[i + 1] ? { n: preview.n, step: list[i + 1], at: me.sessions?.[preview.n]?.[list[i + 1]]?.at || '' } : null;
   }
 
   function stepper(n, now) {
@@ -183,7 +219,29 @@
   }
 
   // ── בחירת מודל: על איזו שיחה מתאמנים, הכנה עצמית, ובחירת המודל ──
+  // ── תכנון השיחה (23/11/2026, נבחר: "המסלול עם טופס תכנון השיחה"): טופס התכנון המלא (talk-plan.html),
+  // עם בחירת המודל והנימוק, תדריך שהמודל הוא הלב שלו, ומשם ישר לתרגול. הטופס הקצר (modelViewShort) נשאר גיבוי.
   function modelView(n) {
+    const prevCase = me.sessions?.[n - 1]?.case, prevModel = me.sessions?.[n - 1]?.model;
+    const c = card('תכנון השיחה', ['ממלאים את טופס תכנון השיחה: על איזו שיחה מתאמנים, מי את/ה בשיחה, מי מולך, מה המטרה ומה מאתגר. בוחרים מודל אחד משלושת המודלים, וכותבים משפט או שניים למה.',
+      'בסוף הטופס מקבלים תדריך לשיחה, שהמודל שבחרת הוא הלב שלו: מה בשיחה שלך קשור לכל שלב, ואיך זה בא לידי ביטוי. מהתדריך ממשיכים ישר לתרגול.']
+      .concat(prevModel?.names?.length ? ['במפגש הקודם בחרת: ' + prevModel.names.join(' + ') + '. הטופס נפתח עם השיחה מהמפגש הקודם. אפשר להמשיך באותה שיחה ובאותו מודל, או לשנות.'] : []));
+    c.append(el('p', 'sub', 'בלי שמות ובלי פרטים מזהים. מה שממלאים נשמר במכשיר תוך כדי.'));
+    const go = el('button', '', '▶ לטופס תכנון השיחה'), b = el('div', 'btns'); b.append(go);
+    const short = el('button', 'link', 'טופס קצר במקום זה'); short.onclick = () => { root.replaceChildren(); modelViewShort(n); root.append(pocketCard()); footer(); };
+    b.append(short); c.append(b);
+    go.onclick = () => {
+      const rounds = T.ROUNDS[n] || 1;
+      store.set('sbe.ts.cred', { c: code, p: cred.pid, key: cred.key });
+      store.set('sbe.ts.planctx', { code, pid: cred.pid, session: n, rounds, next: nextLabel(n), back: backUrl(), prevModel: prevModel ? { ids: prevModel.ids, names: prevModel.names } : null, prevPlan: prevCase?.plan || null });
+      location.href = 'talk-plan.html';
+    };
+    root.append(c);
+  }
+  const nextLabel = (n) => n === 1 ? 'סיום המפגש ←' : n === 2 ? 'המשך: שאלון עמדות ←' : 'המשך: שאלון עמדות מסכם ←';
+  const backUrl = () => location.pathname.split('/').pop() + '?c=' + code;
+
+  function modelViewShort(n) {
     const d = store.get(draftKey(n, 'model')) || {};
     const prev = me.sessions?.[n - 1]?.case;
     const c1 = card('על איזו שיחה מתאמנים?', ['שיחה אמיתית מהעבודה, שכבר הייתה או שעוד לפניך. בלי שמות ובלי פרטים מזהים.']);
@@ -272,7 +330,8 @@
 
   // ── תרגול: בכלי התרגול, ומשם חוזרים לכאן ──
   function practiceView(n) {
-    const s = me.sessions[n], cs = s.case || {}, md = s.model || {};
+    const s = me.sessions?.[n] || {}, cs = s.case || {}, md = s.model || {};
+    if (!cs.fields || !md.ids) { root.append(card('תרגול ומשוב', ['התרגול נפתח אחרי תכנון השיחה במפגש הזה.'])); return; }
     const rounds = T.ROUNDS[n] || 1;
     const c = card('תרגול ומשוב', ['קודם קוראים תדריך הכנה קצר לשיחה שלך, לפי המודל שבחרת. אחר כך הכלי בונה מהתיאור שלך דמות, ומדברים איתה. אחרי כל שיחה מקבלים משוב, ואפשר לבחור כל רגע בשיחה ולנסות אותו שוב. כפתור "עצירה" זמין בכל רגע.'].concat(rounds > 1 ? ['במפגש הזה מתרגלים פעמיים: תרגול ומשוב, ואחר כך "תרגול נוסף" ועוד משוב.'] : []));
     c.append(el('p', '', 'השיחה: ' + (cs.fields?.other || '') + ' · ' + (cs.type || '')), el('p', '', 'המודל: ' + (md.names || []).join(' + ')));
@@ -280,7 +339,7 @@
     const go = el('button', '', '▶ לתדריך ולתרגול'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = () => {
       store.set('sbe.ts.cred', { c: code, p: cred.pid, key: cred.key });
-      store.set('sbe.ts.handoff', { code, pid: cred.pid, session: n, rounds, next: n === 1 ? 'סיום המפגש ←' : n === 2 ? 'המשך: שאלון עמדות ←' : 'המשך: שאלון עמדות מסכם ←', fields: cs.fields || {}, me: cs.me || 'נקבה', prep: cs.prep || {}, type: cs.type || '', modelNote: T.modelNote(md), modelNames: md.names || [], modelSteps: T.MODELS.filter((m) => (md.ids || []).includes(m.id)).map((m) => m.name + ': ' + m.steps.map((x) => x[1] + ' (' + x[2] + ')').join(' · ')), back: location.pathname.split('/').pop() + '?c=' + code });
+      store.set('sbe.ts.handoff', { code, pid: cred.pid, session: n, rounds, next: nextLabel(n), fields: cs.fields || {}, me: cs.me || 'נקבה', prep: cs.prep || {}, type: cs.type || '', modelNote: T.modelNote(md), modelNames: md.names || [], modelSteps: T.MODELS.filter((m) => (md.ids || []).includes(m.id)).map((m) => m.name + ': ' + m.steps.map((x) => x[1] + ' (' + x[2] + ')').join(' · ')), back: backUrl(), briefing: cs.briefing || '' });
       location.href = 'talk-practice.html';
     };
     const pending = store.get('sbe.ts.result');
