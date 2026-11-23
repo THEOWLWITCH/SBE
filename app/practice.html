@@ -21,6 +21,8 @@ if (window.SBE_TS_MODE) { document.title = "תרגול · הכנה לשיחות 
 <script src="lib/report-table.js"></script>
 <script src="lib/quotes.js"></script>
 <script src="lib/product-doc.js"></script>
+<script src="lib/talk-study-model.js"></script>
+<script src="lib/model-brief.js"></script>
 <script src="lib/ai-call.js"></script>
 <script src="lib/practice-custom.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -2390,7 +2392,7 @@ function renderCommFeedback(box, r){
       // לתרגולים הבאים כל עוד המקרה לא השתנה. התדריך נכתב מחדש בכל מפגש ובכל החלפת מודל.
       const sig = JSON.stringify([H.code, H.pid, H.fields, H.me]);
       if (draft.tsSig !== sig) Object.assign(draft, { tsSig: sig, questions: [], answers: {}, scenario: null, fromReady: false });
-      const bsig = JSON.stringify([H.session, H.modelNames || [], H.modelSteps || []]);
+      const bsig = JSON.stringify(["model-v2", H.session, H.modelNames || [], H.modelSteps || []]); // model-v2: תדריך עם טבלת המודל (23/11/2026)
       if (draft.tsBriefSig !== bsig) Object.assign(draft, { tsBriefSig: bsig, briefing: "", briefingRead: false });
       draft.form = Object.assign({}, H.fields, { me: H.me || "נקבה" }); saveDraft();
       Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
@@ -2410,9 +2412,11 @@ function renderCommFeedback(box, r){
         const male = (H.me || "נקבה") === "זכר";
         return ["את מנחה מנוסה של אנשי ונשות חינוך. כתבי תדריך הכנה אישי וקצר לשיחה מאתגרת שהמתנסה עומד/ת לתרגל, לפי המודל שבחר/ה. התדריך נקרא פעם אחת לפני התרגול.",
           "המודל שנבחר ושלביו:\n" + (H.modelSteps || []).join("\n"),
-          "חמישה חלקים, כל אחד בכותרת מודגשת בשורה משלה: **מה המטרה** (משפט אחד) · **השיחה שלך לפי המודל** (לכל שלב במודל: מה עושים בו בשיחה הזאת, ומשפט לדוגמה במרכאות) · **איך לפתוח** (ברכת שלום ומשהו טוב לומר, ומשפט פתיחה במרכאות) · **אם השיחה מסתבכת** (שתיים או שלוש שורות שמתחילות ב-\"- \", לפי מה שמאתגר את המתנסה) · **איך לסיים** (צעד המשך מוסכם).",
+          "חמישה חלקים, כל אחד בכותרת מודגשת בשורה משלה, בסדר הזה: **מה המטרה** (משפט אחד) · החלק של המודל (ההנחיה המלאה בהמשך) · **איך לפתוח** (ברכת שלום ומשהו טוב לומר, ומשפט פתיחה במרכאות) · **אם השיחה מסתבכת** (שתיים או שלוש שורות שמתחילות ב-\"- \", לפי מה שמאתגר את המתנסה) · **איך לסיים** (צעד המשך מוסכם).",
+          // לב התדריך (23/11/2026: "קריטי להוסיף לתדריך ניראות למודל - ממש בפירוט"): lib/model-brief.js
+          (window.SBE_MODELBRIEF && window.SBE_TALKSTUDY) ? SBE_MODELBRIEF.rule(SBE_TALKSTUDY.MODELS.filter((m) => (H.modelNames || []).includes(m.name))) : "",
           "המודל הוא מסגרת ולא תסריט: כתבי כך שיהיה ברור שאפשר לסטות ממנו לפי מה שקורה. השתמשי בהכנה העצמית של המתנסה (המטרה, החשש, מה הוא/היא מקווה), בלי להעתיק אותה.",
-          "עד 380 מילים. גוף שני, " + (male ? "בלשון זכר" : "בלשון נקבה") + ". בלי שמות אמיתיים: במקום שם כותבים [שם]. בלי סימני #. החזירי רק את טקסט התדריך."].join("\n\n");
+          "עד 650 מילים, ורובן בחלק של המודל. גוף שני, " + (male ? "בלשון זכר" : "בלשון נקבה") + ". בלי שמות אמיתיים: במקום שם כותבים [שם]. בלי סימני #. החזירי רק את טקסט התדריך."].join("\n\n");
       }
       function briefInput(){
         const f = H.fields || {}, pr = H.prep || {};
@@ -2422,15 +2426,15 @@ function renderCommFeedback(box, r){
       function paintBrief(){
         bc.textContent = "";
         bc.append(el("h3", {}, "התדריך שלך לפני התרגול"), el("p", { class: "who" }, "לפי המודל: " + (H.modelNames || []).join(" + ") + ". אפשר לקרוא בשקט, ולחזור אליו גם בזמן השיחה (\"הסיפור והתדריך\")."));
-        if (draft.briefing) bc.append(SBE_DOC.sections(draft.briefing) || SBE_DOC.rich(draft.briefing));
+        if (draft.briefing) bc.append((window.SBE_MODELBRIEF && SBE_MODELBRIEF.render(draft.briefing)) || SBE_DOC.sections(draft.briefing) || SBE_DOC.rich(draft.briefing));
         const acts = el("div", { class: "own-acts" });
         if (draft.briefing) { const ok = el("button", { type: "button", class: "primary" }, "קראתי, ממשיכים לתרגול ←"); ok.addEventListener("click", goOn); acts.append(ok); }
         else {
-          const w = el("p", { class: "fb-note" }, "כתיבת התדריך נמשכת כ־30 שניות."); bc.append(w);
+          const w = el("p", { class: "fb-note" }, "כתיבת התדריך נמשכת כ־60 שניות."); bc.append(w);
           (async () => {
-            const t0 = Date.now(), iv = setInterval(() => { w.textContent = "כתיבת התדריך נמשכת כ־30 שניות. חלפו " + Math.round((Date.now() - t0) / 1000) + " שניות."; }, 1000);
+            const t0 = Date.now(), iv = setInterval(() => { w.textContent = "כתיבת התדריך נמשכת כ־60 שניות. חלפו " + Math.round((Date.now() - t0) / 1000) + " שניות."; }, 1000);
             let txt = null;
-            try { const r = await sbeCallAI(AI_SERVER, { system: briefSystem(), messages: [{ role: "user", content: briefInput() }], maxTokens: 3000, fast: true }, 150000); txt = String((r && r.text) || r || "").trim(); }
+            try { const r = await sbeCallAI(AI_SERVER, { system: briefSystem(), messages: [{ role: "user", content: briefInput() }], maxTokens: 7000, fast: true }, 150000); txt = String((r && r.text) || r || "").trim(); }
             catch (e) { console.warn("התדריך לא נכתב:", e && e.message); }
             finally { clearInterval(iv); }
             if (txt && txt.length > 120) { draft.briefing = txt; saveDraft(); return paintBrief(); }
