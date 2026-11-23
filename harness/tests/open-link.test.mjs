@@ -77,7 +77,9 @@ test('a daily link can open any listed tool, or all of them at once', async () =
   // סטודיו חוסן אושר (28/10/2026): פתוח גם עם נוגי, שנמצאת בקישור היומי לכל הכלים
   for (const page of ['message-writer.html', 'leadership-advisor.html', 'shared-dialogue-lab.html', 'academic-review.html', 'resilience-studio.html'])
     assert.ok((await authorizeModel(store, { token: guest, page })).ok, page);
-  for (const page of ['journey.html', 'practice.html'])
+  // practice.html פתוח כי 'conv' (תכנון שיחה) ברשימת הכלים הפתוחים (23/11/2026)
+  assert.ok((await authorizeModel(store, { token: guest, page: 'practice.html' })).ok, 'practice.html');
+  for (const page of ['journey.html'])
     assert.equal((await authorizeModel(store, { token: guest, page })).ok, false, page);
   await handleAccess(store, { action: 'openRevoke', token, id: 'all-day' });
   assert.equal((await authorizeModel(store, { token: guest, page: 'message-writer.html' })).ok, false);
