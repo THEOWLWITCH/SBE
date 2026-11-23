@@ -42,13 +42,13 @@ export function reviewEnabled(payload) {
 // provider.complete({system, messages, maxTokens, variation}) → {text}
 // שני סבבים (11/10/2026: "תיתן ללקוחה לבדוק פעמיים ותתקן אחרי כל בדיקה"): בדיקה ← תיקון ← בדיקה שנייה ← תיקון.
 export const ROUNDS = 2;
-async function reviewOnce(provider, request, text, asJson) {
+async function reviewOnce(provider, request, text, asJson, variation = 'low') {
   try {
     const r = await provider.complete({
       system: CUSTOMER.system,
       messages: [{ role: 'user', content: 'מה ביקשתי (הקלט):\n' + request + '\n\nהתוצר שקיבלתי' +
         (asJson ? ' (מגיע כנתונים: שמות השדות הם הכותרות שיופיעו בתוצר)' : '') + ':\n' + String(text).slice(0, MAX_PRODUCT) }],
-      variation: 'low', maxTokens: 4000,
+      variation, maxTokens: 4000,
     });
     const v = jsonOf(r.text);
     if (v && typeof v.ready === 'boolean' && Array.isArray(v.issues)) return { ready: v.ready, summary: String(v.summary || ''), issues: v.issues.slice(0, 8) };
@@ -57,12 +57,12 @@ async function reviewOnce(provider, request, text, asJson) {
 }
 // תיקון ממוקד (11/10/2026: "ההפקה מתבצעת כבר 10 דקות"): במקום לכתוב את כל התוצר מחדש (פי שניים זמן),
 // המודל מחזיר עריכות {find, replace} לפי ההערות, והן מוחלות כאן. ב-JSON רק בתוך ערכי טקסט, כך שהמבנה לא נשבר.
-async function fixOnce(provider, request, text, issues, asJson) {
+async function fixOnce(provider, request, text, issues, asJson, variation = 'low') {
   try {
     const r = await provider.complete({
       system: CUSTOMER.fixSystem,
       messages: [{ role: 'user', content: CUSTOMER.fixRequest(String(text).slice(0, MAX_PRODUCT), issues, request) }],
-      variation: 'low', maxTokens: 4000,
+      variation, maxTokens: 4000,
     });
     const v = jsonOf(r.text);
     const edits = v && Array.isArray(v.edits) ? v.edits : [];
@@ -75,17 +75,19 @@ async function fixOnce(provider, request, text, issues, asJson) {
     return { text: fixed, applied };
   } catch { return null; }
 }
-export async function customerPass(provider, { system, messages, maxTokens, text }) {
+// fast: התוצר נבנה מול המסך (payload.fast), ולכן גם הבדיקה והתיקון ב-effort בינוני (23/11/2026)
+export async function customerPass(provider, { system, messages, maxTokens, text, fast }) {
+  const variation = fast ? 'fast' : 'low';
   const msgs = Array.isArray(messages) && messages.length ? messages : [{ role: 'user', content: '' }];
   const request = msgs.filter((m) => m.role === 'user').map((m) => contentText(m.content)).join('\n\n').slice(0, MAX_REQUEST);
   const asJson = jsonOf(text);
   let cur = String(text), first = null, last = null, applied = 0, rounds = 0;
   for (let round = 0; round < ROUNDS; round++) {
-    const review = await reviewOnce(provider, request, cur, asJson);
+    const review = await reviewOnce(provider, request, cur, asJson, variation);
     if (!review) break;
     rounds++; last = review; if (!first) first = review;
     if (review.ready || !review.issues.length) break;
-    const f = await fixOnce(provider, request, cur, review.issues, asJson);
+    const f = await fixOnce(provider, request, cur, review.issues, asJson, variation);
     if (!f) continue;
     cur = f.text; applied += f.applied;
   }

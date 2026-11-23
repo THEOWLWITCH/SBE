@@ -755,7 +755,9 @@ function setAIStatus(status){
 async function callAI(system, userText, maxTokens, timeoutMs, review) { // review: תוצר, עובר דרך הסוכנת-הלקוחה (harness/lib/customer-pass.mjs)
   // ברקע, עם שאילת מצב (lib/ai-call.js) — בקשה ארוכה אחת נקטעה בדרך
   LAST_AI_ERR = null;
-  try { return await sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review }, timeoutMs || 60000); }
+  // fast (23/11/2026: "האם ניתן לקצר את משך הכנת השיחה והפקת התדריך?"): מחכים מול המסך, ולכן effort בינוני (VARIATION.fast),
+  // גם בבדיקת הלקוחה של התדריך (שני הסבבים נשארים)
+  try { return await sbeCallAI(AI_SERVER, { system, messages: [{ role:"user", content: userText }], maxTokens: maxTokens || 1200, customerReview: !!review, fast: true }, timeoutMs || 60000); }
   catch (e) { LAST_AI_ERR = e; throw e; }
 }
 // הסיבה האמיתית לתקלה האחרונה (11/10/2026): ההודעה אומרת מה קרה, ולא תמיד "אין חיבור"
