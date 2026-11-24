@@ -715,6 +715,8 @@ if (TS_PLAN) {
       placeholder:"למשל: כי אצטרך למסור מידע קשה, ולתת מקום לכעס" },
     { k:"tsType", l:"סוג השיחה", type:"select", req:1, opts:[""].concat(TSM ? TSM.CASE.types : []) },
     { k:"tsDiff", l:"כמה השיחה מאתגרת אותי, מ־1 עד 5", type:"select", req:1, opts:["","1","2","3","4","5"] },
+    // 24/11/2026: אותה שאלה כמו בהכנה העצמית בטופס הקצר (prep.hope), כדי שהעמודה בייצוא תמדוד את אותו דבר בשני המסלולים
+    { k:"tsHope", l:"מה אני מקווה שהאימון יתרום לי?", req:1, placeholder:"למשל: לדעת איך לפתוח בלי להתנצל" },
     { k:"tsMe", l:"איך לפנות אליי", type:"select", opts:["נקבה","זכר"] });
   if (again) env.note = "במפגש הקודם בחרת: " + TS_CTX.prevModel.names.join(" + ") + ". אפשר להמשיך באותו מודל או להחליף. שתי האפשרויות טובות, כשיש להן נימוק.";
 }
@@ -1313,14 +1315,14 @@ async function tsToPractice(d, briefing, btn, join) {
   const M = TSM.MODELS.find(m => m.name === d.approach);
   const note = (t) => { let p = document.getElementById("tsSaveNote"); if (!p) { p = el("p", { id:"tsSaveNote", class:"banner-mini", role:"status" }); btn.closest("p").after(p); } p.textContent = t; try { p.scrollIntoView({ block:"center", behavior:"smooth" }); } catch (_) {} };
   if (!cred || !TS_CTX || !M) return note("כדי להמשיך, אפשר לבחור את אחד משלושת המודלים ולחזור למסלול דרך הקישור של הקבוצה.");
-  if (!d.tsType || !d.tsDiff || !d.tsReason) return note("כדי להמשיך, אפשר למלא את סוג השיחה, כמה היא מאתגרת, ולמה המודל הזה.");
+  if (!d.tsType || !d.tsDiff || !d.tsReason || !d.tsHope) return note("כדי להמשיך, אפשר למלא את סוג השיחה, כמה היא מאתגרת, למה המודל הזה, ומה את/ה מקווה שהאימון יתרום לך.");
   const fields = {
     story: join(d.eventHistory, d.relationshipHistory && ("הקשר בינינו: " + d.relationshipHistory), d.meetingLogistics && ("איפה ומתי: " + d.meetingLogistics)),
     role: d.myself || "", other: join(d.otherParty, d.otherPerspective && ("מה חשוב לו/ה: " + d.otherPerspective), traitsLine(d.otherTraits)),
     goal: join(d.goal, d.desiredAftermath), hard: join(d.challenges, d.riskBranches && ("מה עלול להשתבש: " + d.riskBranches)),
   };
   if (/\b05\d[-\s]?\d{7}\b|@\S+\.\S+|\b\d{9}\b/.test(JSON.stringify(fields))) return note("נראה שבתיאור יש טלפון, מייל או מספר זהות. אפשר להסיר אותם ולנסות שוב.");
-  const prep = { aim: d.goal || "", fear: d.challenges || "", hope: d.desiredAftermath || "" };
+  const prep = { aim: d.goal || "", fear: d.challenges || "", hope: d.tsHope || "" };
   const pm = TS_CTX.prevModel || null;
   const SERVER = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) ? "" : AI_SERVER;
   const call = async (input) => {
@@ -1373,7 +1375,7 @@ render();
   const KEY = "sbe.ts.plan." + TS_CTX.code + "." + TS_CTX.pid + "." + TS_CTX.session;
   let saved = null; try { saved = JSON.parse(localStorage.getItem(KEY) || "null"); } catch (e) {}
   // מפגש 2 ו-3: הטופס נפתח עם השיחה מהמפגש הקודם. אפשר לשנות כל פרט, או לכתוב שיחה אחרת.
-  if (!saved && TS_CTX.prevPlan) saved = Object.assign({}, TS_CTX.prevPlan, { tsReason: "" });
+  if (!saved && TS_CTX.prevPlan) saved = Object.assign({}, TS_CTX.prevPlan, { tsReason: "", tsHope: "" });
   if (saved && !saved.approach && TS_CTX.prevModel && TS_CTX.prevModel.names && TS_CTX.prevModel.names.length === 1) saved.approach = TS_CTX.prevModel.names[0];
   const firstChip = document.querySelector(".pk-steps li"); if (firstChip) firstChip.lastChild.textContent = "המודל והשיחה";
   const lead = document.querySelector(".pk-intro p"); if (lead) lead.textContent = "ממלאים ארבעה חלקים קצרים, ומקבלים תדריך לשיחה לפי המודל שבחרת. מהתדריך ממשיכים לתרגול.";
