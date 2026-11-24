@@ -1,6 +1,6 @@
 // Offline cache for the credibility notebook only (registered with scope "./credibility-notebook").
-const CACHE = 'credibility-notebook-v6';
-const FILES = ['credibility-notebook.html', 'credibility-notebook.webmanifest', 'assets/credibility-notebook/icon-192.png', 'assets/credibility-notebook/icon-512.png', 'assets/credibility-notebook/woman.svg', 'assets/credibility-notebook/stamp.webp', 'assets/credibility-notebook/mic.webp'];
+const CACHE = 'credibility-notebook-v8';
+const FILES = ['credibility-notebook.html', 'credibility-notebook.webmanifest', 'assets/credibility-notebook/icon-192.png', 'assets/credibility-notebook/icon-512.png', 'assets/credibility-notebook/woman.svg', 'assets/credibility-notebook/stamp-white.webp', 'assets/credibility-notebook/mic.webp', 'assets/credibility-notebook/fonts/karantina-hebrew-700-normal.woff2', 'assets/credibility-notebook/fonts/karantina-latin-700-normal.woff2', 'assets/credibility-notebook/fonts/rubik-hebrew-400-normal.woff2', 'assets/credibility-notebook/fonts/rubik-latin-400-normal.woff2', 'assets/credibility-notebook/fonts/rubik-hebrew-500-normal.woff2', 'assets/credibility-notebook/fonts/rubik-latin-500-normal.woff2', 'assets/credibility-notebook/fonts/rubik-hebrew-700-normal.woff2', 'assets/credibility-notebook/fonts/rubik-latin-700-normal.woff2'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));
 });

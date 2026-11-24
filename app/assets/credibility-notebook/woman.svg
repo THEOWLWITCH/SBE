@@ -8,10 +8,10 @@
   <!-- שיער מאחור -->
   <path d="M132 140C126 66 274 62 268 140C272 205 284 258 306 300L246 312C240 270 236 240 226 222H174C164 240 160 270 154 312L94 300C116 258 128 205 132 140Z" fill="#1D2A3F"/>
   <!-- גוף -->
-  <path d="M62 460C62 330 108 256 200 252C292 256 338 330 338 460Z" fill="#E5483A"/>
+  <path d="M62 460C62 330 108 256 200 252C292 256 338 330 338 460Z" fill="#2EC4B6"/>
   <path d="M160 256L200 300L240 256C226 250 174 250 160 256Z" fill="#F3C9A0"/>
   <path d="M156 258Q200 312 244 258" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
-  <path d="M96 410Q120 420 140 412M304 410Q280 420 260 412" fill="none" stroke="#C93A2E" stroke-width="5" stroke-linecap="round"/>
+  <path d="M96 410Q120 420 140 412M304 410Q280 420 260 412" fill="none" stroke="#1FA597" stroke-width="5" stroke-linecap="round"/>
   <!-- צוואר וראש -->
   <rect x="181" y="200" width="38" height="56" rx="16" fill="#EBB88A"/>
   <ellipse cx="200" cy="152" rx="60" ry="70" fill="#F3C9A0"/>
@@ -33,8 +33,8 @@
   <circle cx="163" cy="180" r="9" fill="#F2A28C" opacity=".55"/>
   <circle cx="238" cy="180" r="9" fill="#F2A28C" opacity=".55"/>
   <!-- זרועות -->
-  <path d="M112 420L170 352" stroke="#CF3D30" stroke-width="40" stroke-linecap="round"/>
-  <path d="M288 420L230 352" stroke="#CF3D30" stroke-width="40" stroke-linecap="round"/>
+  <path d="M112 420L170 352" stroke="#22A99C" stroke-width="40" stroke-linecap="round"/>
+  <path d="M288 420L230 352" stroke="#22A99C" stroke-width="40" stroke-linecap="round"/>
   <!-- טלפון -->
   <g transform="rotate(-6 200 320)">
     <rect x="160" y="262" width="80" height="138" rx="12" fill="#121722"/>
