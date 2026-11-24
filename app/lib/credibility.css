@@ -100,8 +100,13 @@ body.crd-page .crd-link{font-size:16px;font-weight:500;text-decoration-color:rgb
 
 /* מצב בדיקה (7777): הסרגל של כל המסלול */
 .crd-test{border-top:2px solid #2EC4B6}
-.crd-test p{line-height:2}
 .crd-test .crd-link[aria-current="true"]{font-weight:700;text-decoration-thickness:2px}
 .crd-test .crd-link[disabled]{color:#9aa3ad;text-decoration:none;cursor:default}
 .crd-test-b .dlm-btn[disabled]{opacity:.5;cursor:default}
-.crd-test-i{white-space:nowrap}
+.crd-tree,.crd-tree ul{list-style:none;margin:0;padding:0}
+.crd-tree{margin:.6rem 0 .8rem}
+.crd-tree>li{margin:.35rem 0 .6rem}
+.crd-tree>li>b{display:block;color:#1d3f63;margin-bottom:.15rem}
+.crd-tree ul{padding-right:1.4rem;border-right:1px solid #d9e1ea;margin-right:.3rem}
+.crd-tree ul ul{margin-top:.15rem}
+.crd-tree li li{line-height:1.9}
