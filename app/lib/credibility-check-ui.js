@@ -130,7 +130,7 @@
     dlgBody.innerHTML = '<h2>' + esc(t.name) + '</h2><p class="dlm-hint">' + esc(cname(t.classId)) + ' · קוד הצוות: ' + esc(t.code) + '</p>'
       + '<h3>המקורות שנבדקו (' + d.checks.length + ')</h3>' + (d.checks.map(checkHTML).join('') || '<p>עוד אין.</p>')
       + '<h3>עמדות ורפלקציות</h3>' + refl
-      + '<details class="dlm-card soft"><summary>חריג בהסכמה למחקר</summary><p class="dlm-hint">כל משתתף/ת חותם/ת על ההסכמה בכניסה לצוות. כשצריך לפתור מקרה נקודתי, אפשר לסמן כאן "רק ללמידה": העבודה נשארת בכלי, ולא נכנסת לייצוא המחקרי.</p>'
+      + '<details class="dlm-card soft"><summary>חריג בהסכמה למחקר</summary><p class="dlm-hint">כל המשתתפים בצוות נכללים במחקר. כשצריך לפתור מקרה נקודתי, אפשר לסמן כאן "רק ללמידה": העבודה נשארת בכלי, ולא נכנסת לייצוא המחקרי.</p>'
       + t.members.map((m) => '<p><label><input type="checkbox" class="cx" value="' + esc(m.id) + '"' + (m.consent === 'learning' ? ' checked' : '') + '> ' + esc(m.name) + ': רק ללמידה</label></p>').join('')
       + '<p><button class="crd-link" id="cxs">שמירת החריגים</button></p><div id="cxm"></div></details>' + grade
       + '<p style="margin-top:1.5rem"><button class="crd-link" id="tdel" style="color:#b3261e">מחיקת הצוות</button></p>';

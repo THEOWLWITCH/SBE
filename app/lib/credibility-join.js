@@ -82,23 +82,23 @@
   }
   function memberRow(m, i) {
     const learn = m.consent === 'learning';
-    return '<div class="crd-mrow" data-i="' + i + '"><input type="text" class="mn" aria-label="שם משתתף/ת ' + (i + 1) + '" placeholder="שם מלא" value="' + esc(m.name || '') + '">'
+    return '<div class="crd-mrow" data-i="' + i + '"><input type="text" class="mn" aria-label="ראשי תיבות של משתתף/ת ' + (i + 1) + '" placeholder="ראשי תיבות, למשל: י.ש" maxlength="12" value="' + esc(m.name || '') + '">'
       + (learn ? '<span class="dlm-hint">סומן/ה בידי המנחה: רק ללמידה</span><input type="hidden" class="mlearn" value="1">'
-        : '<label><input type="checkbox" class="msign"' + (m.consent === 'research' ? ' checked' : '') + '> ' + esc(M.CONSENT.research) + '</label>')
+        : '')
       + (m.id ? '<input type="hidden" class="mid" value="' + esc(m.id) + '">' : '') + '</div>';
   }
   const readMembers = (root) => [...root.querySelectorAll('.crd-mrow')].map((r) => ({ id: (r.querySelector('.mid') || {}).value, name: r.querySelector('.mn').value.trim(),
-    consent: r.querySelector('.mlearn') ? 'learning' : ((r.querySelector('.msign') || {}).checked ? 'research' : '') }))
+    consent: r.querySelector('.mlearn') ? 'learning' : 'research' }))
     .filter((m) => m.name || m.id);
   function consentHTML(a) {
-    return '<details class="crd-consent" open><summary><b>' + esc(M.CONSENT.title) + '</b></summary>' + M.CONSENT.text.map((t) => '<p>' + esc(t) + '</p>').join('')
+    return '<details class="crd-consent"><summary><b>' + esc(M.CONSENT.title) + '</b></summary>' + M.CONSENT.text.map((t) => '<p>' + esc(t) + '</p>').join('')
       + '<p class="dlm-hint">החוקרות: ' + esc(M.CONSENT.researchers) + (a.consent.ethics ? ' · אישור ועדת האתיקה: ' + esc(a.consent.ethics) : '') + (a.consent.contact ? ' · ליצירת קשר: ' + esc(a.consent.contact) : '') + '</p></details>';
   }
   function newTeam(info) {
     const rows = [{}, {}, {}, {}];
     app.innerHTML = testBar() + '<div class="dlm-card"><h1>פתיחת צוות</h1>' + consentHTML(info.activity)
       + '<label for="tn">שם הצוות</label><input type="text" id="tn" maxlength="80" placeholder="למשל: צוות 3">'
-      + '<h3>המשתתפים בצוות</h3><p class="dlm-hint">לכל משתתף/ת: שם, וחתימה על ההסכמה.</p>'
+      + '<h3>המשתתפים בצוות</h3><p class="dlm-hint">לכל משתתף/ת: ראשי תיבות.</p>'
       + '<div id="mrows">' + rows.map(memberRow).join('') + '</div><p><button class="crd-link" id="addm">➕ משתתף/ת נוסף/ת</button></p>'
       + '<p><button class="dlm-btn main" id="save">פתיחת הצוות</button> <button class="dlm-btn" id="back">חזרה</button></p><div id="m"></div></div>';
     $('#addm').onclick = () => { const n = $('#mrows').children.length; if (n < 8) $('#mrows').insertAdjacentHTML('beforeend', memberRow({}, n)); };
@@ -106,7 +106,6 @@
     if (testAct()) { $('#back').hidden = !S.cred; bindTest(); }
     $('#save').onclick = async () => {
       const members = readMembers($('#mrows'));
-      if (members.some((m) => !m.consent)) { $('#m').innerHTML = msg('כדי לפתוח את הצוות, כל משתתף/ת חותם/ת על ההסכמה.', 'err'); return; }
       try {
         const old = S.cred;
         const r = await U.api('p.teamCreate', { code: classCode, name: $('#tn').value, members });
@@ -288,7 +287,7 @@
       + '<p class="dlm-hint">אפשר לפתוח כל שלב. מה ששומרים כאן נשמר בפעילות הבדיקה בלבד, ולא נכנס למחקר. הרפלקציה כבר פתוחה.</p>'
       + '<ul class="crd-tree">'
       + '<li><b>מפגש 1</b><ul>'
-      + '<li>' + lnk('consent', 'הסכמה ופתיחת צוות', !S.cred || S.preview === 'consent') + '</li>'
+      + '<li>' + lnk('consent', 'פתיחת צוות', !S.cred || S.preview === 'consent') + '</li>'
       + '<li>' + lnk('pre', 'שאלון עמדות ראשוני', S.preview === 'pre' || (gated && !S.preview && S.tab === 'checks'), noTeam) + '</li>'
       + '<li>' + lnk('list', 'בדיקת מקורות', S.cred && !gated && !S.preview && S.tab === 'checks' && !S.open, noTeam || (gated ? 'קודם ממלאים את שאלון העמדות הראשוני (אחד/ת מספיק/ה), ופותחים את אזור העבודה' : '')) + '<ul>'
       + '<li>' + lnk('describe', 'שלב 1: פרטים וציון', stOn('describe'), noTeam || (reach.describe ? '' : 'קודם מעלים מקור ברשימת המקורות')) + '</li>'
@@ -551,7 +550,7 @@
     app.querySelectorAll('[data-rai]').forEach((b) => { b.onclick = () => act(async () => { await analyzeReflection(b.dataset.rai); render(); }, $('#rmm')); });
     // הצוות
     on('#addm', () => { const n = $('#mrows').children.length; if (n < 8) $('#mrows').insertAdjacentHTML('beforeend', memberRow({}, n)); });
-    on('#saveTeamM', () => act(async () => { const members = readMembers($('#mrows')); if (members.some((m) => !m.consent)) throw new Error('כדי לשמור, כל משתתף/ת חותם/ת על ההסכמה.'); const r = await call('p.members', { members, name: $('#tn2').value }); S.data.team = r.team; render(); $('#tm').innerHTML = msg('נשמר.'); }, $('#tm')));
+    on('#saveTeamM', () => act(async () => { const members = readMembers($('#mrows')); const r = await call('p.members', { members, name: $('#tn2').value }); S.data.team = r.team; render(); $('#tm').innerHTML = msg('נשמר.'); }, $('#tm')));
     on('#leave', async () => { if (await U.ask('לצאת מהצוות במכשיר הזה? אפשר לחזור עם קוד הצוות.')) { saveCred(classCode, null); S.cred = null; clearInterval(S.timer); start(); } });
     scrollChat();
   }
