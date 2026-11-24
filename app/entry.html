@@ -347,7 +347,7 @@ function renderEntry(){
     // entry.html?c=קוד&go=message-writer.html (QR להתנסות בהרצאה): אחרי הכניסה הכלי נפתח ישר.
     // רק שם של דף באתר; דף שלא פתוח בקוד הזה מחזיר ל"המרחב שלי" (access-guard.js).
     const go = new URLSearchParams(location.search).get("go") || "";
-    location.href = /^[a-z0-9-]+\.html$/.test(go) ? go : "home.html";
+    location.href = /^[a-z0-9-]+\.html(\?[A-Za-z0-9=&_-]{0,60})?$/.test(go) ? go : "home.html";
   };
   btn.addEventListener("click", submit);
   code.addEventListener("keydown", e => { if (e.key === "Enter") submit(); });
@@ -358,6 +358,9 @@ function renderEntry(){
   // קישור מהמרצה (entry.html?c=קוד) — הקוד כבר ממולא, נשאר רק ללחוץ "כניסה"
   const pre = fixCodeKeys(new URLSearchParams(location.search).get("c") || "").replace(/[^A-Z0-9-]/g, "").slice(0, 12);
   if (pre) code.value = pre;
+  // כניסה ישירה לכלי (24/11/2026: "אני צריכה כניסה ישירה לכלי הזה - לא דרך הכניסה של בי גוד"):
+  // entry.html?c=קוד&go=דף.html נכנס לבד, נשאר מחובר במכשיר ופותח את הכלי, בלי ללחוץ "כניסה"
+  if (pre && /^[a-z0-9-]+\.html/.test(new URLSearchParams(location.search).get("go") || "")) { stay.checked = true; setTimeout(submit, 0); }
   // שדה הקוד וכפתור הכניסה באותה שורה, קטנים ועדינים (28/10/2026)
   btn.classList.add("go-in");
   // שורה אחת, בלי כותרת (29/10/2026: "לעצב יפה בשורה אחת: בלי הכותרת כניסה למערכת. כפתור נוסף בדומה לכפתור הכניסה ולידו - לבקש קוד")
