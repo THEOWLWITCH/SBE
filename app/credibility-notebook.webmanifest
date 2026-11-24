@@ -1,5 +1,5 @@
 {
-  "name": "פנקס לבדיקת אמינות של מקור · Begood",
+  "name": "פנקס לבדיקת אמינות של מקור",
   "short_name": "בדיקת מקור",
   "description": "המודל ותהליך הבדיקה של אמינות מקור, לתזכורת בנייד",
   "lang": "he",
@@ -7,8 +7,8 @@
   "start_url": "credibility-notebook.html",
   "scope": "credibility-notebook",
   "display": "standalone",
-  "background_color": "#F3EFE6",
-  "theme_color": "#E5483A",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1D3F63",
   "icons": [
     { "src": "assets/credibility-notebook/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
     { "src": "assets/credibility-notebook/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }

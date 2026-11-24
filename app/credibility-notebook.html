@@ -3,205 +3,193 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>פנקס לבדיקת אמינות של מקור · Begood</title>
+<title>פנקס לבדיקת אמינות של מקור</title>
 <!-- פנקס אישי לנייד (24/11/2026: "הכן קובץ כמו פנקס - כל סטודנטית תוכל להוריד מהמערכת ולשמור לעצמה בנייד לתזכורת. יהיה בו רק המודל ותהליך אימות מקור. לא יהיה מנוע האימות כי זה עולה כסף - אלא אם תאפשר לכל אחת לחבר את הפנקס כפרומט לAI שלה").
-     העיצוב (24/11/2026: "עצב באופן מקורי עם האיורים מהמצגת, עם צבעי המצגת, עם שמות החוקרות ופרטים ליצירת קשר"; "בסגנון צעיר, מושך, דינאמי ואלגנטי"; "העיצוב עדיין נראה לי גנרי - כזה שמורה בבית ספר תעשה"):
-     פוסטר: גופן תצוגה צר וענק (Karantina), גושי צבע מלאים מהמצגת, פס "מבזק" נע, מדרגות של אמינות, ספרות ענק בקו מתאר, וקלפים מוטים.
-     פתוח לכולם, בלי כניסה ובלי מודל. בהורדה האיורים נכנסים לתוך הקובץ, כדי שיעבוד בלי אינטרנט. -->
-<meta name="theme-color" content="#E5483A">
+     העיצוב (24/11/2026: "עצב באופן מקורי עם האיורים מהמצגת, עם צבעי המצגת, עם שמות החוקרות ופרטים ליצירת קשר"; "בסגנון צעיר, מושך, דינאמי ואלגנטי"; "העיצוב גס ומגושם - ביקשתי אלגנטי וצעיר"):
+     מגזין עדין: כותרות ב-Frank Ruhl Libre דק, גוף ב-Rubik, הרבה אוויר, קווים דקים, צבעי המצגת כנקודות צבע ולא כגושים.
+     פתוח לכולם, בלי כניסה ובלי מודל. בהורדה האיורים והגופנים נכנסים לתוך הקובץ, כדי שיעבוד בלי אינטרנט. -->
+<meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="credibility-notebook.webmanifest">
 <link rel="apple-touch-icon" href="assets/credibility-notebook/icon-192.png">
 <style>
-  @font-face{font-family:Karantina;font-style:normal;font-weight:700;font-display:swap;src:url(assets/credibility-notebook/fonts/karantina-hebrew-700-normal.woff2) format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-  @font-face{font-family:Karantina;font-style:normal;font-weight:700;font-display:swap;src:url(assets/credibility-notebook/fonts/karantina-latin-700-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-  @font-face{font-family:Rubik;font-style:normal;font-weight:400;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-hebrew-400-normal.woff2) format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-  @font-face{font-family:Rubik;font-style:normal;font-weight:400;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-  @font-face{font-family:Rubik;font-style:normal;font-weight:500;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-hebrew-500-normal.woff2) format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-  @font-face{font-family:Rubik;font-style:normal;font-weight:500;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-  @font-face{font-family:Rubik;font-style:normal;font-weight:700;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-hebrew-700-normal.woff2) format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
-  @font-face{font-family:Rubik;font-style:normal;font-weight:700;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-latin-700-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
-  :root{--ink:#121722;--navy:#1D3F63;--red:#E5483A;--teal:#2EC4B6;--sky:#E8F1F7;--txt:#262D3A;--soft:#5E6878;--disp:Karantina,"Secular One",Impact,Arial,sans-serif}
+  @font-face{font-family:"Frank Ruhl Libre";font-style:normal;font-weight:300;font-display:swap;src:url(assets/credibility-notebook/fonts/frank-ruhl-libre-hebrew-300-normal.woff2) format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+  @font-face{font-family:"Frank Ruhl Libre";font-style:normal;font-weight:300;font-display:swap;src:url(assets/credibility-notebook/fonts/frank-ruhl-libre-latin-300-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  @font-face{font-family:"Frank Ruhl Libre";font-style:normal;font-weight:500;font-display:swap;src:url(assets/credibility-notebook/fonts/frank-ruhl-libre-hebrew-500-normal.woff2) format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+  @font-face{font-family:"Frank Ruhl Libre";font-style:normal;font-weight:500;font-display:swap;src:url(assets/credibility-notebook/fonts/frank-ruhl-libre-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  @font-face{font-family:"Rubik";font-style:normal;font-weight:300;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-hebrew-300-normal.woff2) format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+  @font-face{font-family:"Rubik";font-style:normal;font-weight:300;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-latin-300-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  @font-face{font-family:"Rubik";font-style:normal;font-weight:400;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-hebrew-400-normal.woff2) format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+  @font-face{font-family:"Rubik";font-style:normal;font-weight:400;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-latin-400-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  @font-face{font-family:"Rubik";font-style:normal;font-weight:500;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-hebrew-500-normal.woff2) format('woff2');unicode-range:U+0307-0308,U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+  @font-face{font-family:"Rubik";font-style:normal;font-weight:500;font-display:swap;src:url(assets/credibility-notebook/fonts/rubik-latin-500-normal.woff2) format('woff2');unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+  :root{--ink:#1B2332;--navy:#1D3F63;--red:#E5483A;--teal:#2EC4B6;--tealD:#14897E;--mist:#F4F7FA;--line:#E4E9EF;--soft:#667085;--serif:"Frank Ruhl Libre",Georgia,serif}
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;font-family:Rubik,Arial,sans-serif;background:#fff;color:var(--txt);line-height:1.65;font-size:17px;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-  h1,h2,h3{font-family:var(--disp);font-weight:700;line-height:.86;margin:0;color:var(--ink)}
-  :focus-visible{outline:3px solid var(--teal);outline-offset:3px;border-radius:6px}
-  .wrap{max-width:820px;margin:0 auto;padding:0 1.25rem}
+  body{margin:0;font-family:Rubik,Arial,sans-serif;font-weight:300;background:#fff;color:var(--ink);line-height:1.75;font-size:16.5px;-webkit-font-smoothing:antialiased}
+  b,strong{font-weight:500}
+  h1,h2,h3{font-family:var(--serif);font-weight:300;line-height:1.08;margin:0;color:var(--navy);letter-spacing:-.3px}
+  :focus-visible{outline:2px solid var(--teal);outline-offset:3px;border-radius:6px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 1.4rem}
   p,li{text-align:justify}
 
-  /* פתיח: פוסטר אדום */
-  .hero{background:var(--red);color:#fff;position:relative;overflow:hidden;padding:1rem 0 0}
-  .top{display:flex;justify-content:space-between;align-items:center;font-size:.88rem;color:#FFE1DC}
-  .top b{font-family:var(--disp);font-size:1.9rem;line-height:1;color:#fff;letter-spacing:.5px}
-  .poster{position:relative;display:grid;grid-template-columns:1fr 17rem;align-items:end;gap:.5rem;padding-top:.6rem}
-  .hero h1{color:#fff;font-size:clamp(7rem,30vw,13.5rem);line-height:.74;letter-spacing:-1px}
-  .hero h1 span{display:block;color:var(--ink)}
-  .hero h1 i{font-style:normal;display:inline-block;color:#fff;-webkit-text-stroke:0;transform:rotate(14deg) translateY(-.04em);transform-origin:50% 80%}
-  .hero .lead{max-width:26rem;font-size:1.1rem;color:#fff;margin:1.2rem 0 1.1rem;text-align:right}
-  .hero .acts{display:flex;flex-wrap:wrap;align-items:center;gap:1rem;padding-bottom:1.6rem}
-  .cta{display:inline-flex;align-items:center;background:#fff;color:var(--red);text-decoration:none;font-weight:700;padding:.75rem 1.4rem;border-radius:999px;box-shadow:6px 6px 0 var(--ink);transition:transform .15s,box-shadow .15s}
-  .cta:hover{transform:translate(2px,2px);box-shadow:3px 3px 0 var(--ink)}
-  .by{font-size:.84rem;color:#FFE1DC;margin:0;text-align:right}
-  .art{position:relative;height:24rem;align-self:stretch}
-  .art .stamp{position:absolute;top:-.4rem;left:-3rem;width:14rem;transform:rotate(12deg);opacity:.95;animation:stampin .55s cubic-bezier(.2,.9,.3,1.3) .3s both}
-  .art .woman{position:absolute;bottom:0;right:-1rem;width:12.5rem}
-  @keyframes stampin{from{opacity:0;transform:rotate(12deg) scale(1.9)}to{opacity:.95;transform:rotate(12deg) scale(1)}}
+  /* פתיח */
+  .hero{position:relative;padding:1.1rem 0 3.2rem;overflow:hidden}
+  .hero::before{content:"";position:absolute;width:30rem;height:30rem;border-radius:50%;left:-9rem;top:-6rem;background:radial-gradient(circle,#2EC4B624 0,#2EC4B60A 45%,transparent 70%)}
+  .top{position:relative;display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:var(--soft)}
+  .top b{font-family:var(--serif);font-weight:500;font-size:1.05rem;color:var(--navy)}
+  .hero-in{position:relative;display:grid;grid-template-columns:1fr 15rem;gap:1.5rem;align-items:center;margin-top:2.6rem}
+  .hero h1{font-size:clamp(3.4rem,10.5vw,5.4rem);line-height:.98}
+  .hero h1 em{font-style:normal;color:var(--red)}
+  .hero .lead{max-width:27rem;color:#3A4456;margin:1.3rem 0 1.5rem;font-size:1.06rem;text-align:right}
+  .acts{display:flex;flex-wrap:wrap;align-items:center;gap:1.1rem}
+  .cta{display:inline-flex;align-items:center;gap:.45rem;background:var(--navy);color:#fff;text-decoration:none;font-weight:400;padding:.7rem 1.35rem;border-radius:999px;font-size:.96rem;transition:background .2s}
+  .cta:hover{background:#16314D}
+  .cta::after{content:"";width:.45rem;height:.45rem;border-radius:50%;background:var(--red)}
+  .by{font-size:.8rem;color:var(--soft);margin:0;text-align:right}
+  .art{position:relative;height:17rem}
+  .art .disc{position:absolute;inset:auto 0 0 auto;width:13.5rem;height:13.5rem;border-radius:50%;background:var(--mist);border:1px solid var(--line)}
+  .art .woman{position:absolute;bottom:0;right:.6rem;width:12rem}
+  .art .stamp{position:absolute;top:0;left:-.6rem;width:7.2rem;transform:rotate(-12deg);opacity:.9;animation:stampin .6s cubic-bezier(.2,.9,.3,1.25) .35s both}
+  @keyframes stampin{from{opacity:0;transform:rotate(-12deg) scale(1.7)}to{opacity:.9;transform:rotate(-12deg) scale(1)}}
 
-  /* פס מבזק נע: הרגע הדינמי היחיד */
-  .wire{background:var(--ink);color:#fff;display:flex;align-items:center;overflow:hidden;white-space:nowrap;border-top:4px solid #fff}
-  .wire .tag{flex:0 0 auto;background:var(--teal);color:var(--ink);font-family:var(--disp);font-size:1.6rem;line-height:1;padding:.45rem .9rem .3rem;position:relative;z-index:1}
-  .wire .run{display:flex;animation:crawl 34s linear infinite}
-  .wire .run span{font-family:var(--disp);font-size:1.6rem;line-height:1;padding:.45rem 0 .3rem;letter-spacing:.5px}
-  .wire .run span::after{content:"✦";color:var(--red);margin:0 1.1rem}
-  @keyframes crawl{from{transform:translateX(0)}to{transform:translateX(50%)}}
+  nav{position:sticky;top:0;z-index:5;background:#ffffffE8;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+  nav .wrap{display:flex;gap:1.6rem;overflow-x:auto;scrollbar-width:none;padding-top:.6rem;padding-bottom:.6rem}
+  nav a{white-space:nowrap;text-decoration:none;color:var(--soft);font-size:.86rem;letter-spacing:.2px;transition:color .2s}
+  nav a:hover{color:var(--navy)}
 
-  nav{position:sticky;top:0;z-index:5;background:#ffffffEE;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid #E7ECF2}
-  nav .wrap{display:flex;gap:1.3rem;overflow-x:auto;scrollbar-width:none;padding-top:.55rem;padding-bottom:.55rem}
-  nav a{white-space:nowrap;text-decoration:none;color:var(--ink);font-weight:500;font-size:.92rem;border-bottom:2px solid transparent;padding-bottom:.1rem}
-  nav a:hover{border-color:var(--red)}
+  section{padding:4rem 0 .5rem;scroll-margin-top:3.2rem}
+  .eye{display:flex;align-items:center;gap:.6rem;font-size:.8rem;color:var(--tealD);letter-spacing:.3px;margin:0 0 .7rem}
+  .eye::before{content:"";width:1.6rem;height:1px;background:var(--teal)}
+  h2{font-size:clamp(2.1rem,6vw,2.9rem)}
+  .note{color:var(--soft);font-size:.92rem;margin:.7rem 0 1.8rem;text-align:right;max-width:34rem}
 
-  section{scroll-margin-top:3rem}
-  .big{font-size:clamp(3.6rem,13vw,6.2rem)}
-  .note{color:var(--soft);font-size:.95rem;margin:.6rem 0 1.4rem;text-align:right;max-width:34rem}
-
-  /* המודל: מדרגות */
-  .model{padding:3.4rem 0 2.6rem}
-  .stairs{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:.45rem}
-  .lv{background:var(--c);color:#fff;border-radius:4px 22px 22px 4px;display:grid;grid-template-columns:4.2rem 1fr;align-items:center;gap:.6rem;padding:.55rem 1rem .55rem 1.1rem;margin-left:auto}
-  .lv:nth-child(1){width:64%}.lv:nth-child(2){width:73%}.lv:nth-child(3){width:82%}.lv:nth-child(4){width:91%}.lv:nth-child(5){width:100%}
-  .lv .n{font-family:var(--disp);font-size:4.4rem;line-height:.8;text-align:center;color:#ffffffD9}
-  .lv b{display:block;font-family:var(--disp);font-size:2rem;line-height:1;font-weight:700}
-  .lv p{margin:.15rem 0 0;font-size:.93rem;line-height:1.45;color:#ffffffEB;text-align:right}
-  .remember{margin:2rem 0 0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;counter-reset:r}
-  .remember li{position:relative;padding-top:2.3rem;font-size:.95rem;line-height:1.5;text-align:right}
-  .remember li::before{content:"!";position:absolute;top:0;right:0;width:1.9rem;height:1.9rem;border-radius:50%;background:var(--ink);color:#fff;font-family:var(--disp);font-size:1.5rem;display:flex;align-items:center;justify-content:center;padding-top:.15rem}
-  details{margin:1.8rem 0 0;border-top:2px solid var(--ink);padding-top:.8rem}
-  details summary{cursor:pointer;font-family:var(--disp);font-size:1.9rem;line-height:1;color:var(--ink);list-style:none;display:flex;justify-content:space-between;align-items:center}
-  details summary::after{content:"+";font-size:2.2rem;color:var(--red);transition:transform .2s}
+  /* חמש רמות */
+  .levels{list-style:none;padding:0;margin:0;border-top:1px solid var(--line)}
+  .lv{display:grid;grid-template-columns:3.4rem 1fr;gap:1rem;align-items:baseline;padding:1rem 0;border-bottom:1px solid var(--line)}
+  .lv .n{font-family:var(--serif);font-weight:300;font-size:2.6rem;line-height:1;color:var(--c);text-align:center;position:relative}
+  .lv .n::after{content:"";position:absolute;bottom:-.45rem;right:50%;transform:translateX(50%);width:1.1rem;height:2px;border-radius:2px;background:var(--c)}
+  .lv b{display:block;font-family:var(--serif);font-weight:500;font-size:1.22rem;color:var(--ink);margin-bottom:.1rem}
+  .lv p{margin:0;color:#4A5466;text-align:right;font-size:.95rem}
+  .remember{list-style:none;padding:0;margin:1.8rem 0 0;display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem}
+  .remember li{font-size:.9rem;line-height:1.6;color:#3A4456;padding-top:.8rem;border-top:2px solid var(--red);text-align:right}
+  .remember li:nth-child(2){border-color:var(--teal)}
+  .remember li:nth-child(3){border-color:var(--navy)}
+  details{margin:2rem 0 0;background:var(--mist);border-radius:18px;padding:.9rem 1.2rem}
+  details summary{cursor:pointer;font-family:var(--serif);font-weight:500;font-size:1.1rem;color:var(--navy);list-style:none;display:flex;justify-content:space-between;align-items:center}
+  details summary::after{content:"+";font-family:Rubik,Arial,sans-serif;font-weight:300;font-size:1.5rem;color:var(--red);transition:transform .25s}
   details[open] summary::after{transform:rotate(45deg)}
-  .ev{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-top:1rem}
-  .ev p{margin:0;font-size:.95rem;line-height:1.55;text-align:right}
-  .ev b{display:block;font-family:var(--disp);font-size:1.6rem;line-height:1;margin-bottom:.3rem}
-  .ev .y b{color:#138F84}.ev .no b{color:var(--red)}.ev .q b{color:var(--navy)}
+  .ev{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem;margin:.8rem 0 .3rem}
+  .ev p{margin:0;font-size:.9rem;line-height:1.6;text-align:right;color:#3A4456}
+  .ev b{display:block;font-size:.85rem;margin-bottom:.25rem}
+  .ev .y b{color:var(--tealD)}.ev .no b{color:var(--red)}.ev .q b{color:var(--navy)}
 
-  /* הבדיקה: ספרות ענק בקו מתאר, על רקע כהה */
-  .process{background:var(--ink);color:#D6DCE6;padding:3.4rem 0 3rem;position:relative}
-  .process h2{color:#fff}
-  .process .head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem}
-  .process .head img{width:7rem;margin-bottom:-.4rem}
-  .steps{list-style:none;padding:0;margin:2rem 0 0;display:grid;gap:1.8rem}
-  .steps>li{display:grid;grid-template-columns:6.2rem 1fr;gap:1rem;align-items:start;text-align:right}
-  .steps .num{font-family:var(--disp);font-size:8.5rem;line-height:.72;color:transparent;-webkit-text-stroke:2px var(--c);text-align:center}
-  .steps>li:nth-child(1){--c:var(--teal)}.steps>li:nth-child(2){--c:#6FA8DC}.steps>li:nth-child(3){--c:var(--red)}.steps>li:nth-child(4){--c:#F2C14E}
-  .steps h3{font-size:2.5rem;color:var(--c);margin:.1rem 0 .4rem}
-  .steps p{margin:.2rem 0;text-align:right}
-  .steps ul{margin:.4rem 0;padding-right:1.1rem}
-  .steps li li{margin:.25rem 0;text-align:right}
-  .steps b{color:#fff;font-weight:500}
-  .truth{margin:2.4rem 0 0;font-family:var(--disp);font-size:clamp(2rem,6.5vw,2.9rem);line-height:1;color:#fff;text-align:right}
-  .truth em{font-style:normal;color:var(--teal)}
+  /* ארבעה שלבים */
+  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem}
+  .head img{width:5rem;opacity:.95}
+  .steps{list-style:none;padding:0;margin:2rem 0 0;display:grid;gap:0;border-top:1px solid var(--line)}
+  .steps>li{display:grid;grid-template-columns:4.2rem 1fr;gap:1rem;padding:1.4rem 0;border-bottom:1px solid var(--line);text-align:right}
+  .steps .num{font-family:var(--serif);font-weight:300;font-size:3.6rem;line-height:.85;color:var(--c);text-align:center}
+  .steps>li:nth-child(1){--c:var(--tealD)}.steps>li:nth-child(2){--c:var(--navy)}.steps>li:nth-child(3){--c:var(--red)}.steps>li:nth-child(4){--c:#B88500}
+  .steps h3{font-family:var(--serif);font-weight:500;font-size:1.35rem;color:var(--ink);margin:.1rem 0 .35rem}
+  .steps p{margin:.2rem 0;text-align:right;color:#3A4456}
+  .steps ul{margin:.45rem 0;padding:0;list-style:none}
+  .steps li li{position:relative;padding-right:1rem;margin:.3rem 0;color:#3A4456;text-align:right;font-size:.95rem}
+  .steps li li::before{content:"";position:absolute;right:0;top:.72em;width:.35rem;height:.35rem;border-radius:50%;background:var(--c)}
+  .truth{margin:2rem 0 0;font-family:var(--serif);font-weight:300;font-size:clamp(1.35rem,4vw,1.7rem);line-height:1.45;color:var(--navy);text-align:right;padding-right:1.2rem;border-right:2px solid var(--red)}
 
-  /* עשר שאלות: קלפים מוטים על טורקיז */
-  .qsec{background:var(--teal);padding:3.4rem 0 2.6rem}
-  .qsec .note{color:#123B37}
-  .deck{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(14rem,1fr);gap:1rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:1rem .4rem 1.6rem;margin:0;scrollbar-width:none}
-  .deck li{list-style:none;scroll-snap-align:center;background:#fff;border-radius:18px;padding:1rem 1.15rem 1.3rem;min-height:12rem;box-shadow:0 14px 28px #0E4D4733;font-weight:500;color:var(--ink);line-height:1.45;text-align:right}
-  .deck li:nth-child(odd){transform:rotate(-2.2deg)}
-  .deck li:nth-child(even){transform:rotate(1.8deg)}
-  .deck li .k{display:block;font-family:var(--disp);font-size:3.4rem;line-height:.85;color:var(--red);margin-bottom:.4rem}
-  .deck li:nth-child(3n+2) .k{color:var(--navy)}
-  .deck li:nth-child(3n) .k{color:#138F84}
-  .swipe{margin:0;font-size:.88rem;color:#123B37;text-align:right}
+  /* עשר שאלות */
+  .deck{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(13rem,1fr);gap:.9rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.2rem 0 1rem;margin:0;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+  .deck li{list-style:none;scroll-snap-align:start;background:#fff;border:1px solid var(--line);border-radius:20px;padding:1.1rem 1.2rem 1.3rem;min-height:10.5rem;font-size:.95rem;line-height:1.55;color:var(--ink);text-align:right;transition:border-color .2s}
+  .deck li:hover{border-color:#C9D3DE}
+  .deck li .k{display:block;font-family:var(--serif);font-weight:300;font-size:2rem;line-height:1;color:var(--red);margin-bottom:.6rem}
+  .deck li:nth-child(3n+2) .k{color:var(--tealD)}
+  .deck li:nth-child(3n) .k{color:var(--navy)}
 
-  /* AI: שיחה לדוגמה וההנחיה */
-  .ai{background:var(--navy);color:#DCE6F1;padding:3.4rem 0 3.2rem}
-  .ai h2{color:#fff}
+  /* AI */
+  .ai .panel{background:var(--mist);border-radius:28px;padding:2rem 1.6rem 1.6rem;margin-top:1.6rem}
   .ai p{text-align:right}
-  .chat{display:flex;flex-direction:column;gap:.55rem;margin:1.6rem 0 1.8rem;max-width:30rem}
-  .chat p{margin:0;padding:.6rem .95rem;border-radius:18px;font-size:.95rem;line-height:1.45;max-width:85%}
-  .chat .bot{background:#ffffff1F;color:#fff;align-self:flex-end;border-bottom-left-radius:4px}
-  .chat .me{background:var(--teal);color:var(--ink);align-self:flex-start;border-bottom-right-radius:4px}
-  .chat small{display:block;font-size:.75rem;opacity:.75;margin-bottom:.1rem}
-  .chat .lbl{font-size:.82rem;color:#AFC1D6;background:none;padding:0}
-  .prompt{background:#fff;color:var(--ink);border-radius:22px;overflow:hidden;box-shadow:10px 10px 0 var(--red)}
-  .prompt .bar{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.7rem 1rem .7rem 1.2rem;border-bottom:1px solid #E7ECF2}
-  .prompt .bar b{font-family:var(--disp);font-size:1.7rem;line-height:1}
-  .prompt pre{margin:0;padding:1rem 1.2rem 1.2rem;white-space:pre-wrap;word-break:break-word;font-family:Rubik,Arial,sans-serif;font-size:.9rem;line-height:1.65;max-height:20rem;overflow:auto;direction:rtl;text-align:right;color:#2B3240}
-  .btn{display:inline-flex;align-items:center;justify-content:center;border:0;border-radius:999px;padding:.6rem 1.25rem;font-family:Rubik,Arial,sans-serif;font-weight:700;font-size:.98rem;cursor:pointer;text-decoration:none;background:var(--red);color:#fff}
-  .btn:hover{background:#CF3B2E}
-  .btn.big{width:100%;padding:.95rem 1rem;font-size:1.1rem;margin-top:1.6rem;background:#fff;color:var(--navy);box-shadow:6px 6px 0 var(--ink)}
-  .btn.big:hover{background:#F2F6FA}
-  .btn.ghost{background:transparent;color:var(--ink);border:2px solid var(--ink)}
-  .btn.ghost:hover{background:var(--ink);color:#fff}
-  #ok{min-height:1.5em;margin:.7rem 0 0;font-weight:500;color:#fff}
-  .care{margin-top:.6rem;font-size:.9rem;color:#AFC1D6}
+  .chat{display:flex;flex-direction:column;gap:.5rem;margin:0 0 1.6rem}
+  .chat .lbl{font-size:.78rem;color:var(--soft);margin:0 0 .2rem}
+  .chat p.b{margin:0;padding:.55rem .9rem;border-radius:16px;font-size:.88rem;line-height:1.5;max-width:82%}
+  .chat .bot{background:#fff;border:1px solid var(--line);align-self:flex-end;border-bottom-left-radius:4px}
+  .chat .me{background:var(--navy);color:#fff;align-self:flex-start;border-bottom-right-radius:4px}
+  .chat small{display:block;font-size:.7rem;opacity:.65}
+  .prompt{background:#fff;border:1px solid var(--line);border-radius:20px;overflow:hidden}
+  .prompt .bar{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.65rem .9rem .65rem 1.1rem;border-bottom:1px solid var(--line)}
+  .prompt .bar b{font-family:var(--serif);font-weight:500;font-size:1.05rem;color:var(--navy)}
+  .prompt pre{margin:0;padding:1rem 1.2rem 1.2rem;white-space:pre-wrap;word-break:break-word;font-family:Rubik,Arial,sans-serif;font-weight:300;font-size:.86rem;line-height:1.7;max-height:19rem;overflow:auto;direction:rtl;text-align:right;color:#3A4456}
+  .btn{display:inline-flex;align-items:center;justify-content:center;border:1px solid var(--navy);border-radius:999px;padding:.45rem 1.05rem;font-family:Rubik,Arial,sans-serif;font-weight:400;font-size:.88rem;cursor:pointer;text-decoration:none;background:#fff;color:var(--navy);transition:background .2s,color .2s}
+  .btn:hover{background:var(--navy);color:#fff}
+  .btn.big{width:100%;padding:.8rem 1rem;font-size:1rem;margin-top:1.1rem;background:var(--navy);color:#fff}
+  .btn.big:hover{background:#16314D}
+  #ok{min-height:1.4em;margin:.6rem 0 0;font-size:.9rem;color:var(--tealD)}
+  .care{margin-top:.4rem;font-size:.84rem;color:var(--soft)}
 
   /* החוקרות */
-  .team{padding:3.4rem 0 2rem}
-  .people{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem;margin-top:1.4rem}
-  .person{border-top:6px solid var(--c);padding-top:.8rem;text-align:right}
+  .people{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6rem;margin-top:.4rem}
+  .person{text-align:right}
+  .person .dot{display:block;width:.55rem;height:.55rem;border-radius:50%;background:var(--c);margin-bottom:.9rem}
   .person:nth-child(1){--c:var(--teal)}.person:nth-child(2){--c:var(--red)}.person:nth-child(3){--c:var(--navy)}
-  .person h3{font-size:2.2rem;line-height:.95}
-  .person .org{margin:.3rem 0 .7rem;color:var(--soft);font-size:.92rem;text-align:right}
-  .person a{display:block;width:max-content;max-width:100%;text-decoration:none;color:var(--ink);font-size:.92rem;padding:.12rem 0;margin-bottom:.3rem;direction:ltr;unicode-bidi:isolate;overflow-wrap:anywhere;border-bottom:2px solid var(--c)}
+  .person h3{font-family:var(--serif);font-weight:500;font-size:1.3rem;color:var(--ink)}
+  .person .org{margin:.15rem 0 .7rem;color:var(--soft);font-size:.85rem;text-align:right}
+  .person a{display:block;width:max-content;max-width:100%;text-decoration:none;color:var(--navy);font-size:.86rem;margin-bottom:.25rem;direction:ltr;unicode-bidi:isolate;overflow-wrap:anywhere;border-bottom:1px solid var(--line);transition:border-color .2s}
+  .person a:hover{border-color:var(--c)}
 
-  /* שמירה */
-  .save{padding:1.6rem 0 3rem}
-  .save .cols{display:grid;grid-template-columns:1fr 1fr;gap:1.4rem;margin-top:1rem}
-  .save h3{font-size:1.9rem;margin-bottom:.2rem}
-  .save ol{margin:0;padding-right:1.2rem}
+  /* בטלפון */
+  .save .cols{display:grid;grid-template-columns:1fr 1fr;gap:1.6rem}
+  .save h3{font-family:var(--serif);font-weight:500;font-size:1.15rem;color:var(--ink);margin-bottom:.3rem}
+  .save ol{margin:0;padding-right:1.1rem;color:#3A4456;font-size:.93rem}
   .save li{text-align:right;margin:.2rem 0}
-  .dlrow{display:flex;flex-wrap:wrap;align-items:center;gap:.9rem;margin-top:1.4rem}
-  .dlrow p{margin:0;color:var(--soft);font-size:.92rem;text-align:right}
+  .dlrow{display:flex;flex-wrap:wrap;align-items:center;gap:1rem;margin-top:1.6rem}
+  .dlrow p{margin:0;color:var(--soft);font-size:.85rem;text-align:right}
 
-  footer{background:var(--ink);color:#AFB8C6;padding:1.8rem 0;font-size:.88rem}
-  footer b{font-family:var(--disp);font-size:2.2rem;line-height:1;color:#fff}
-  footer p{margin:.2rem 0;text-align:right}
+  footer{margin-top:4.5rem;border-top:1px solid var(--line);padding:1.6rem 0 2rem;font-size:.84rem;color:var(--soft)}
+  footer .wrap{display:flex;justify-content:space-between;align-items:center}
+  footer b{font-family:var(--serif);font-weight:500;font-size:1.1rem;color:var(--navy)}
+  footer a{color:var(--soft);text-decoration:none}
 
   @media screen and (max-width:640px){
-    .poster{grid-template-columns:1fr}
-    .art{order:-1;height:13.5rem}
-    .art .stamp{width:11rem;left:-1.4rem;top:-.2rem}
-    .art .woman{width:10rem}
-    .lv{grid-template-columns:3.2rem 1fr;padding:.5rem .8rem}
-    .lv .n{font-size:3.6rem}
-    .lv b{font-size:1.7rem}
-    .lv:nth-child(1){width:84%}.lv:nth-child(2){width:88%}.lv:nth-child(3){width:92%}.lv:nth-child(4){width:96%}
+    .hero-in{grid-template-columns:1fr;margin-top:1.2rem;gap:.5rem}
+    .art{order:-1;height:13rem}
+    .art .disc{width:11rem;height:11rem;right:0;left:auto}
+    .art .woman{width:10rem;right:.5rem}
+    .art .stamp{width:6rem;left:.4rem}
     .remember,.ev,.people,.save .cols{grid-template-columns:1fr}
-    .steps>li{grid-template-columns:4rem 1fr;gap:.7rem}
-    .steps .num{font-size:6rem}
-    .steps h3{font-size:2.1rem}
-    .process .head img{width:4.6rem}
+    .remember{gap:1rem}
+    .steps>li{grid-template-columns:3rem 1fr;gap:.7rem}
+    .steps .num{font-size:2.9rem}
+    .ai .panel{padding:1.4rem 1rem 1.1rem;border-radius:22px}
+    .head img{width:3.8rem}
   }
-  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.art .stamp,.wire .run{animation:none}.cta,details summary::after{transition:none}}
-  @media print{nav,.wire,.btn,.cta,#save,#ok,.chat{display:none}.prompt pre{max-height:none}.deck{grid-auto-flow:row;grid-template-columns:1fr 1fr}.deck li{transform:none}section{break-inside:avoid}@page{size:A5;margin:14mm}}
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.art .stamp{animation:none}*{transition:none!important}}
+  @media print{nav,.btn,.cta,#save,#ok,.chat{display:none}.prompt pre{max-height:none}.deck{grid-auto-flow:row;grid-template-columns:1fr 1fr}section{break-inside:avoid;padding-top:1.4rem}@page{size:A5;margin:14mm}}
 </style>
 </head>
 <body>
 <header class="hero">
   <div class="wrap">
-    <div class="top"><b>Begood</b><span>פנקס כיס לבדיקת אמינות של מקורות</span></div>
-    <div class="poster">
+    <div class="top"><b>פנקס כיס · בדיקת אמינות של מקורות</b><a href="https://be-good.co.il" style="color:inherit;text-decoration:none">be-good.co.il</a></div>
+    <div class="hero-in">
       <div>
-        <h1>רגע.<span>זה נכון<i>?</i></span></h1>
+        <h1>רגע.<br>זה נכון<em>?</em></h1>
         <p class="lead">לפני שמאמינים לידיעה, משתפים אותה או מלמדים אותה, עוצרים לבדוק: מי פרסם אותה, ועל מה היא נשענת. בסוף הבדיקה נותנים לה ציון אמינות מ־1 עד 5.</p>
         <div class="acts"><a class="cta" href="#ai">בודקים עם ה־AI שלי</a><p class="by">ד״ר איבנה ריטנר · ד״ר עינת שושן־רפאלי · ד״ר יעל שדה</p></div>
       </div>
       <div class="art" aria-hidden="true">
-        <img class="stamp" src="assets/credibility-notebook/stamp-white.webp" alt="">
+        <span class="disc"></span>
         <img class="woman" src="assets/credibility-notebook/woman.svg" alt="">
+        <img class="stamp" src="assets/credibility-notebook/stamp.webp" alt="">
       </div>
     </div>
   </div>
-  <div class="wire" aria-hidden="true"><b class="tag">מבזק</b><div class="run"><span>בודקים לפני שמשתפים</span><span>קוראים לרוחב</span><span>מגיעים עד המקור הראשוני</span><span>תואר אינו ראיה</span><span>אין לי עוד מידע</span><span>בודקים לפני שמשתפים</span><span>קוראים לרוחב</span><span>מגיעים עד המקור הראשוני</span><span>תואר אינו ראיה</span><span>אין לי עוד מידע</span><span>בודקים לפני שמשתפים</span><span>קוראים לרוחב</span><span>מגיעים עד המקור הראשוני</span><span>תואר אינו ראיה</span><span>אין לי עוד מידע</span><span>בודקים לפני שמשתפים</span><span>קוראים לרוחב</span><span>מגיעים עד המקור הראשוני</span><span>תואר אינו ראיה</span><span>אין לי עוד מידע</span></div></div>
 </header>
 <nav aria-label="תוכן"><div class="wrap"><a href="#model">המודל</a><a href="#process">הבדיקה</a><a href="#questions">10 שאלות</a><a href="#ai">עם ה־AI</a><a href="#team">החוקרות</a><a href="#save">בטלפון</a></div></nav>
 
 <main>
-  <section id="model" class="model"><div class="wrap">
-    <h2 class="big">חמש רמות של אמינות</h2>
+  <section id="model"><div class="wrap">
+    <h2>חמש רמות של אמינות</h2>
     <p class="note">הציון ניתן למקור בהקשר של הטענה שבודקים, ולא לגוף המפרסם באופן כללי.</p>
-    <ol class="stairs" id="scale"></ol>
+    <ol class="levels" id="scale"></ol>
     <ul class="remember" id="remember"></ul>
     <details><summary>מה נחשב ראיה, ומה רק נראה משכנע</summary>
       <div class="ev">
@@ -212,8 +200,8 @@
     </details>
   </div></section>
 
-  <section id="process" class="process"><div class="wrap">
-    <div class="head"><h2 class="big">הבדיקה בארבעה שלבים</h2><img src="assets/credibility-notebook/mic.webp" alt=""></div>
+  <section id="process"><div class="wrap">
+    <div class="head"><div><h2>הבדיקה בארבעה שלבים</h2></div><img src="assets/credibility-notebook/mic.webp" alt=""></div>
     <ol class="steps">
       <li><span class="num" aria-hidden="true">1</span><div><h3>עוצרים ומתארים</h3><p>כותבים את הטענה במשפט אחד, ואת מה שידוע על המקור:</p>
         <ul><li>מה סוג המקור, ומי פרסם?</li><li>מתי ואיפה פורסם, ואיך הגיע אליי?</li><li>על מה הטענה נשענת: מסמך, נתון, עדות, צילום?</li><li>מה אני מרגיש/ה כשאני קורא/ת, והאם אני רוצה שזה יהיה נכון?</li></ul>
@@ -223,53 +211,48 @@
       <li><span class="num" aria-hidden="true">3</span><div><h3>מוסיפים פריטי מידע</h3><p>כל דבר שמצאתי נרשם: מה מצאתי ומאיפה. ממשיכים עוד ועוד, עד שאפשר לומר בכנות: <b>אין לי עוד מידע</b>.</p></div></li>
       <li><span class="num" aria-hidden="true">4</span><div><h3>ציון סופי ונימוק</h3><p>נותנים ציון מ־1 עד 5 לאור מה שנמצא, ומשווים לציון הראשון: מה השתנה, ולמה? מה עדיין לא ידוע, ומה היה משנה את הציון?</p></div></li>
     </ol>
-    <p class="truth">1 אינו "שקר", ו־5 אינו "אמת מוחלטת". <em>הציון אומר עד כמה הטענה נשענת על ראיות שנבדקו.</em></p>
+    <p class="truth">1 אינו "שקר", ו־5 אינו "אמת מוחלטת". הציון אומר עד כמה הטענה נשענת על ראיות שנבדקו.</p>
   </div></section>
 
-  <section id="questions" class="qsec"><div class="wrap">
-    <h2 class="big">10 שאלות לפני ציון</h2>
+  <section id="questions"><div class="wrap">
+    <h2>10 שאלות לבדיקה עצמית</h2>
     <p class="note">עוברים עליהן לפי הסדר. בטלפון גוללים הצידה.</p>
     <ol class="deck" id="qs"></ol>
   </div></section>
 
   <section id="ai" class="ai"><div class="wrap">
-    <h2 class="big">בודקים עם ה־AI שלי</h2>
-    <p>הפנקס אינו מחובר למנוע בדיקה. אפשר לחבר אותו ל־AI שבחרת (ChatGPT, Claude, Gemini או אחר), בחשבון שלך: מעתיקים את ההנחיה, מדביקים אותה בשיחה חדשה, ומביאים את המקור.</p>
-    <div class="chat" aria-label="כך נראית תחילת השיחה">
-      <p class="lbl">כך נראית תחילת השיחה:</p>
-      <p class="bot"><small>AI</small>מה הטענה במשפט אחד, ומי פרסם אותה? ולפני שאני נותן/ת ציון: מה הציון שלך מ־1 עד 5, ולמה?</p>
-      <p class="me"><small>אני</small>צילום מסך מטיקטוק, בלי שם. נראה לי 2, כי אין מקור מזוהה.</p>
-      <p class="bot"><small>AI</small>אני מסכים/ה עם הכיוון. שלוש בדיקות לעשות עכשיו: חיפוש תמונה הפוך, ...</p>
+    <h2>בודקים מקור עם ה־AI</h2>
+    <p class="note">הפנקס אינו מחובר למנוע בדיקה. אפשר לחבר אותו ל־AI שבחרת (ChatGPT, Claude, Gemini או אחר), בחשבון שלך: מעתיקים את ההנחיה, מדביקים אותה בשיחה חדשה, ומביאים את המקור.</p>
+    <div class="panel">
+      <div class="prompt">
+        <div class="bar"><b>ההנחיה המלאה</b><button class="btn" id="copy" type="button">העתקה</button></div>
+        <pre id="prompt" tabindex="0" aria-label="ההנחיה ל־AI"></pre>
+      </div>
+      <button class="btn big" id="copy2" type="button">העתקת ההנחיה ל־AI</button>
+      <p id="ok" aria-live="polite"></p>
+      <p class="care">ה־AI יכול לטעות ואף להמציא מקורות וקישורים. כל מקור שהוא מציע בודקים בעצמנו, וההכרעה שלך. כדאי לא להדביק פרטים מזהים של אנשים פרטיים.</p>
     </div>
-    <div class="prompt">
-      <div class="bar"><b>ההנחיה המלאה</b><button class="btn" id="copy" type="button">העתקה</button></div>
-      <pre id="prompt" tabindex="0" aria-label="ההנחיה ל־AI"></pre>
-    </div>
-    <button class="btn big" id="copy2" type="button">העתקת ההנחיה ל־AI</button>
-    <p id="ok" aria-live="polite"></p>
-    <p class="care">ה־AI יכול לטעות ואף להמציא מקורות וקישורים. כל מקור שהוא מציע בודקים בעצמנו, וההכרעה שלך. כדאי לא להדביק פרטים מזהים של אנשים פרטיים.</p>
   </div></section>
 
-  <section id="team" class="team"><div class="wrap">
-    <h2 class="big">החוקרות</h2>
-    <p class="note">הפנקס נכתב במסגרת המחקר "בדיקת אמינות של מקורות". שאלה, הערה או רעיון: נשמח לשמוע.</p>
-    <div class="people">
-      <div class="person"><h3>ד״ר איבנה ריטנר</h3><p class="org">האקדמית גורדון</p><a href="tel:+972507156711">050-7156711</a><a href="mailto:ratnere@gmail.com">ratnere@gmail.com</a></div>
-      <div class="person"><h3>ד״ר עינת שושן־רפאלי</h3><p class="org">המכללה האקדמית אורנים</p><a href="tel:+972509000408">050-9000408</a><a href="mailto:ei0509000408@gmail.com">ei0509000408@gmail.com</a></div>
-      <div class="person"><h3>ד״ר יעל שדה</h3><p class="org">Begood · חוסן, קהילה, חינוך</p><a href="tel:+972523969417">052-3969417</a><a href="mailto:yael.sade@gmail.com">yael.sade@gmail.com</a><a href="https://be-good.co.il">be-good.co.il</a></div>
+  <section id="team"><div class="wrap">
+    <h2>החוקרות</h2>
+    <div class="people" style="margin-top:1.6rem">
+      <div class="person"><span class="dot"></span><h3>ד״ר איבנה ריטנר</h3><p class="org">האקדמית גורדון</p><a href="tel:+972507156711">050-7156711</a><a href="mailto:ratnere@gmail.com">ratnere@gmail.com</a></div>
+      <div class="person"><span class="dot"></span><h3>ד״ר עינת שושן־רפאלי</h3><p class="org">המכללה האקדמית אורנים</p><a href="tel:+972509000408">050-9000408</a><a href="mailto:ei0509000408@gmail.com">ei0509000408@gmail.com</a></div>
+      <div class="person"><span class="dot"></span><h3>ד״ר יעל שדה</h3><p class="org">פיתוח · חוסן, קהילה, חינוך</p><a href="tel:+972523969417">052-3969417</a><a href="mailto:yael.sade@gmail.com">yael.sade@gmail.com</a><a href="https://be-good.co.il">be-good.co.il</a></div>
     </div>
   </div></section>
 
   <section id="save" class="save"><div class="wrap">
-    <h2 class="big">הפנקס בטלפון שלי</h2>
-    <div class="cols">
+    <h2>הפנקס בטלפון שלי</h2>
+    <div class="cols" style="margin-top:1.4rem">
       <div><h3>אייפון</h3><ol><li>פותחים את הדף בספארי.</li><li>לוחצים על כפתור השיתוף (ריבוע עם חץ למעלה).</li><li>בוחרים "הוספה למסך הבית".</li></ol></div>
       <div><h3>אנדרואיד</h3><ol><li>פותחים את הדף בכרום.</li><li>לוחצים על שלוש הנקודות בפינה העליונה.</li><li>בוחרים "התקנת אפליקציה" או "הוספה למסך הבית".</li></ol></div>
     </div>
-    <div class="dlrow"><button class="btn ghost" id="dl" type="button">הורדת הפנקס כקובץ</button><p>נפתח בכל דפדפן, גם בלי אינטרנט. אפשר גם להדפיס או לשמור כ־PDF.</p></div>
+    <div class="dlrow"><button class="btn" id="dl" type="button">הורדת הפנקס כקובץ</button><p>נפתח בכל דפדפן, גם בלי אינטרנט. אפשר גם להדפיס או לשמור כ־PDF.</p></div>
   </div></section>
 </main>
-<footer><div class="wrap"><b>Begood</b><p><a href="https://be-good.co.il" style="color:#AFB8C6">be-good.co.il</a></p></div></footer>
+<footer><div class="wrap"><a href="https://be-good.co.il">be-good.co.il</a></div></footer>
 <script>
 (function () {
   // הנוסח של המודל זהה ל-credibility-model.js (SCALE, REMEMBER, QUESTIONS). הקובץ עומד בפני עצמו כדי שיעבוד גם אחרי הורדה.
@@ -369,7 +352,7 @@
       var html = '<!DOCTYPE html>\n' + copyDoc.outerHTML;
       var a = document.createElement('a');
       a.href = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
-      a.download = 'begood-credibility-notebook.html';
+      a.download = 'credibility-notebook.html';
       document.body.appendChild(a); a.click(); a.remove();
     });
   });
