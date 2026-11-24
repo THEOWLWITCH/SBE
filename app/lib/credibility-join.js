@@ -277,7 +277,8 @@
     const D = S.data, ks = (S.cred && D && D.checks) || [];
     const k = ks.find((x) => x.id === S.open) || ks[ks.length - 1];
     const cur = (v) => (v ? ' aria-current="true"' : '');
-    const lnk = (go, label, on, off) => '<button type="button" class="crd-link" data-tgo="' + go + '"' + cur(on) + (off ? ' disabled title="' + esc(off) + '"' : '') + '>' + esc(label) + '</button>';
+    // כל קישור נפתח (24/11/2026: "העמוד לבדיקה לא נותן לפתוח קישורים"): בלי צוות נפתח צוות בדיקה לבד, ושלב שעוד לא הושג מסביר מה עושים
+    const lnk = (go, label, on, off) => '<button type="button" class="crd-link' + (off ? ' crd-later' : '') + '" data-tgo="' + go + '"' + cur(on) + (off ? ' data-need="' + esc(off) + '"' : '') + '>' + esc(label) + '</button>';
     const stOn = (s) => S.cred && !S.preview && S.tab === 'checks' && S.open && (S.stage && S.stageFor === S.open ? S.stage : stageOf(k || {})) === s;
     const gated = S.cred && D && D.team.members.some((m) => !(D.reflections[m.id] || {}).pre) && !D.team.workOpen;
     const need = 'קודם משלימים את השלב הקודם במקור';
@@ -298,11 +299,47 @@
       + '<li><b>מפגש 2</b><ul><li>' + lnk('reflect', 'שאלון עמדות מסכם ורפלקציה', S.cred && !S.preview && S.tab === 'reflect', noTeam) + '</li></ul></li>'
       + '<li><b>בכל שלב</b><ul><li>' + lnk('team', 'הצוות', S.cred && !S.preview && S.tab === 'team', noTeam) + '</li><li>' + lnk('scale', 'המחוון', S.cred && !S.preview && S.tab === 'scale', noTeam) + '</li></ul></li>'
       + '</ul>'
-      + '<p class="crd-test-b"><button type="button" class="dlm-btn" data-tgo="flow"' + (S.cred ? '' : ' disabled') + '>המסלול כפי שמשתתף/ת רואה אותו</button> '
-      + '<button type="button" class="dlm-btn" data-tgo="reset"' + (S.cred ? '' : ' disabled') + '>התחלה מחדש מההסכמה</button></p><div id="tmm"></div></div>';
+      + '<p class="crd-test-b"><button type="button" class="dlm-btn" data-tgo="flow"' + (S.cred ? '' : ' data-need="' + esc(noTeam) + '"') + '>המסלול כפי שמשתתף/ת רואה אותו</button> '
+      + '<button type="button" class="dlm-btn" data-tgo="reset">התחלה מחדש מההסכמה</button></p><div id="tmm"></div></div>';
   }
   function bindTest() {
-    app.querySelectorAll('[data-tgo]').forEach((b) => { b.onclick = () => testGo(b.dataset.tgo); });
+    app.querySelectorAll('[data-tgo]').forEach((b) => { b.onclick = () => testClick(b.dataset.tgo, b.dataset.need || ''); });
+  }
+  // צוות בדיקה בלחיצה אחת: משתתף/ת אחד/ת עם הסכמה, ואזור העבודה פתוח
+  async function testTeam() {
+    const r = await U.api('p.teamCreate', { code: classCode, name: 'צוות בדיקה', members: [{ name: 'בודק/ת', consent: 'research' }] });
+    S.cred = { a: r.a, t: r.t, key: r.key }; saveCred(classCode, S.cred);
+    S.data = await call('p.get');
+    clearInterval(S.timer); S.timer = setInterval(() => { if (!S.busy && !document.hidden && !document.querySelector('dialog[open]') && !isTyping()) load(true); }, 12000);
+  }
+  // פותחים את אזור העבודה בפעילות הבדיקה: שאלון ראשוני לדוגמה לבודק/ת הראשון/ה, ואז "פתיחת אזור העבודה"
+  async function testUnlock() {
+    const m = S.data.team.members[0];
+    if (m && !(S.data.reflections[m.id] || {}).pre) {
+      const pre = {}; M.ATTITUDES.forEach((q) => { pre[q.k] = 3; });
+      await call('p.reflect', { member: m.id, pre, initial: 'בדיקה של צוות המחקר.' });
+      if (!me()) setMe(m.id);
+    }
+    const r = await call('p.openWork', {}); S.data = await call('p.get'); S.data.team = r.team;
+  }
+  async function testClick(go, need) {
+    const box = () => $('#tmm');
+    try {
+      if (!S.cred && !['consent', 'reset'].includes(go)) { await testTeam(); if (go !== 'pre') await testUnlock(); }
+      else if (S.cred && S.data && go === 'list' && !S.data.team.workOpen && S.data.team.members.some((m) => !(S.data.reflections[m.id] || {}).pre)) {
+        await testUnlock();
+      }
+      const stage = ['describe', 'first', 'inquiry', 'final'].includes(go);
+      if (stage && S.data && !(S.data.checks || []).length) {
+        await testGo('list'); const x = box(); if (x) { x.innerHTML = msg('קודם מעלים מקור ברשימת המקורות. אחר כך השלבים נפתחים כאן.'); x.scrollIntoView({ block: 'center' }); }
+        return;
+      }
+      if (stage && need && need !== 'קודם פותחים צוות') {
+        const x = box(); if (x) { x.innerHTML = msg(need + '. אחר כך השלב הזה נפתח כאן.'); x.scrollIntoView({ block: 'center' }); }
+        return;
+      }
+      await testGo(go);
+    } catch (e) { if (box()) box().innerHTML = msg(e.message, 'err'); }
   }
   async function testGo(go) {
     const top = () => window.scrollTo(0, 0);
