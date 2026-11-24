@@ -37,7 +37,7 @@
   .hero::before{content:"";position:absolute;width:30rem;height:30rem;border-radius:50%;left:-9rem;top:-6rem;background:radial-gradient(circle,#2EC4B624 0,#2EC4B60A 45%,transparent 70%)}
   .top{position:relative;display:flex;justify-content:space-between;align-items:center;font-size:.82rem;color:var(--soft)}
   .top b{font-family:var(--serif);font-weight:500;font-size:1.05rem;color:var(--navy)}
-  .hero-in{position:relative;display:grid;grid-template-columns:1fr 15rem;gap:1.5rem;align-items:center;margin-top:2.6rem}
+  .hero-in{position:relative;display:grid;grid-template-columns:1fr 19rem;gap:1.5rem;align-items:center;margin-top:2.6rem}
   .hero h1{font-size:clamp(3.4rem,10.5vw,5.4rem);line-height:.98}
   .hero h1 em{font-style:normal;color:var(--red)}
   .hero .lead{max-width:27rem;color:#3A4456;margin:1.3rem 0 1.5rem;font-size:1.06rem;text-align:right}
@@ -46,10 +46,9 @@
   .cta:hover{background:#16314D}
   .cta::after{content:"";width:.45rem;height:.45rem;border-radius:50%;background:var(--red)}
   .by{font-size:.8rem;color:var(--soft);margin:0;text-align:right}
-  .art{position:relative;height:17rem}
-  .art .disc{position:absolute;inset:auto 0 0 auto;width:13.5rem;height:13.5rem;border-radius:50%;background:var(--mist);border:1px solid var(--line)}
-  .art .woman{position:absolute;bottom:0;right:.6rem;width:12rem}
-  .art .stamp{position:absolute;top:0;left:-.6rem;width:7.2rem;transform:rotate(-12deg);opacity:.9;animation:stampin .6s cubic-bezier(.2,.9,.3,1.25) .35s both}
+  .art{position:relative;padding-left:5.6rem}
+  .art .photo{display:block;width:100%;aspect-ratio:720/1075;object-fit:cover;border-radius:4px;box-shadow:0 18px 40px -24px #12172259}
+  .art .stamp{position:absolute;bottom:2.4rem;left:0;width:11.2rem;transform:rotate(-12deg);opacity:.9;animation:stampin .6s cubic-bezier(.2,.9,.3,1.25) .35s both}
   @keyframes stampin{from{opacity:0;transform:rotate(-12deg) scale(1.7)}to{opacity:.9;transform:rotate(-12deg) scale(1)}}
 
   nav{position:sticky;top:0;z-index:5;background:#ffffffE8;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
@@ -84,8 +83,7 @@
   .ev .y b{color:var(--tealD)}.ev .no b{color:var(--red)}.ev .q b{color:var(--navy)}
 
   /* ארבעה שלבים */
-  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem}
-  .head img{width:5rem;opacity:.95}
+  .shot{display:block;width:100%;aspect-ratio:1000/663;object-fit:cover;border-radius:4px;margin:1.6rem 0 .4rem;box-shadow:0 18px 40px -26px #12172259}
   .steps{list-style:none;padding:0;margin:2rem 0 0;display:grid;gap:0;border-top:1px solid var(--line)}
   .steps>li{display:grid;grid-template-columns:4.2rem 1fr;gap:1rem;padding:1.4rem 0;border-bottom:1px solid var(--line);text-align:right}
   .steps .num{font-family:var(--serif);font-weight:300;font-size:3.6rem;line-height:.85;color:var(--c);text-align:center}
@@ -150,16 +148,14 @@
 
   @media screen and (max-width:640px){
     .hero-in{grid-template-columns:1fr;margin-top:1.2rem;gap:.5rem}
-    .art{order:-1;height:13rem}
-    .art .disc{width:11rem;height:11rem;right:0;left:auto}
-    .art .woman{width:10rem;right:.5rem}
-    .art .stamp{width:6rem;left:.4rem}
+    .art{order:-1;width:min(14.5rem,64vw);padding-left:0;margin:0 auto 0 4.6rem}
+    .art .photo{aspect-ratio:720/860;object-position:50% 30%}
+    .art .stamp{width:9.2rem;left:-4.6rem;bottom:1.2rem}
     .remember,.ev,.people,.save .cols{grid-template-columns:1fr}
     .remember{gap:1rem}
     .steps>li{grid-template-columns:3rem 1fr;gap:.7rem}
     .steps .num{font-size:2.9rem}
     .ai .panel{padding:1.4rem 1rem 1.1rem;border-radius:22px}
-    .head img{width:3.8rem}
   }
   @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.art .stamp{animation:none}*{transition:none!important}}
   @media print{nav,.btn,.cta,#save,#ok,.chat{display:none}.prompt pre{max-height:none}.deck{grid-auto-flow:row;grid-template-columns:1fr 1fr}section{break-inside:avoid;padding-top:1.4rem}@page{size:A5;margin:14mm}}
@@ -176,8 +172,7 @@
         <div class="acts"><a class="cta" href="#ai">בודקים עם ה־AI שלי</a><p class="by">ד״ר איבנה ריטנר · ד״ר עינת שושן־רפאלי · ד״ר יעל שדה</p></div>
       </div>
       <div class="art" aria-hidden="true">
-        <span class="disc"></span>
-        <img class="woman" src="assets/credibility-notebook/woman.svg" alt="">
+        <img class="photo" src="assets/credibility-notebook/photo.webp" alt="">
         <img class="stamp" src="assets/credibility-notebook/stamp.webp" alt="">
       </div>
     </div>
@@ -201,7 +196,8 @@
   </div></section>
 
   <section id="process"><div class="wrap">
-    <div class="head"><div><h2>הבדיקה בארבעה שלבים</h2></div><img src="assets/credibility-notebook/mic.webp" alt=""></div>
+    <h2>הבדיקה בארבעה שלבים</h2>
+    <img class="shot" src="assets/credibility-notebook/check.webp" alt="">
     <ol class="steps">
       <li><span class="num" aria-hidden="true">1</span><div><h3>עוצרים ומתארים</h3><p>כותבים את הטענה במשפט אחד, ואת מה שידוע על המקור:</p>
         <ul><li>מה סוג המקור, ומי פרסם?</li><li>מתי ואיפה פורסם, ואיך הגיע אליי?</li><li>על מה הטענה נשענת: מסמך, נתון, עדות, צילום?</li><li>מה אני מרגיש/ה כשאני קורא/ת, והאם אני רוצה שזה יהיה נכון?</li></ul>
@@ -216,6 +212,7 @@
 
   <section id="questions"><div class="wrap">
     <h2>10 שאלות לבדיקה עצמית</h2>
+    <img class="shot" src="assets/credibility-notebook/questions.webp" alt="">
     <p class="note">עוברים עליהן לפי הסדר. בטלפון גוללים הצידה.</p>
     <ol class="deck" id="qs"></ol>
   </div></section>
