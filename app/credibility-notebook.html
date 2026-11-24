@@ -5,109 +5,212 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>פנקס לבדיקת אמינות של מקור · Begood</title>
 <!-- פנקס אישי לנייד (24/11/2026: "הכן קובץ כמו פנקס - כל סטודנטית תוכל להוריד מהמערכת ולשמור לעצמה בנייד לתזכורת. יהיה בו רק המודל ותהליך אימות מקור. לא יהיה מנוע האימות כי זה עולה כסף - אלא אם תאפשר לכל אחת לחבר את הפנקס כפרומט לAI שלה").
-     פתוח לכולם, בלי כניסה ובלי מודל. הכול בתוך הקובץ, כדי שגם הקובץ שמורידים יעבוד בלי אינטרנט. -->
-<meta name="theme-color" content="#1d3f63">
+     העיצוב (24/11/2026: "עצב באופן מקורי עם האיורים מהמצגת, עם צבעי המצגת, עם שמות החוקרות ופרטים ליצירת קשר"): חדר חדשות, כמו המצגת "רגע. זה נכון?".
+     פתוח לכולם, בלי כניסה ובלי מודל. בהורדה האיורים נכנסים לתוך הקובץ, כדי שיעבוד בלי אינטרנט. -->
+<meta name="theme-color" content="#121722">
 <link rel="manifest" href="credibility-notebook.webmanifest">
 <link rel="apple-touch-icon" href="assets/credibility-notebook/icon-192.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&family=Secular+One&display=swap">
 <style>
-  :root{--navy:#1d3f63;--teal:#2a9d8f;--ink:#1f2a33;--muted:#5f6b76;--line:#e3e7eb}
+  :root{--ink:#121722;--ink2:#1C2433;--paper:#F3EFE6;--sheet:#FFFDF7;--news:#E9E3D5;--red:#E5483A;--teal:#2EC4B6;--navy:#1D3F63;--gray:#8A93A3;--txt:#2B3240;--line:#D8D0BC}
   *{box-sizing:border-box}
-  body{margin:0;font-family:Assistant,"Segoe UI",Arial,sans-serif;background:#f4f7f9;color:var(--ink);line-height:1.55;font-size:17px}
-  header{background:#fff;border-bottom:1px solid var(--line);padding:.8rem 1rem;position:sticky;top:0;z-index:5}
-  header b{display:block;font-size:1.15rem;color:var(--navy)}
-  header span{font-size:.85rem;color:var(--muted)}
-  nav{display:flex;gap:.4rem;overflow-x:auto;padding:.5rem 1rem;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:62px;z-index:4}
-  nav a{white-space:nowrap;text-decoration:none;color:var(--navy);border:1px solid #cfd8e0;border-radius:999px;padding:.25rem .8rem;font-size:.92rem;background:#fff}
-  main{max-width:680px;margin:0 auto;padding:1rem}
-  section{background:#fff;border:1px solid var(--line);border-top:2px solid var(--teal);border-radius:14px;padding:1rem 1.1rem;margin:0 0 1rem;scroll-margin-top:120px}
-  h1{font-size:1.5rem;color:var(--navy);margin:.1rem 0 .4rem}
-  h2{font-size:1.2rem;color:var(--navy);margin:.1rem 0 .6rem}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:Rubik,Arial,sans-serif;background:var(--paper);color:var(--txt);line-height:1.6;font-size:17px}
+  h1,h2,h3,.disp{font-family:"Secular One",Rubik,Arial,sans-serif;font-weight:400;color:var(--ink);line-height:1.1;margin:0}
+  a{color:var(--navy)}
+  /* מבזק */
+  .ticker{background:var(--ink);color:#E9ECF2;display:flex;align-items:stretch;overflow:hidden;border-bottom:3px solid #fff;position:sticky;top:0;z-index:6}
+  .ticker .tag{background:var(--red);color:#fff;font-family:"Secular One",Arial,sans-serif;padding:.35rem .9rem;flex:0 0 auto;font-size:1.05rem}
+  .ticker .run{flex:1;overflow:hidden;white-space:nowrap;display:flex;align-items:center}
+  .ticker .run span{display:inline-block;padding-right:100%;animation:crawl 26s linear infinite;font-size:.95rem}
+  @keyframes crawl{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+  nav{display:flex;gap:.35rem;overflow-x:auto;padding:.55rem .8rem;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:2.35rem;z-index:5;scrollbar-width:none}
+  nav a{white-space:nowrap;text-decoration:none;color:var(--ink);font-family:"Secular One",Arial,sans-serif;font-size:.95rem;padding:.15rem .7rem;border-radius:999px;border:1.5px solid var(--ink);background:var(--sheet)}
+  nav a:hover,nav a:focus{background:var(--ink);color:#fff}
+  main{max-width:720px;margin:0 auto;padding:1rem .9rem 2rem}
+  /* דף בפנקס: טבעות בצד ימין */
+  .page{position:relative;background:var(--sheet);border:1.5px solid var(--ink);border-radius:6px 14px 14px 6px;padding:1.2rem 1.2rem 1.3rem 1.2rem;padding-right:2.6rem;margin:0 0 1.3rem;box-shadow:6px 6px 0 #1217221A;scroll-margin-top:6rem}
+  .page::before{content:"";position:absolute;top:14px;bottom:14px;right:.75rem;width:.9rem;background:radial-gradient(circle at 50% 50%,var(--paper) 0 .32rem,var(--ink) .33rem .42rem,transparent .43rem) 0 0/.9rem 1.6rem repeat-y}
+  .page::after{content:"";position:absolute;top:0;bottom:0;right:2.05rem;border-right:1.5px solid #E5483A55}
+  .kicker{font-family:"Secular One",Arial,sans-serif;color:var(--red);letter-spacing:1px;font-size:.95rem;margin:0 0 .15rem}
+  h2{font-size:1.7rem;margin:0 0 .6rem}
   p,li{text-align:justify}
-  .muted{color:var(--muted);font-size:.92rem}
-  .lvl{display:flex;gap:.75rem;align-items:flex-start;padding:.55rem 0;border-bottom:1px solid #eef1f4}
-  .lvl:last-child{border:0}
-  .dot{flex:0 0 2.2rem;height:2.2rem;border-radius:50%;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
-  ol.steps>li{margin:.6rem 0}
-  ol.steps>li>b{color:var(--navy)}
-  ul.sub{margin:.3rem 0;padding-right:1.1rem}
-  ul.sub li{text-align:right;margin:.15rem 0}
-  .note{background:#f4f8fb;border-right:3px solid var(--navy);padding:.55rem .8rem;border-radius:6px;margin:.6rem 0}
-  .btn{display:block;width:100%;text-align:center;background:var(--navy);color:#fff;border:0;border-radius:999px;padding:.8rem 1rem;font-weight:700;font-size:1.05rem;margin:.6rem 0;cursor:pointer;font-family:inherit;text-decoration:none}
-  .btn.sec{background:#fff;color:var(--navy);border:1px solid var(--navy)}
-  textarea{width:100%;min-height:9rem;font-family:inherit;font-size:.88rem;border:1px solid #cfd8e0;border-radius:10px;padding:.6rem;direction:rtl;background:#fbfcfd}
-  details summary{cursor:pointer;font-weight:700;color:var(--navy);margin:.3rem 0}
-  #ok{color:var(--teal);font-weight:700;min-height:1.4em}
-  footer{text-align:center;color:var(--muted);font-size:.82rem;padding:1rem}
-  @media print{header,nav,.btn,#ai textarea,#save{display:none}section{break-inside:avoid;border-top-width:1px}@page{size:A5;margin:14mm}}
+  .muted{color:#6B7282;font-size:.92rem}
+  /* שער */
+  .cover{overflow:hidden;min-height:20rem}
+  .cover h1{font-size:3.4rem;line-height:.98;margin:.3rem 0 .7rem;position:relative;z-index:1}
+  .cover h1 em{font-style:normal;color:var(--red)}
+  .cover .sub{font-family:"Secular One",Arial,sans-serif;color:var(--navy);font-size:1.35rem;margin:0 0 .6rem;position:relative;z-index:1;max-width:62%}
+  .cover p.lead{position:relative;z-index:1;max-width:62%}
+  .cover .stamp{position:absolute;left:-.4rem;top:.4rem;width:9.5rem;transform:rotate(10deg);opacity:.95}
+  .cover .man{position:absolute;left:.4rem;bottom:-.3rem;width:9.6rem}
+  .byline{font-size:.85rem;color:#6B7282;font-style:italic;position:relative;z-index:1;max-width:62%}
+  /* המודל */
+  .meter{display:flex;flex-direction:column;gap:.45rem;margin:.4rem 0 .9rem}
+  .bar{display:flex;align-items:stretch;border-radius:10px;overflow:hidden;color:#fff;min-height:3.1rem}
+  .bar .n{flex:0 0 3rem;display:flex;align-items:center;justify-content:center;font-family:"Secular One",Arial,sans-serif;font-size:1.8rem;background:#0000001F}
+  .bar .x{padding:.4rem .75rem;font-size:.93rem;line-height:1.4}
+  .bar .x b{display:block;font-family:"Secular One",Arial,sans-serif;font-weight:400;font-size:1.1rem}
+  .rule{background:#fff;border-right:6px solid var(--red);padding:.7rem .9rem;margin:.7rem 0;border-radius:4px}
+  .rule h3{font-size:1.15rem;margin:0 0 .3rem}
+  .rule ul{margin:0;padding-right:1.1rem}
+  .rule li{margin:.25rem 0}
+  details{margin:.5rem 0}
+  details summary{cursor:pointer;font-family:"Secular One",Arial,sans-serif;color:var(--navy);font-size:1.05rem}
+  .ev{display:grid;gap:.5rem;margin-top:.5rem}
+  .ev div{border-radius:8px;padding:.55rem .75rem;font-size:.95rem}
+  .ev .y{background:#2EC4B61F;border-right:4px solid var(--teal)}
+  .ev .no{background:#E5483A14;border-right:4px solid var(--red)}
+  .ev .q{background:#1D3F6314;border-right:4px solid var(--navy)}
+  /* תהליך: דף כהה */
+  .page.dark{background:var(--ink);color:#C3CAD6;border-color:var(--ink)}
+  .page.dark::before{background:radial-gradient(circle at 50% 50%,var(--paper) 0 .32rem,#3A465C .33rem .42rem,transparent .43rem) 0 0/.9rem 1.6rem repeat-y}
+  .page.dark::after{border-right-color:#2EC4B655}
+  .page.dark h2,.page.dark h3{color:#fff}
+  .page.dark .kicker{color:var(--teal)}
+  .proc-head{display:flex;gap:.6rem;align-items:flex-end}
+  .proc-head > div{flex:1}
+  .proc-head img{flex:0 0 6.2rem;width:6.2rem;margin-bottom:-.3rem}
+  .steps{list-style:none;padding:0;margin:.6rem 0 0;display:flex;flex-direction:column;gap:.7rem;counter-reset:s}
+  .steps>li{background:var(--ink2);border:1px solid #2E384B;border-radius:14px;padding:.8rem .9rem;counter-increment:s;position:relative;padding-right:3.7rem;text-align:right}
+  .steps>li::before{content:counter(s);position:absolute;right:.8rem;top:.75rem;width:2.3rem;height:2.3rem;border-radius:50%;background:var(--teal);color:var(--ink);font-family:"Secular One",Arial,sans-serif;font-size:1.35rem;display:flex;align-items:center;justify-content:center}
+  .steps>li.hot{border-color:var(--teal);background:#26324A}
+  .steps h3{font-size:1.2rem;margin:.1rem 0 .3rem}
+  .steps ul{margin:.3rem 0;padding-right:1.1rem}
+  .steps li li{text-align:right;margin:.2rem 0}
+  .steps b{color:#fff;font-weight:500}
+  .say{border:1.5px dashed var(--teal);border-radius:12px;padding:.6rem .8rem;margin-top:.8rem;color:#E9ECF2}
+  /* 10 שאלות */
+  .qs{list-style:none;padding:0;margin:.5rem 0 0;display:grid;grid-template-columns:1fr 1fr;gap:.6rem;counter-reset:q}
+  .qs li{counter-increment:q;background:#fff;border-top:7px solid var(--red);border-radius:5px;padding:.45rem .65rem .6rem;box-shadow:0 5px 12px #1217221F;text-align:right;font-weight:500;color:var(--ink);font-size:.95rem;line-height:1.4}
+  .qs li:nth-child(3n+2){border-top-color:var(--teal)}
+  .qs li:nth-child(3n){border-top-color:var(--navy)}
+  .qs li::before{content:counter(q);display:block;font-family:"Secular One",Arial,sans-serif;font-size:1.7rem;line-height:1;color:var(--red);margin-bottom:.15rem}
+  .qs li:nth-child(3n+2)::before{color:#138F84}
+  .qs li:nth-child(3n)::before{color:var(--navy)}
+  @media screen and (max-width:440px){.qs{grid-template-columns:1fr}.cover h1{font-size:2.7rem}.cover .sub,.cover p.lead,.byline{max-width:100%}.cover .man{position:static;display:block;width:8rem;margin:.2rem auto .4rem}.page{padding-right:2.3rem}.page::after{right:1.8rem}.page::before{right:.55rem}.cover .stamp{width:6.5rem;left:-.8rem;top:-.4rem;opacity:.9}}
+  /* ההנחיה ל-AI */
+  .page.red{background:var(--red);border-color:var(--ink);color:#FFF8F2}
+  .page.red::before{background:radial-gradient(circle at 50% 50%,var(--paper) 0 .32rem,#8E2A21 .33rem .42rem,transparent .43rem) 0 0/.9rem 1.6rem repeat-y}
+  .page.red::after{border-right-color:#FFFFFF66}
+  .page.red h2{color:#fff}
+  .page.red .kicker{color:var(--ink)}
+  .page.red p{color:#FFEDE6}
+  .how{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
+  .how span{background:#ffffff26;border:1px solid #ffffff59;border-radius:999px;padding:.2rem .75rem;font-size:.9rem;color:#fff}
+  .how b{font-family:"Secular One",Arial,sans-serif;font-weight:400;margin-left:.3rem}
+  .wire{background:var(--sheet);color:var(--ink);border-radius:4px;margin:.8rem 0 .4rem;position:relative;box-shadow:0 8px 18px #12172240;transform:rotate(-.4deg)}
+  .wire .top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;background:var(--ink);color:#fff;padding:.45rem .7rem;border-radius:4px 4px 0 0}
+  .wire .top b{font-family:"Secular One",Arial,sans-serif;font-weight:400}
+  .wire pre{margin:0;padding:.8rem .9rem;white-space:pre-wrap;word-break:break-word;font-family:Rubik,Arial,sans-serif;font-size:.86rem;line-height:1.55;max-height:22rem;overflow:auto;direction:rtl;text-align:right;background:repeating-linear-gradient(#FFFDF7 0 1.33rem,#EDE6D6 1.33rem calc(1.33rem + 1px))}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border:0;border-radius:999px;padding:.55rem 1.1rem;font-family:"Secular One",Arial,sans-serif;font-size:1.02rem;cursor:pointer;text-decoration:none;background:var(--teal);color:var(--ink)}
+  .btn.big{width:100%;padding:.8rem 1rem;font-size:1.15rem;background:var(--ink);color:#fff;margin-top:.4rem}
+  .btn.line{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
+  #ok{color:#fff;font-weight:700;min-height:1.4em;margin:.3rem 0}
+  .warn{background:#ffffff1F;border-right:5px solid var(--ink);padding:.55rem .8rem;border-radius:4px;font-size:.93rem;margin-top:.6rem}
+  /* החוקרות: תעודות עיתונאי */
+  .press{display:grid;gap:.7rem;margin-top:.6rem}
+  .card{display:flex;gap:.8rem;align-items:flex-start;background:#fff;border:1.5px solid var(--ink);border-top:9px solid var(--teal);border-radius:10px;padding:.7rem .85rem}
+  .card:nth-child(2){border-top-color:var(--red)}
+  .card:nth-child(3){border-top-color:var(--navy)}
+  .card .ini{flex:0 0 3.1rem;height:3.1rem;border-radius:50%;background:var(--ink);color:#fff;font-family:"Secular One",Arial,sans-serif;font-size:1.25rem;display:flex;align-items:center;justify-content:center}
+  .card h3{font-size:1.2rem}
+  .card .org{font-size:.9rem;color:#6B7282;margin:.05rem 0 .35rem}
+  .card .c{display:flex;flex-wrap:wrap;gap:.35rem}
+  .card .c a{font-size:.88rem;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:.12rem .65rem;background:var(--paper);color:var(--navy);direction:ltr;unicode-bidi:isolate}
+  .stamp-t{display:inline-block;font-family:"Secular One",Arial,sans-serif;color:var(--red);border:3px solid var(--red);border-radius:8px;padding:.1rem .7rem;transform:rotate(-6deg);font-size:1.05rem}
+  footer{background:var(--ink);color:#C3CAD6;text-align:center;font-size:.85rem;padding:1rem;border-top:3px solid #fff}
+  footer b{font-family:"Secular One",Arial,sans-serif;font-weight:400;color:#fff}
+  @media (prefers-reduced-motion:reduce){.ticker .run span{animation:none;padding-right:0}html{scroll-behavior:auto}}
+  @media print{.ticker,nav,.btn,#save,#ok{display:none}.page{break-inside:avoid;box-shadow:none}.wire pre{max-height:none}@page{size:A5;margin:14mm}}
 </style>
 </head>
 <body>
-<header><b>פנקס לבדיקת אמינות של מקור</b><span>המודל ותהליך הבדיקה, לתזכורת בנייד · Begood</span></header>
-<nav aria-label="תוכן"><a href="#model">המודל</a><a href="#process">תהליך הבדיקה</a><a href="#questions">10 שאלות</a><a href="#ai">עם ה־AI שלי</a><a href="#save">שמירה בנייד</a></nav>
+<div class="ticker" aria-hidden="true"><b class="tag">מבזק</b><div class="run"><span>כל אדם זכאי לדעה משלו, אבל לא לעובדות משלו · דניאל פטריק מויניהן &nbsp;&nbsp;★&nbsp;&nbsp; "סמכו, אבל בדקו." · פתגם רוסי שרונלד רייגן הפך למפורסם</span></div></div>
+<nav aria-label="תוכן"><a href="#model">המודל</a><a href="#process">תהליך הבדיקה</a><a href="#questions">10 שאלות</a><a href="#ai">ההנחיה ל־AI</a><a href="#team">החוקרות</a><a href="#save">שמירה בנייד</a></nav>
 <main>
-  <section id="intro">
-    <h1>רגע. זה נכון?</h1>
-    <p>לפני שמאמינים לידיעה, לפני שמשתפים אותה ולפני שמלמדים אותה: עוצרים, בודקים מי עומד מאחוריה ועל מה היא נשענת, ונותנים לה ציון מ־1 עד 5.</p>
-    <p class="muted">הפנקס עובד גם בלי אינטרנט, אחרי ששומרים אותו בנייד.</p>
+  <section class="page cover" id="intro">
+    <img class="stamp" src="assets/credibility-notebook/stamp.webp" alt="">
+    <img class="man" src="assets/credibility-notebook/man.webp" alt="">
+    <p class="kicker">פנקס כיס · בדיקת אמינות של מקורות</p>
+    <h1>רגע.<br>זה נכון<em>?</em></h1>
+    <p class="sub">לבדוק מקור לפני שמאמינים לו</p>
+    <p class="lead">לפני שמאמינים לידיעה, לפני שמשתפים אותה ולפני שמלמדים אותה: עוצרים, בודקים מי עומד מאחוריה ועל מה היא נשענת, ונותנים לה ציון מ־1 עד 5.</p>
+    <p class="byline">ד״ר איבנה ריטנר · ד״ר עינת שושן־רפאלי · ד״ר יעל שדה</p>
   </section>
 
-  <section id="model">
-    <h2>המודל: חמש רמות של אמינות</h2>
+  <section class="page" id="model">
+    <p class="kicker">המודל</p>
+    <h2>חמש רמות של אמינות</h2>
     <p class="muted">הציון ניתן למקור בהקשר של הטענה שבודקים, ולא לגוף המפרסם באופן כללי.</p>
-    <div id="scale"></div>
-    <div class="note"><b>חשוב לזכור</b><ul class="sub" id="remember"></ul></div>
+    <div class="meter" id="scale"></div>
+    <div class="rule"><h3>חשוב לזכור</h3><ul id="remember"></ul></div>
     <details><summary>מה נחשב ראיה, ומה רק נראה משכנע</summary>
-      <ul class="sub">
-        <li><b>ראיה:</b> מסמך רשמי (חוק, פסק דין, נתון רשמי, פרוטוקול), מקור ראשוני שאפשר לקרוא במלואו, והצלבה עם שני מקורות עצמאיים שאינם מעתיקים זה מזה.</li>
-        <li><b>לא ראיה:</b> תואר או תפקיד של מי שאמר, מספר שיתופים או לייקים, עיצוב מקצועי, לוגו או סיומת של אתר, "מקור בכיר" בלי שם, ו"מחקר מצא" בלי שם המחקר.</li>
-        <li><b>סימן לבדיקה:</b> טענה שמסבירה הכול בקנוניה סודית, ואי אפשר לחשוב על שום דבר שיפריך אותה.</li>
-      </ul>
+      <div class="ev">
+        <div class="y"><b>ראיה:</b> מסמך רשמי (חוק, פסק דין, נתון רשמי, פרוטוקול), מקור ראשוני שאפשר לקרוא במלואו, והצלבה עם שני מקורות עצמאיים שאינם מעתיקים זה מזה.</div>
+        <div class="no"><b>לא ראיה:</b> תואר או תפקיד של מי שאמר, מספר שיתופים או לייקים, עיצוב מקצועי, לוגו או סיומת של אתר, "מקור בכיר" בלי שם, ו"מחקר מצא" בלי שם המחקר.</div>
+        <div class="q"><b>סימן לבדיקה:</b> טענה שמסבירה הכול בקנוניה סודית, ואי אפשר לחשוב על שום דבר שיפריך אותה.</div>
+      </div>
     </details>
   </section>
 
-  <section id="process">
-    <h2>תהליך הבדיקה: ארבעה שלבים</h2>
+  <section class="page dark" id="process">
+    <div class="proc-head"><div><p class="kicker">תהליך הבדיקה</p><h2>ארבעה שלבים, בכל מקור</h2></div><img src="assets/credibility-notebook/mic.webp" alt=""></div>
     <ol class="steps">
-      <li><b>עוצרים ומתארים.</b> כותבים את הטענה במשפט אחד, ואת מה שידוע על המקור:
-        <ul class="sub"><li>מה סוג המקור, ומי פרסם?</li><li>מתי ואיפה פורסם, ואיך הגיע אליי?</li><li>על מה הטענה נשענת: מסמך, נתון, עדות, צילום?</li><li>מה אני מרגיש/ה כשאני קורא/ת, והאם אני רוצה שזה יהיה נכון?</li></ul>
+      <li><h3>עוצרים ומתארים</h3>כותבים את הטענה במשפט אחד, ואת מה שידוע על המקור:
+        <ul><li>מה סוג המקור, ומי פרסם?</li><li>מתי ואיפה פורסם, ואיך הגיע אליי?</li><li>על מה הטענה נשענת: מסמך, נתון, עדות, צילום?</li><li>מה אני מרגיש/ה כשאני קורא/ת, והאם אני רוצה שזה יהיה נכון?</li></ul>
         נותנים <b>ציון ראשון משלי</b> מ־1 עד 5, עם נימוק קצר. מה שלא ידוע, כותבים "לא ידוע".</li>
-      <li><b>יוצאים מהמקור: קריאה לרוחב.</b> לא מתעמקים בדף עצמו, אלא פותחים לשונית חדשה ובודקים מה אחרים אומרים עליו (SIFT):
-        <ul class="sub"><li><b>מי עומד מאחורי המקור:</b> מה כתוב עליו מחוץ לאתר עצמו.</li><li><b>כיסוי טוב יותר:</b> מה מדווחים מקורות עצמאיים אחרים, ואתרי בדיקת עובדות.</li><li><b>עד המקור הראשוני:</b> המסמך, החוק, המחקר או הסרטון המלא, והאם הטענה תואמת אותם.</li><li><b>תמונה או סרטון:</b> חיפוש תמונה הפוך, תאריך הצילום, סימנים לעריכה או ליצירה ב־AI.</li></ul></li>
-      <li><b>מוסיפים פריטי מידע.</b> כל דבר שמצאתי נרשם: מה מצאתי ומאיפה. ממשיכים עוד ועוד, עד שאפשר לומר בכנות: <b>אין לי עוד מידע</b>.</li>
-      <li><b>ציון סופי ונימוק.</b> נותנים ציון מ־1 עד 5 לאור מה שנמצא, ומשווים לציון הראשון: מה השתנה, ולמה? ומה עדיין לא ידוע, ומה היה משנה את הציון?</li>
+      <li class="hot"><h3>יוצאים מהמקור: קריאה לרוחב</h3>לא מתעמקים בדף עצמו, אלא פותחים לשונית חדשה ובודקים מה אחרים אומרים עליו (SIFT):
+        <ul><li><b>מי עומד מאחורי המקור:</b> מה כתוב עליו מחוץ לאתר עצמו.</li><li><b>כיסוי טוב יותר:</b> מה מדווחים מקורות עצמאיים אחרים, ואתרי בדיקת עובדות.</li><li><b>עד המקור הראשוני:</b> המסמך, החוק, המחקר או הסרטון המלא, והאם הטענה תואמת אותם.</li><li><b>תמונה או סרטון:</b> חיפוש תמונה הפוך, תאריך הצילום, סימנים לעריכה או ליצירה ב־AI.</li></ul></li>
+      <li><h3>מוסיפים פריטי מידע</h3>כל דבר שמצאתי נרשם: מה מצאתי ומאיפה. ממשיכים עוד ועוד, עד שאפשר לומר בכנות: <b>אין לי עוד מידע</b>.</li>
+      <li><h3>ציון סופי ונימוק</h3>נותנים ציון מ־1 עד 5 לאור מה שנמצא, ומשווים לציון הראשון: מה השתנה, ולמה? מה עדיין לא ידוע, ומה היה משנה את הציון?</li>
     </ol>
-    <div class="note">ציון 1 אינו "שקר", וציון 5 אינו "אמת מוחלטת". הציון אומר עד כמה הטענה נשענת על ראיות שנבדקו.</div>
+    <p class="say">ציון 1 אינו "שקר", וציון 5 אינו "אמת מוחלטת". הציון אומר עד כמה הטענה נשענת על ראיות שנבדקו.</p>
   </section>
 
-  <section id="questions">
+  <section class="page" id="questions">
+    <p class="kicker">לפני שנותנים ציון</p>
     <h2>10 שאלות לבדיקה עצמית</h2>
-    <p class="muted">עוברים עליהן לפי הסדר, לפני שנותנים ציון.</p>
-    <ol id="qs"></ol>
+    <p class="muted">עוברים עליהן לפי הסדר.</p>
+    <ol class="qs" id="qs"></ol>
   </section>
 
-  <section id="ai">
-    <h2>להיעזר ב־AI שלי</h2>
-    <p>הפנקס אינו מחובר למנוע בדיקה. אפשר לחבר אותו ל־AI שבחרת (ChatGPT, Claude, Gemini או אחר), בחשבון שלך: מעתיקים את ההנחיה, מדביקים אותה בתחילת שיחה חדשה, ואחריה מדביקים או מעלים את המקור.</p>
-    <ol class="steps">
-      <li>לוחצים על <b>העתקת ההנחיה</b>.</li>
-      <li>פותחים שיחה חדשה ב־AI שלך ומדביקים.</li>
-      <li>מדביקים את המקור (טקסט, קישור או צילום מסך), ועונים על השאלות שה־AI שואל. הוא יבקש קודם את הציון והנימוק שלך.</li>
-    </ol>
-    <button class="btn" id="copy" type="button">העתקת ההנחיה ל־AI</button>
+  <section class="page red" id="ai">
+    <p class="kicker">להיעזר ב־AI שלי</p>
+    <h2>ההנחיה ל־AI: בודקים מקור לפי המודל</h2>
+    <p>הפנקס אינו מחובר למנוע בדיקה. אפשר לחבר אותו ל־AI שבחרת (ChatGPT, Claude, Gemini או אחר), בחשבון שלך: מעתיקים את ההנחיה, מדביקים אותה בתחילת שיחה חדשה, ואחריה מדביקים או מעלים את המקור. ה־AI יבקש קודם את הציון והנימוק שלך.</p>
+    <div class="how"><span><b>1</b>מעתיקים</span><span><b>2</b>מדביקים בשיחה חדשה</span><span><b>3</b>מביאים את המקור ועונים</span></div>
+    <div class="wire">
+      <div class="top"><b>ההנחיה המלאה</b><button class="btn" id="copy" type="button">העתקה</button></div>
+      <pre id="prompt" tabindex="0" aria-label="ההנחיה ל־AI"></pre>
+    </div>
+    <button class="btn big" id="copy2" type="button">העתקת ההנחיה ל־AI</button>
     <div id="ok" aria-live="polite"></div>
-    <details><summary>לקרוא את ההנחיה</summary><textarea id="prompt" readonly aria-label="ההנחיה ל־AI"></textarea></details>
-    <div class="note">ה־AI יכול לטעות ואף להמציא מקורות וקישורים. כל מקור שהוא מציע בודקים בעצמנו. ההכרעה שלך. כדאי לא להדביק פרטים מזהים של אנשים פרטיים.</div>
+    <p class="warn">ה־AI יכול לטעות ואף להמציא מקורות וקישורים. כל מקור שהוא מציע בודקים בעצמנו, וההכרעה שלך. כדאי לא להדביק פרטים מזהים של אנשים פרטיים.</p>
   </section>
 
-  <section id="save">
+  <section class="page" id="team">
+    <p class="kicker">מי אנחנו</p>
+    <h2>החוקרות</h2>
+    <p class="muted">הפנקס נכתב במסגרת המחקר "בדיקת אמינות של מקורות". שאלה, הערה או רעיון: נשמח לשמוע.</p>
+    <div class="press">
+      <div class="card"><span class="ini" aria-hidden="true">א״ר</span><div><h3>ד״ר איבנה ריטנר</h3><p class="org">האקדמית גורדון</p></div></div>
+      <div class="card"><span class="ini" aria-hidden="true">ע״ש</span><div><h3>ד״ר עינת שושן־רפאלי</h3><p class="org">המכללה האקדמית אורנים</p><div class="c"><a href="tel:+972509000408">050-9000408</a><a href="mailto:ei0509000408@gmail.com">ei0509000408@gmail.com</a></div></div></div>
+      <div class="card"><span class="ini" aria-hidden="true">י״ש</span><div><h3>ד״ר יעל שדה</h3><p class="org">Begood · חוסן | קהילה | חינוך</p><div class="c"><a href="tel:+972523969417">052-3969417</a><a href="mailto:yael.sade@gmail.com">yael.sade@gmail.com</a><a href="https://be-good.co.il">be-good.co.il</a></div></div></div>
+    </div>
+  </section>
+
+  <section class="page" id="save">
+    <p class="kicker">תמיד בכיס</p>
     <h2>שמירה בנייד</h2>
     <details open><summary>אייפון</summary><ol><li>פותחים את הדף בספארי.</li><li>לוחצים על כפתור השיתוף (ריבוע עם חץ למעלה).</li><li>בוחרים "הוספה למסך הבית".</li></ol></details>
     <details><summary>אנדרואיד</summary><ol><li>פותחים את הדף בכרום.</li><li>לוחצים על שלוש הנקודות בפינה העליונה.</li><li>בוחרים "התקנת אפליקציה" או "הוספה למסך הבית".</li></ol></details>
-    <button class="btn sec" id="dl" type="button">הורדת הפנקס כקובץ</button>
+    <button class="btn line" id="dl" type="button">הורדת הפנקס כקובץ</button>
     <p class="muted">הקובץ נפתח בכל דפדפן, גם בלי אינטרנט. אפשר גם להדפיס או לשמור כ־PDF.</p>
   </section>
 </main>
-<footer>מחקר "בדיקת אמינות של מקורות" · ד״ר איבנה ריטנר, ד״ר עינת שושן־רפאלי, ד״ר יעל שדה · Begood · be-good.co.il</footer>
+<footer><b>Begood</b> · מחקר "בדיקת אמינות של מקורות" · ד״ר איבנה ריטנר, ד״ר עינת שושן־רפאלי, ד״ר יעל שדה · be-good.co.il</footer>
 <script>
 (function () {
   // הנוסח של המודל זהה ל-credibility-model.js (SCALE, REMEMBER, QUESTIONS). הקובץ עומד בפני עצמו כדי שיעבוד גם אחרי הורדה.
@@ -160,23 +263,44 @@
   ].join('\n');
   var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var $ = function (s) { return document.querySelector(s); };
-  $('#scale').innerHTML = SCALE.map(function (l) {
-    return '<div class="lvl"><span class="dot" style="background:' + l[3] + '" aria-hidden="true">' + l[0] + '</span><div><b>' + l[0] + ' · ' + esc(l[1]) + '</b><br>' + esc(l[2]) + '</div></div>';
-  }).join('');
-  $('#remember').innerHTML = REMEMBER.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('');
-  $('#qs').innerHTML = QUESTIONS.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('');
-  $('#prompt').value = PROMPT;
-  $('#copy').addEventListener('click', function () {
+  if (!$('#scale').children.length) {
+    $('#scale').innerHTML = SCALE.map(function (l) {
+      return '<div class="bar" style="background:' + l[3] + ';width:' + (76 + (l[0] - 1) * 6) + '%"><span class="n" aria-hidden="true">' + l[0] + '</span><span class="x"><b>' + esc(l[1]) + '</b>' + esc(l[2]) + '</span></div>';
+    }).join('');
+    $('#remember').innerHTML = REMEMBER.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('');
+    $('#qs').innerHTML = QUESTIONS.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('');
+    $('#prompt').textContent = PROMPT;
+  }
+  function copy() {
     var done = function () { $('#ok').textContent = '✓ ההנחיה הועתקה. אפשר להדביק אותה בשיחה חדשה ב־AI שלך.'; };
+    var fallback = function () {
+      var r = document.createRange(); r.selectNodeContents($('#prompt'));
+      var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+      try { document.execCommand('copy'); done(); } catch (e) { $('#ok').textContent = 'ההנחיה מסומנת. אפשר להעתיק אותה ידנית.'; }
+    };
     if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(PROMPT).then(done, fallback); else fallback();
-    function fallback() { var t = $('#prompt'); t.closest('details').open = true; t.focus(); t.select(); try { document.execCommand('copy'); done(); } catch (e) { $('#ok').textContent = 'אפשר לסמן את ההנחיה ולהעתיק אותה ידנית.'; } }
-  });
+  }
+  $('#copy').addEventListener('click', copy);
+  $('#copy2').addEventListener('click', copy);
+  // הורדה: האיורים נכנסים לקובץ, כדי שיוצגו גם בלי אינטרנט.
+  function inline(img) {
+    if (/^data:/.test(img.src)) return Promise.resolve();
+    return fetch(img.src).then(function (r) { return r.blob(); }).then(function (b) {
+      return new Promise(function (ok) { var fr = new FileReader(); fr.onload = function () { img.setAttribute('src', fr.result); ok(); }; fr.onerror = ok; fr.readAsDataURL(b); });
+    }).catch(function () {});
+  }
   $('#dl').addEventListener('click', function () {
-    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
-    a.download = 'begood-credibility-notebook.html';
-    document.body.appendChild(a); a.click(); a.remove();
+    var copyDoc = document.documentElement.cloneNode(true);
+    var imgs = Array.prototype.slice.call(copyDoc.querySelectorAll('img'));
+    imgs.forEach(function (i) { i.src = i.src; });
+    Promise.all(imgs.map(inline)).then(function () {
+      copyDoc.querySelectorAll('link[rel=manifest],link[rel=apple-touch-icon]').forEach(function (l) { l.remove(); });
+      var html = '<!DOCTYPE html>\n' + copyDoc.outerHTML;
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+      a.download = 'begood-credibility-notebook.html';
+      document.body.appendChild(a); a.click(); a.remove();
+    });
   });
   if ('serviceWorker' in navigator && location.protocol === 'https:') {
     navigator.serviceWorker.register('credibility-notebook-sw.js', { scope: './credibility-notebook' }).catch(function () {});

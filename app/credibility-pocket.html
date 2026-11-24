@@ -39,7 +39,7 @@
 </head>
 <body>
 <header><img src="assets/begood-edu.webp" alt="Begood בחינוך"><b>בדיקת אמינות של מקורות: גירסה לסטודנטיות.ים</b></header>
-<nav class="toc" aria-label="תוכן"><a href="#enter">כניסה</a><a href="#how">איך עובדים</a><a href="#scale">המחוון</a><a href="#examples">דוגמאות</a><a href="#questions">10 שאלות</a><a href="#reflect">רפלקציה</a><a href="#save">שמירה בטלפון</a><a href="credibility-notebook.html">פנקס לנייד</a></nav>
+<nav class="toc" aria-label="תוכן"><a href="#enter">כניסה</a><a href="#how">איך עובדים</a><a href="#scale">המחוון</a><a href="#examples">דוגמאות</a><a href="#questions">10 שאלות</a><a href="#reflect">רפלקציה</a><a href="#ai">ההנחיה ל־AI</a><a href="#save">שמירה בטלפון</a><a href="credibility-notebook.html">פנקס לנייד</a></nav>
 <main>
   <section id="enter">
     <h1>בדיקת אמינות של מקורות</h1>
@@ -62,6 +62,11 @@
   <section id="examples"><h2>דוגמאות לכל רמה</h2><p class="crd-hint"><span class="yes">✓</span> מתאים לרמה · <span class="no">✗</span> נראה משכנע, אבל אינו מספיק</p><div id="exBox"></div></section>
   <section id="questions"><h2>10 שאלות לבדיקה עצמית</h2><p class="crd-hint">לפני שנותנים ציון, עוברים על השאלות לפי הסדר.</p><ol id="qBox"></ol></section>
   <section id="reflect"><h2>הרפלקציה (מפגש 3)</h2><ol id="rBox"></ol><p class="crd-hint" id="rNote"></p></section>
+  <section id="ai"><h2>ההנחיה ל־AI שלי</h2><p>אפשר לבדוק מקור לפי המודל גם ב־AI שבחרת (ChatGPT, Claude, Gemini או אחר), בחשבון שלך: מעתיקים את ההנחיה, מדביקים אותה בתחילת שיחה חדשה, ואחריה מביאים את המקור. ה־AI יבקש קודם את הציון והנימוק שלך.</p>
+    <pre id="aiPrompt" tabindex="0" aria-label="ההנחיה ל־AI" style="white-space:pre-wrap;font-family:inherit;font-size:.88rem;line-height:1.55;background:#f7f5ef;border:1px solid #ddd5c3;border-radius:10px;padding:.7rem .85rem;max-height:18rem;overflow:auto;text-align:right"></pre>
+    <p><button type="button" class="go" id="aiCopy">העתקת ההנחיה</button> <span id="aiOk" aria-live="polite" class="crd-hint"></span></p>
+    <p class="crd-hint">ה־AI יכול לטעות ואף להמציא מקורות וקישורים. כל מקור שהוא מציע בודקים בעצמנו, וההכרעה שלך.</p>
+  </section>
   <section id="notebook"><h2>פנקס לנייד</h2><p>המודל ותהליך הבדיקה בקובץ קטן, לתזכורת בנייד ולבדיקות אחרי הקורס. אפשר לחבר אותו ל־AI שלך בהעתקת הנחיה.</p><a class="go" href="credibility-notebook.html">לפנקס ←</a></section>
   <section id="save"><h2>שמירת הגירסה לסטודנטיות.ים בטלפון</h2>
     <details open><summary>אייפון</summary><ol><li>פותחים את הדף בספארי.</li><li>לוחצים על כפתור השיתוף: ריבוע עם חץ למעלה, בתחתית המסך.</li><li>גוללים מעט ובוחרים "הוספה למסך הבית".</li><li>לוחצים "הוספה". הגירסה לסטודנטיות.ים מופיעה כסמל במסך הבית.</li></ol></details>
@@ -80,6 +85,12 @@
   $('#qBox').innerHTML = M.QUESTIONS.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('');
   $('#rBox').innerHTML = M.REFLECT.map(function (q) { return '<li>' + esc(q.t) + (q.when ? ' <span class="crd-hint">(' + (q.when[0] === 'no' ? 'אם לא' : 'אם כן') + ')</span>' : '') + '</li>'; }).join('');
   $('#rNote').textContent = M.REFLECT_NOTE;
+  $('#aiPrompt').textContent = M.AI_PROMPT;
+  $('#aiCopy').addEventListener('click', function () {
+    var ok = function () { $('#aiOk').textContent = '✓ הועתק. אפשר להדביק בשיחה חדשה ב־AI שלך.'; };
+    var sel = function () { var r = document.createRange(); r.selectNodeContents($('#aiPrompt')); var w = getSelection(); w.removeAllRanges(); w.addRange(r); try { document.execCommand('copy'); ok(); } catch (e) { $('#aiOk').textContent = 'ההנחיה מסומנת. אפשר להעתיק ידנית.'; } };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(M.AI_PROMPT).then(ok, sel); else sel();
+  });
   // קישור עם קוד הכיתה (credibility-pocket.html?c=...): הכניסה נפתחת ישר במרחב הכיתה
   var c = (new URLSearchParams(location.search).get('c') || '').replace(/[^A-Za-z0-9]/g, '');
   if (c) document.querySelector('.go').href = 'credibility-join.html?c=' + c;
