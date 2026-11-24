@@ -1216,8 +1216,11 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
       body.append(SBE_DOC.editable(briefNode));
       // מתאמנים על השיחה הזאת (23/11/2026: "התרגול נקטע כאן", ובחרה: "אחרי התדריך אין מעבר"): פרטי השיחה, המודל והתדריך
       // עוברים לתרגול על מקרה משלך (practice.html?from=plan), והתרגול נפתח עם השיחה הזאת.
-      const goPractice = el("button", { type:"button", class:"dlg-dl primary", id:"bToPractice" }, "▶ מתאמנים על השיחה הזאת");
-      goPractice.addEventListener("click", async () => {
+      // במסלול המחקר (24/11/2026: "שוב הגעתי לכאן ואני נתקעת... אחרי שמירת התדריך - ממשיכים לאימון עצמו"):
+      // כפתור אחד ששומר את התדריך ועובר לאימון, בראש החלון ובסופו, בלי "שמירה במערכת".
+      const goLabel = TS_PLAN ? "שמירת התדריך וממשיכים לאימון ▶" : "▶ מתאמנים על השיחה הזאת";
+      const goPractice = el("button", { type:"button", class:"dlg-dl primary", id:"bToPractice" }, goLabel);
+      const goClick = async () => {
         const join = (...a) => a.filter(x => x && String(x).trim()).join(". ");
         if (TS_PLAN) return tsToPractice(d, briefing || "", goPractice, join);
         const M = ((window.SBE_TALKSTUDY && SBE_TALKSTUDY.MODELS) || []).find(m => m.name === d.approach);
@@ -1229,7 +1232,13 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
         const modelNote = M ? (SBE_TALKSTUDY.modelNote({ ids: [M.id] }) || "") : "";
         try { localStorage.setItem("sbe.plan.handoff", JSON.stringify({ at: Date.now(), form, approach: d.approach || "", modelNote, briefing: briefing || "" })); } catch (_) {}
         location.href = "practice.html?from=plan";
-      });
+      };
+      goPractice.addEventListener("click", goClick);
+      if (TS_PLAN) {
+        const top = el("button", { type:"button", class:"dlg-dl primary" }, goLabel);
+        top.addEventListener("click", () => goPractice.click());
+        body.prepend(el("p", { class:"to-practice" }, top));
+      }
       body.append(el("p", { class:"to-practice" }, goPractice));
     } else {
       body.append(el("div", { class:"banner-mini" }, "⚠ אין חיבור למודל כרגע: מוצגים כרטיס התזכורת ועץ האפשרויות מהשדות כפי שמולאו (מצב הדגמה). כשהשרת המקומי פועל, המודל כותב מהם תדריך רציף."));
@@ -1275,7 +1284,10 @@ document.getElementById("bBuild").addEventListener("click", async (e) => {
       subtitle: [d.myself, d.otherParty].filter(Boolean).join(" · מול ") ,
       nodes: (() => { const card = rc.querySelector("tr") ? [h("כרטיס תזכורת"), rc] : [];
         return briefing ? [briefNode, ...card] : [...card, h("עץ אפשרויות"), tree]; })() }));
-    body.append(dl, sysBtn);
+    if (TS_PLAN && briefing) {
+      dl.textContent = "🖨 הדפסה (רשות)";
+      body.append(dl, el("p", { class:"to-practice" }, (() => { const b = el("button", { type:"button", class:"dlg-dl primary" }, "שמירת התדריך וממשיכים לאימון ▶"); b.addEventListener("click", () => document.getElementById("bToPractice").click()); return b; })()));
+    } else body.append(dl, sysBtn);
     show(briefing ? "התדריך לפני השיחה" : "כרטיס התזכורת ועץ האפשרויות", body);
   }
 });
@@ -1299,7 +1311,7 @@ async function tsToPractice(d, briefing, btn, join) {
   const TSM = window.SBE_TALKSTUDY;
   let cred = null; try { cred = JSON.parse(localStorage.getItem("sbe.ts.cred") || "null"); } catch (e) {}
   const M = TSM.MODELS.find(m => m.name === d.approach);
-  const note = (t) => { let p = document.getElementById("tsSaveNote"); if (!p) { p = el("p", { id:"tsSaveNote", class:"banner-mini", role:"status" }); btn.closest("p").after(p); } p.textContent = t; };
+  const note = (t) => { let p = document.getElementById("tsSaveNote"); if (!p) { p = el("p", { id:"tsSaveNote", class:"banner-mini", role:"status" }); btn.closest("p").after(p); } p.textContent = t; try { p.scrollIntoView({ block:"center", behavior:"smooth" }); } catch (_) {} };
   if (!cred || !TS_CTX || !M) return note("כדי להמשיך, אפשר לבחור את אחד משלושת המודלים ולחזור למסלול דרך הקישור של הקבוצה.");
   if (!d.tsType || !d.tsDiff || !d.tsReason) return note("כדי להמשיך, אפשר למלא את סוג השיחה, כמה היא מאתגרת, ולמה המודל הזה.");
   const fields = {

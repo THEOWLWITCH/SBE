@@ -47,6 +47,7 @@ import { handleBackupStatus } from './lib/backup-monitor.mjs';
 import { handleScenarios, supabaseScenarios } from './lib/scenarios.mjs';
 import { handleCommunication } from './lib/communication-continuity.mjs';
 import { handleResearch } from './lib/research.mjs';
+import { handleResearchDocs } from './lib/research-docs.mjs';
 import { handleIntake } from './lib/research-intake.mjs';
 import {startPartnershipWorkScheduler} from './lib/research-partnership-work.mjs';
 import { handleResearchSigningWebhook } from './lib/research-partnerships.mjs';
@@ -211,6 +212,16 @@ const server = createServer(async (req, res) => {
       const [status, out] = await handleIntake(authStore || supabaseStore(url, key, { timeoutMs: 8000 }), supabaseResearchStore(url, key), body, { clientAddress: req.socket.remoteAddress });
       return sendJson(res, status, { ...out, ok: status >= 200 && status < 300, status });
     } catch { return sendJson(res, 503, {ok:false,status:503,error:'unavailable',code:'unavailable'}); }
+  }
+  // POST /api/research-docs: מסמכי המחקר במרכז המחקר (עד כ־8 מגה למסמך). ההרשאה לפי מרכז המחקר.
+  if (req.method === 'POST' && req.url === '/api/research-docs') {
+    const url = process.env.SUPABASE_URL, key = process.env.SUPABASE_SERVICE_KEY;
+    if (!url || !key || !jobStore()) return sendJson(res, 503, { error: 'not_configured' });
+    let body;
+    try { body = JSON.parse(await readBody(req, 12 * 1024 * 1024)); }
+    catch (e) { return sendJson(res, e && e.status === 413 ? 413 : 400, { error: e && e.status === 413 ? 'too_large' : 'invalid' }); }
+    const [status, out] = await handleResearchDocs(jobStore(), supabaseResearchStore(url, key), body);
+    return sendJson(res, status, out);
   }
   if (researchPath) {
     if (req.method !== 'POST') { res.setHeader('allow', 'POST, OPTIONS'); return sendJson(res, 405, {ok:false,status:405,error:'invalid',code:'invalid'}); }
