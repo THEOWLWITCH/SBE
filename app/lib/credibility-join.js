@@ -20,6 +20,11 @@
   const saveCred = (c, v) => { try { if (v) localStorage.setItem(credKey(c), JSON.stringify(v)); else localStorage.removeItem(credKey(c)); } catch (e) {} };
   const me = () => { try { return localStorage.getItem('sbe.crd.me.' + (S.cred && S.cred.t)) || ''; } catch (e) { return ''; } };
   const setMe = (v) => { try { localStorage.setItem('sbe.crd.me.' + S.cred.t, v); } catch (e) {} };
+  // השאלון האישי לפני הכניסה לצוותים (24/11/2026: "שאלון לפני כניסה לצוותים"): נשמר במכשיר עד שהצוות נפתח, ואז נשלח בשם המשתתף/ת
+  const mineKey = () => 'sbe.crd.mine.' + classCode;
+  const getMine = () => { try { return JSON.parse(localStorage.getItem(mineKey()) || 'null'); } catch (e) { return null; } };
+  const putMine = (v) => { try { if (v) localStorage.setItem(mineKey(), JSON.stringify(v)); else localStorage.removeItem(mineKey()); } catch (e) {} };
+  const normName = (x) => String(x || '').replace(/[\s.'"\u05F3\u05F4\-]/g, '').toLowerCase();
   const call = (op, input) => U.api(op, input, Object.assign({ by: me() || null }, S.cred));
   const auth = () => ({ page: 'credibility-join.html', crd: S.cred });
   const msg = (t, cls) => '<div class="dlm-msg' + (cls ? ' ' + cls : '') + '" role="' + (cls === 'err' ? 'alert' : 'status') + '">' + esc(t) + '</div>';
@@ -66,19 +71,60 @@
     }
     const a = info.activity;
     $('#topTitle').textContent = a.title;
+    const mine = getMine();
+    if (!mine || !mine.pre) return personalPre(info);
     if (testAct()) return newTeam(info);
     app.innerHTML = '<div class="dlm-card"><h1>' + esc(a.title) + '</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
       + (a.dilemma ? '<p><b>הדילמה:</b> ' + esc(a.dilemma) + '</p>' : '')
       + (a.status !== 'open' ? msg('הפעילות סגורה כרגע. המרצה תפתח אותה.') : '')
       + '<div class="dlm-grid2"><div class="dlm-card soft"><h2>הצוות שלנו כבר נפתח</h2><p class="dlm-hint">כל אחד ואחת מהצוות נכנס/ת עם קוד הצוות שמופיע אצל מי שפתח/ה אותו.</p>'
       + '<label for="tc">קוד הצוות</label><input type="text" id="tc" dir="ltr" autocomplete="off" maxlength="6" style="max-width:10rem"> <button class="dlm-btn main" id="join">הצטרפות לצוות</button><div id="jm"></div></div>'
-      + '<div class="dlm-card soft"><h2>פתיחת צוות חדש</h2>' + (info.full ? '<p>בכיתה כבר יש 10 צוותים. אפשר להצטרף לצוות קיים עם קוד הצוות.</p>' : '<p class="dlm-hint">אחד/ת מהצוות פותח/ת, וכותב/ת את שמות כל המשתתפים.</p><button class="dlm-btn main" id="new">פתיחת צוות</button>') + '</div></div>'
+      + '<div class="dlm-card soft"><h2>פתיחת צוות חדש</h2>' + (info.full ? '<p>בכיתה כבר יש 10 צוותים. אפשר להצטרף לצוות קיים עם קוד הצוות.</p>' : '<p class="dlm-hint">אחד/ת מהצוות פותח/ת, וכותב/ת את ראשי התיבות של כל המשתתפים.</p><button class="dlm-btn main" id="new">פתיחת צוות</button>') + '</div></div>'
       + (info.teams.length ? '<p class="dlm-hint">צוותים בכיתה: ' + info.teams.map((t) => esc(t.name)).join(' · ') + '</p>' : '') + '</div>';
+    app.querySelector('.dlm-card').insertAdjacentHTML('afterbegin', '<p class="dlm-msg">✓ השאלון של ' + esc(mine.name) + ' נשמר במכשיר הזה. הוא נשלח לצוות כשנכנסים אליו. <button type="button" class="crd-link" id="redoPre">עריכת השאלון</button></p>');
+    $('#redoPre').onclick = () => personalPre(info, true);
     $('#join').onclick = async () => {
       try { const r = await U.api('p.teamJoin', { code: classCode, tcode: $('#tc').value }); S.cred = { a: r.a, t: r.t, key: r.key }; saveCred(classCode, S.cred); load(); }
       catch (e) { $('#jm').innerHTML = msg(e.message, 'err'); }
     };
     const nb = $('#new'); if (nb) nb.onclick = () => newTeam(info);
+  }
+  function personalPre(info, edit) {
+    const a = info.activity, mine = getMine() || {};
+    app.innerHTML = testBar() + '<div class="dlm-card"><h1>' + esc(M.ATT.pre) + '</h1><p class="dlm-sub">' + esc(a.title) + ' · ' + esc(a.class.name) + '</p>'
+      + '<p>לפני הכניסה לצוותים, כל משתתף/ת ממלא/ת שאלון עמדות אישי קצר, מהמכשיר שלו/ה. אחר כך פותחים צוות או מצטרפים לצוות.</p>'
+      + '<p class="dlm-hint">' + esc(M.ATT.note) + '</p>'
+      + '<label for="mi">ראשי התיבות שלי <span class="crd-req">(שדה עיקרי)</span></label><input type="text" id="mi" maxlength="12" placeholder="למשל: י.ש" style="max-width:12rem" value="' + esc(mine.name || '') + '">'
+      + '<p class="dlm-hint">אותם ראשי תיבות כותבים גם ברשימת המשתתפים בצוות.</p>'
+      + attForm('pre-', mine.pre || mine.d) + '<label for="pi" class="crd-ini-h">' + esc(M.INITIAL.t) + ' <span class="crd-req">(שדה עיקרי)</span> <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="pi" rows="5">' + esc(mine.initial || '') + '</textarea>'
+      + '<p><button class="dlm-btn main" id="savePre1">שמירת השאלון וכניסה לצוותים</button>' + (edit ? ' <button class="dlm-btn" id="back1">חזרה</button>' : '') + '</p><div id="pmm"></div></div>';
+    bindTest();
+    // מה שמסומן נשמר במכשיר תוך כדי, וחוזר אחרי רענון
+    const keep = () => { const d = {}; M.ATTITUDES.forEach((q) => { const c = app.querySelector('input[name="pre-' + q.k + '"]:checked'); if (c) d[q.k] = Number(c.value); });
+      putMine(Object.assign(getMine() || {}, { name: $('#mi').value.trim(), initial: $('#pi').value, d })); };
+    app.addEventListener('input', keep); app.addEventListener('change', keep);
+    if (edit) $('#back1').onclick = () => start();
+    $('#savePre1').onclick = () => {
+      const name = $('#mi').value.trim(), pre = readAtt('pre-'), init = $('#pi').value.trim();
+      const err = !name ? 'כדי להמשיך, אפשר לכתוב את ראשי התיבות שלך.' : !pre ? 'כדי להמשיך, אפשר לבחור תשובה בכל אחד מההיגדים.' : !init ? 'כדי להמשיך, אפשר לכתוב את עמדתך לגבי ספקולציות, פייק ניוז, קונספירציות ודיסאינפורמציה.' : '';
+      if (err) { $('#pmm').innerHTML = msg(err, 'err'); const miss = app.querySelector('.crd-att-q:not(:has(input:checked))'); if (pre === null && miss) miss.scrollIntoView({ block: 'center' }); return; }
+      app.removeEventListener('input', keep); app.removeEventListener('change', keep);
+      putMine({ name, pre, initial: init, sent: (getMine() || {}).sent || {} });
+      window.scrollTo(0, 0); start();
+    };
+  }
+  // אחרי הכניסה לצוות: השאלון שמולא לפני כן נשלח בשם המשתתף/ת שראשי התיבות שלו/ה תואמים
+  async function sendMine(memberId) {
+    const mine = getMine(); if (!mine || !mine.pre || !S.cred) return false;
+    await call('p.reflect', { member: memberId, pre: mine.pre, initial: mine.initial });
+    mine.sent = Object.assign(mine.sent || {}, { [S.cred.t]: memberId }); putMine(mine); setMe(memberId);
+    return true;
+  }
+  async function autoMine() {
+    const mine = getMine(); if (!mine || !mine.pre || !S.cred || (mine.sent || {})[S.cred.t]) return false;
+    const t = S.data.team, hit = t.members.filter((m) => normName(m.name) === normName(mine.name) && !(S.data.reflections[m.id] || {}).pre);
+    if (hit.length !== 1) return false;
+    try { await sendMine(hit[0].id); S.data = await call('p.get'); return true; } catch (e) { return false; }
   }
   function memberRow(m, i) {
     const learn = m.consent === 'learning';
@@ -95,7 +141,7 @@
       + '<p class="dlm-hint">החוקרות: ' + esc(M.CONSENT.researchers) + (a.consent.ethics ? ' · אישור ועדת האתיקה: ' + esc(a.consent.ethics) : '') + (a.consent.contact ? ' · ליצירת קשר: ' + esc(a.consent.contact) : '') + '</p></details>';
   }
   function newTeam(info) {
-    const rows = [{}, {}, {}, {}];
+    const rows = [{ name: (getMine() || {}).name || '' }, {}, {}, {}];
     app.innerHTML = testBar() + '<div class="dlm-card"><h1>פתיחת צוות</h1>' + consentHTML(info.activity)
       + '<label for="tn">שם הצוות</label><input type="text" id="tn" maxlength="80" placeholder="למשל: צוות 3">'
       + '<h3>המשתתפים בצוות</h3><p class="dlm-hint">לכל משתתף/ת: ראשי תיבות.</p>'
@@ -120,7 +166,7 @@
 
   // ── מרחב הצוות ──
   async function load(quiet) {
-    try { S.data = await call('p.get'); }
+    try { S.data = await call('p.get'); if (!quiet) await autoMine(); }
     catch (e) {
       if (e.status === 401 || e.status === 404) { saveCred(classCode, null); S.cred = null; return start(); }
       if (!quiet) app.innerHTML = msg(e.message, 'err'); return;
@@ -185,13 +231,16 @@
     const isMiss = (id) => missing.some((m) => m.id === id);
     const mine = me() && !isMiss(me()) && t.members.find((m) => m.id === me());
     const sel = isMiss(S.pm) ? S.pm : isMiss(me()) ? me() : (!mine && missing.length === 1 ? missing[0].id : '');
+    const pend = getMine(), pending = pend && pend.pre && !(pend.sent || {})[S.cred.t] && missing.length;
+    if (pending && S.preview !== 'pre') return '<div class="dlm-card"><h2>' + esc(M.ATT.pre) + '</h2><p>השאלון של ' + esc(pend.name) + ' כבר מולא במכשיר הזה. לוחצים על השם שלך ברשימת הצוות, והשאלון נשלח:</p><p>'
+      + missing.map((m) => '<button type="button" class="crd-link" data-mine="' + esc(m.id) + '">' + esc(m.name) + '</button>').join(' · ') + '</p><div id="pmm"></div></div>';
     return '<div class="dlm-card"><h2>' + esc(M.ATT.pre) + '</h2>'
       + '<p>לפני שמתחילים לבדוק מקורות, כל משתתף/ת ממלא/ת שאלון עמדות אישי קצר. עבודת הצוות נפתחת אחרי שכולם מילאו.</p>'
       + '<p class="dlm-hint">' + esc(M.ATT.note) + '</p>'
       + (mine && !t.workOpen ? '<div class="dlm-msg">✓ השאלון של ' + esc(mine.name) + ' נשמר. עוד לא מילאו: ' + missing.map((m) => esc(m.name)).join(', ') + '.</div><p><button class="dlm-btn main" id="openWork">פתיחת אזור העבודה</button></p><p class="dlm-hint">אזור העבודה נפתח לכל הצוות. מי שעוד לא מילא/ה את השאלון ממלא/ת אותו כשנכנס/ת מהמכשיר שלו/ה.</p>' : '')
       + (done.length && !(mine && !t.workOpen) ? (t.workOpen ? '<p>אזור העבודה פתוח. כבר מילאת? לוחצים על השם: ' + done.map((m) => '<button type="button" class="crd-link" data-pme="' + esc(m.id) + '">' + esc(m.name) + ' ✓</button>').join(' · ') + '</p>' : '<p class="dlm-hint">כבר מילאו: ' + done.map((m) => esc(m.name) + ' ✓').join(' · ') + '</p>') : '')
       + (missing.length > 1 || !sel ? '<p class="crd-pre-who">' + (mine ? 'ממלאים עכשיו במכשיר הזה בשם אחר? ' : done.length ? 'עוד לא מילאו. מי ממלא/ת עכשיו? ' : 'מי ממלא/ת עכשיו? ') + missing.map((m) => '<button type="button" class="crd-link" data-pm="' + esc(m.id) + '"' + (sel === m.id ? ' aria-pressed="true"' : '') + '>' + esc(m.name) + '</button>').join(' · ') + '</p>' : '')
-      + (sel ? '<h3>השאלון של ' + esc((t.members.find((m) => m.id === sel) || {}).name || '') + '</h3><input type="hidden" id="pm" value="' + esc(sel) + '">' + attForm('pre-') + '<label for="pi" class="crd-ini-h">' + esc(M.INITIAL.t) + ' <span class="crd-req">(שדה עיקרי)</span> <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="pi" rows="5"></textarea>'
+      + (sel ? '<p class="dlm-hint">ממלא/ת עכשיו: <b>' + esc((t.members.find((m) => m.id === sel) || {}).name || '') + '</b></p><input type="hidden" id="pm" value="' + esc(sel) + '">' + attForm('pre-') + '<label for="pi" class="crd-ini-h">' + esc(M.INITIAL.t) + ' <span class="crd-req">(שדה עיקרי)</span> <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="pi" rows="5"></textarea>'
         + '<p><button class="dlm-btn main" id="savePre">שליחת השאלון</button></p>' : '')
       + '<div id="pmm"></div></div>';
   }
@@ -288,7 +337,7 @@
       + '<ul class="crd-tree">'
       + '<li><b>מפגש 1</b><ul>'
       + '<li>' + lnk('consent', 'פתיחת צוות', !S.cred || S.preview === 'consent') + '</li>'
-      + '<li>' + lnk('pre', 'שאלון עמדות ראשוני', S.preview === 'pre' || (gated && !S.preview && S.tab === 'checks'), noTeam) + '</li>'
+      + '<li>' + lnk('pre', 'שאלון עמדות 1', S.preview === 'pre' || (gated && !S.preview && S.tab === 'checks'), noTeam) + '</li>'
       + '<li>' + lnk('list', 'בדיקת מקורות', S.cred && !gated && !S.preview && S.tab === 'checks' && !S.open, noTeam || (gated ? 'קודם ממלאים את שאלון העמדות הראשוני (אחד/ת מספיק/ה), ופותחים את אזור העבודה' : '')) + '<ul>'
       + '<li>' + lnk('describe', 'שלב 1: פרטים וציון', stOn('describe'), noTeam || (reach.describe ? '' : 'קודם מעלים מקור ברשימת המקורות')) + '</li>'
       + '<li>' + lnk('first', 'שלב 2: בדיקת AI', stOn('first'), noTeam || (reach.first ? '' : need)) + '</li>'
@@ -526,6 +575,7 @@
     const lk = () => 'sbe.crd.refl.' + S.cred.t + '.' + $('#rm').value;
     const keepLocal = (patch) => { try { const cur = JSON.parse(localStorage.getItem(lk()) || '{}'); localStorage.setItem(lk(), JSON.stringify(Object.assign(cur, patch))); } catch (e) {} };
     app.querySelectorAll('[data-pm]').forEach((x) => { x.onclick = () => { S.pm = x.dataset.pm; setMe(x.dataset.pm); render(); }; });
+    app.querySelectorAll('[data-mine]').forEach((x) => { x.onclick = () => act(async () => { await sendMine(x.dataset.mine); await load(); window.scrollTo(0, 0); }, $('#pmm')); });
     app.querySelectorAll('[data-pme]').forEach((x) => { x.onclick = () => { setMe(x.dataset.pme); S.tab = 'checks'; render(); }; });
     on('#openWork', () => act(async () => { const r = await call('p.openWork', {}); S.data.team = r.team; S.tab = 'checks'; render(); window.scrollTo(0, 0); }, $('#pmm')));
     on('#savePre', () => act(async () => {
