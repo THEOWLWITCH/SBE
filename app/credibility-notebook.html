@@ -83,8 +83,7 @@
   .ev .y b{color:var(--tealD)}.ev .no b{color:var(--red)}.ev .q b{color:var(--navy)}
 
   /* ארבעה שלבים */
-  .head{display:flex;align-items:flex-end;justify-content:space-between;gap:1rem}
-  .head img{width:5rem;opacity:.95}
+  .shot{display:block;width:100%;aspect-ratio:1000/663;object-fit:cover;border-radius:4px;margin:1.6rem 0 .4rem;box-shadow:0 18px 40px -26px #12172259}
   .steps{list-style:none;padding:0;margin:2rem 0 0;display:grid;gap:0;border-top:1px solid var(--line)}
   .steps>li{display:grid;grid-template-columns:4.2rem 1fr;gap:1rem;padding:1.4rem 0;border-bottom:1px solid var(--line);text-align:right}
   .steps .num{font-family:var(--serif);font-weight:300;font-size:3.6rem;line-height:.85;color:var(--c);text-align:center}
@@ -157,7 +156,6 @@
     .steps>li{grid-template-columns:3rem 1fr;gap:.7rem}
     .steps .num{font-size:2.9rem}
     .ai .panel{padding:1.4rem 1rem 1.1rem;border-radius:22px}
-    .head img{width:3.8rem}
   }
   @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.art .stamp{animation:none}*{transition:none!important}}
   @media print{nav,.btn,.cta,#save,#ok,.chat{display:none}.prompt pre{max-height:none}.deck{grid-auto-flow:row;grid-template-columns:1fr 1fr}section{break-inside:avoid;padding-top:1.4rem}@page{size:A5;margin:14mm}}
@@ -198,7 +196,8 @@
   </div></section>
 
   <section id="process"><div class="wrap">
-    <div class="head"><div><h2>הבדיקה בארבעה שלבים</h2></div><img src="assets/credibility-notebook/mic.webp" alt=""></div>
+    <h2>הבדיקה בארבעה שלבים</h2>
+    <img class="shot" src="assets/credibility-notebook/check.webp" alt="">
     <ol class="steps">
       <li><span class="num" aria-hidden="true">1</span><div><h3>עוצרים ומתארים</h3><p>כותבים את הטענה במשפט אחד, ואת מה שידוע על המקור:</p>
         <ul><li>מה סוג המקור, ומי פרסם?</li><li>מתי ואיפה פורסם, ואיך הגיע אליי?</li><li>על מה הטענה נשענת: מסמך, נתון, עדות, צילום?</li><li>מה אני מרגיש/ה כשאני קורא/ת, והאם אני רוצה שזה יהיה נכון?</li></ul>
