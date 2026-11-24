@@ -112,6 +112,13 @@
     function capture(){if(workspacePage)return {view:'partnerships',workspace:workspacePage.capture()};return {studyId:study?.id,revision:study?.revision,view,fields:R.snapshot(root),shape:draftShape()};}
     return Object.freeze({load,openStudy,clear,capture});
   }
-  function start(){let page;const client=R.create({onClear:reason=>page?.clear(reason)});page=mount({client,search:location.search,hash:location.hash,replaceRoute:route=>history.replaceState(null,'',location.pathname+route)});const home=document.getElementById('research-home');if(home){try{home.href=sessionStorage.getItem('sbe.session.homeUrl')||'home.html';}catch(_){}}R.lifecycle(page,client);page.load();}
+  function start(){let page;const client=R.create({onClear:reason=>page?.clear(reason)});page=mount({client,search:location.search,hash:location.hash,replaceRoute:route=>history.replaceState(null,'',location.pathname+route)});const home=document.getElementById('research-home');if(home){try{home.href=sessionStorage.getItem('sbe.session.homeUrl')||'home.html';}catch(_){}}R.lifecycle(page,client);
+    // חזרה למרכז המחקר מפותחת באותו מחקר ובאותה לשונית (24/11/2026). נשמר רק המיקום, בלי תוכן המחקר.
+    const LAST='sbe.research.last';let last=null;try{last=JSON.parse(sessionStorage.getItem(LAST)||'null');}catch(_){}
+    const rootEl=document.getElementById('research-root')||document.body;
+    rootEl.addEventListener('click',e=>{const b=e.target.closest?.('.r-tabs button');if(!b)return;try{const cur=page.capture?.();if(cur&&cur.studyId)sessionStorage.setItem(LAST,JSON.stringify({studyId:cur.studyId,tab:b.textContent.trim()}));}catch(_){}},true);
+    window.addEventListener('pagehide',()=>{try{const cur=page.capture?.();if(cur&&cur.studyId){const prev=JSON.parse(sessionStorage.getItem(LAST)||'null');sessionStorage.setItem(LAST,JSON.stringify({studyId:cur.studyId,tab:prev&&prev.studyId===cur.studyId?prev.tab:''}));}}catch(_){}});
+    const plain=!location.search.replace(/^\?/,'')&&!location.hash;
+    Promise.resolve(page.load(plain&&last&&last.studyId?{studyId:last.studyId}:undefined)).then(()=>{if(!(plain&&last&&last.tab))return;const t=Array.from(document.querySelectorAll('.r-tabs button')).find(b=>b.textContent.trim()===last.tab);if(t&&t.getAttribute('aria-current')!=='page')t.click();}).catch(()=>{});}
   return Object.freeze({mount,start});
 });
