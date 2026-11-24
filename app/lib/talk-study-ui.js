@@ -191,17 +191,20 @@
     const saved = store.get(draftKey(n, part)) || {};
     const read = [];
     for (const item of def.items) {
-      const q = el('div', 'q');
+      if (/_other$/.test(item.id) && def.items.some((x) => x.id + '_other' === item.id)) continue;
+      const q = el('div', 'q'); q.dataset.q = item.id;
       q.append(el('div', '', item.label));
       if (item.type === 'likert') {
         const sc = el('div', 'scale'), name = 'q_' + item.id;
         for (let v = item.min; v <= item.max; v++) { const l = el('label'), i = el('input'); i.type = 'radio'; i.name = name; i.value = String(v); if (saved[item.id] === v) i.checked = true; l.append(i, el('span', '', String(v))); sc.append(l); }
-        const dl = el('label', 'dec'), d = el('input'); d.type = 'radio'; d.name = name; d.value = 'x'; if (saved[item.id] === null) d.checked = true; dl.append(d, el('span', '', BG.SCALE.decline)); sc.append(dl);
         q.append(sc);
-        read.push([item.id, () => { const x = c.querySelector('input[name="' + name + '"]:checked'); return !x ? undefined : x.value === 'x' ? null : Number(x.value); }]);
+        read.push([item.id, () => { const x = c.querySelector('input[name="' + name + '"]:checked'); return !x ? undefined : Number(x.value); }]);
       } else if (item.type === 'choice') {
         const s = el('select'); s.append(new Option('בחירת תשובה', '')); for (const o of item.options) s.append(new Option(o, o)); if (saved[item.id]) s.value = saved[item.id];
         q.append(s); read.push([item.id, () => s.value || undefined]);
+        // "אחר": שדה לכתוב מה שלא נמצא ברשימה (24/11/2026)
+        const oi = def.items.find((x) => x.id === item.id + '_other');
+        if (oi) { const t = el('input'); t.type = 'text'; t.placeholder = 'אחר: אפשר לפרט'; t.value = saved[oi.id] || ''; t.hidden = s.value !== BG.OTHER; s.addEventListener('change', () => { t.hidden = s.value !== BG.OTHER; if (!t.hidden) t.focus(); }); q.append(t); read.push([oi.id, () => (!t.hidden && t.value.trim()) || undefined]); }
       } else {
         const t = el('textarea'); t.value = saved[item.id] || ''; q.append(t); read.push([item.id, () => t.value.trim() || undefined]);
       }
@@ -210,13 +213,21 @@
     const anchors = el('p', 'sub', '1 = ' + BG.SCALE.anchors[1] + ' · 5 = ' + BG.SCALE.anchors[5]);
     c.insertBefore(anchors, c.children[2] || null);
     const collect = () => Object.fromEntries(read.map(([id, f]) => [id, f()]).filter(([, v]) => v !== undefined));
-    c.addEventListener('change', () => store.set(draftKey(n, part), collect()));
+    c.addEventListener('change', (e) => { store.set(draftKey(n, part), collect()); const q = e.target.closest && e.target.closest('.q.qmiss'); if (q) q.classList.remove('qmiss'); });
     c.addEventListener('input', () => store.set(draftKey(n, part), collect()));
     const go = el('button', '', 'שמירה והמשך'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = async () => {
       const answers = collect(), likertIds = def.items.filter((i) => i.type === 'likert').map((i) => i.id);
-      const missing = likertIds.filter((id) => !(id in answers)).length;
-      if (missing) return say(c, 'נשארו ' + missing + ' היגדים בלי תשובה. אפשר לענות, או לבחור "' + BG.SCALE.decline + '".', true);
+      // היגד שלא סומן מודגש לסטודנט/ית, והמסך עובר אליו (24/11/2026)
+      const miss = likertIds.filter((id) => !(id in answers));
+      c.querySelectorAll('.q.qmiss').forEach((x) => x.classList.remove('qmiss'));
+      if (miss.length) {
+        const boxes = miss.map((id) => c.querySelector('.q[data-q="' + id + '"]')).filter(Boolean);
+        boxes.forEach((x) => x.classList.add('qmiss'));
+        say(c, miss.length === 1 ? 'נשאר היגד אחד בלי תשובה. הוא מסומן באדום.' : 'נשארו ' + miss.length + ' היגדים בלי תשובה. הם מסומנים באדום.', true);
+        if (boxes[0]) boxes[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        return;
+      }
       busy(go, true);
       try { me = (await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part, data: { answers, title: def.title } })).participant; store.del(draftKey(n, part)); render(); window.scrollTo(0, 0); }
       catch (e) { busy(go, false); say(c, e.message, true); }
@@ -324,7 +335,9 @@
       i.placeholder = ph; i.value = d[k] || ''; f[k] = i; c1.append(l, i);
     }
     const meL = el('label', 'f', 'איך לפנות אליי'), meS = el('select'); meS.append(new Option('בלשון נקבה', 'נקבה'), new Option('בלשון זכר', 'זכר')); meS.value = d.me || 'נקבה'; c1.append(meL, meS);
-    const tL = el('label', 'f', 'סוג השיחה'), tS = el('select'); tS.append(new Option('בחירה', '')); for (const t of T.CASE.types) tS.append(new Option(t, t)); tS.value = d.type || ''; c1.append(tL, tS);
+    const tL = el('label', 'f', 'סוג השיחה'), tS = el('select'); tS.append(new Option('בחירה', '')); for (const t of T.CASE.types) tS.append(new Option(t, t)); tS.append(new Option('אחר', 'אחר'));
+    // "אחר": כותבים סוג שיחה שלא ברשימה (24/11/2026)
+    const tO = el('input'); tO.type = 'text'; tO.placeholder = 'אחר: איזו שיחה?'; const known = !d.type || T.CASE.types.includes(d.type); tS.value = known ? (d.type || '') : 'אחר'; tO.value = known ? '' : d.type; tO.hidden = tS.value !== 'אחר'; tS.addEventListener('change', () => { tO.hidden = tS.value !== 'אחר'; if (!tO.hidden) tO.focus(); }); c1.append(tL, tS, tO);
     const dL = el('label', 'f', 'כמה השיחה מאתגרת אותי, מ־1 עד 5'), dS = el('select'); dS.append(new Option('בחירה', '')); for (let i = 1; i <= 5; i++) dS.append(new Option(String(i), String(i))); dS.value = d.difficulty ? String(d.difficulty) : ''; c1.append(dL, dS);
 
     const c2 = card('הכנה עצמית', ['לפני שבוחרים מודל, כמה מילים משלך.']);
@@ -347,7 +360,7 @@
     c3.append(box);
     const rL = el('label', 'f', prevModel?.ids?.length ? 'למה ממשיכים באותו מודל, או למה מחליפים? משפט או שניים' : 'למה בחרתי במודל הזה? משפט או שניים'), r = el('textarea'); r.value = d.reason || ''; r.placeholder = 'למשל: כי אצטרך למסור מידע קשה, ולתת מקום לכעס'; c3.append(rL, r);
 
-    function read() { const o = { ids: [...picked], reason: r.value.trim(), me: meS.value, type: tS.value, difficulty: Number(dS.value) || null }; for (const k in f) o[k] = f[k].value.trim(); for (const k in p) o['prep_' + k] = p[k].value.trim(); return o; }
+    function read() { const o = { ids: [...picked], reason: r.value.trim(), me: meS.value, type: tS.value === 'אחר' ? tO.value.trim() : tS.value, difficulty: Number(dS.value) || null }; for (const k in f) o[k] = f[k].value.trim(); for (const k in p) o['prep_' + k] = p[k].value.trim(); return o; }
     function save() { store.set(draftKey(n, 'model'), read()); }
     [c1, c2, c3].forEach((c) => c.addEventListener('input', save));
     [meS, tS, dS].forEach((s) => s.addEventListener('change', save));

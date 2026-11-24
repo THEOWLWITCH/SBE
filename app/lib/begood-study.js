@@ -7,7 +7,7 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  const SCALE = Object.freeze({ min: 1, max: 5, anchors: Object.freeze({ 1: 'כלל לא', 2: 'במידה מועטה', 3: 'במידה בינונית', 4: 'במידה רבה', 5: 'במידה רבה מאוד' }), decline: 'מעדיף/ה לא לענות' });
+  const SCALE = Object.freeze({ min: 1, max: 5, anchors: Object.freeze({ 1: 'כלל לא', 2: 'במידה מועטה', 3: 'במידה בינונית', 4: 'במידה רבה', 5: 'במידה רבה מאוד' }) });
 
   const ITEMS = Object.freeze({
     M1: 'אני מסוגל/ת לפתוח שיחה מאתגרת באופן המזמין את האדם שמולי לדבר.',
@@ -49,16 +49,23 @@
   const CORE = ['M', 'B', 'N', 'T', 'A', 'P', 'K'];
   const likert = prefixes => Object.keys(ITEMS).filter(id => prefixes.includes(id[0])).map(id => ({ id, type: 'likert', label: ITEMS[id], required: false, min: SCALE.min, max: SCALE.max }));
 
+  // 24/11/2026: "בכל מקום שיש בחירה הוסף אפשרות לכתוב משהו שלא נמצא ברשימה. לא לענות זו לא אפשרות":
+  // בלי "מעדיף/ה לא לענות"; לכל שאלת בחירה האפשרות "אחר" ושדה לפרט (<id>_other), שנשמר כפריט טקסט משלו.
+  const OTHER = 'אחר';
+  const choiceWithOther = (id, label, options) => [
+    { id, type: 'choice', label, required: false, options: [...options, OTHER] },
+    { id: id + '_other', type: 'text', label: 'אחר: אפשר לפרט', required: false }
+  ];
   const BACKGROUND = Object.freeze([
     { id: 'bg_track', type: 'text', label: 'באיזה מסלול הכשרה את/ה לומד/ת?', required: false },
-    { id: 'bg_experience', type: 'choice', label: 'ניסיון מעשי בהוראה או בייעוץ', required: false, options: ['אין ניסיון', 'עד שנה', 'שנה עד שלוש שנים', 'יותר משלוש שנים', 'מעדיף/ה לא לענות'] },
-    { id: 'bg_models', type: 'choice', label: 'היכרות קודמת עם מודלים לניהול שיחות מאתגרות', required: false, options: ['לא הכרתי', 'שמעתי עליהם', 'הכרתי והשתמשתי בהם', 'מעדיף/ה לא לענות'] },
-    { id: 'bg_simulations', type: 'choice', label: 'שימוש קודם בסימולציות או בתרגול שיחות', required: false, options: ['לא', 'פעם או פעמיים', 'כמה פעמים', 'מעדיף/ה לא לענות'] }
+    ...choiceWithOther('bg_experience', 'ניסיון מעשי בהוראה או בייעוץ', ['אין ניסיון', 'עד שנה', 'שנה עד שלוש שנים', 'יותר משלוש שנים']),
+    ...choiceWithOther('bg_models', 'היכרות קודמת עם מודלים לניהול שיחות מאתגרות', ['לא הכרתי', 'שמעתי עליהם', 'הכרתי והשתמשתי בהם']),
+    ...choiceWithOther('bg_simulations', 'שימוש קודם בסימולציות או בתרגול שיחות', ['לא', 'פעם או פעמיים', 'כמה פעמים'])
   ]);
 
   const OPEN = { id: 'open_helped', type: 'text', label: 'מה בתרגול עזר לך להבין את השיחה, לנהל אותה ולמצוא בה משמעות? ומה לא עזר?', required: false };
 
-  const INTRO = 'לכל היגד: עד כמה הוא מתאר אותך כרגע, מ־1 (כלל לא) עד 5 (במידה רבה מאוד). אפשר לבחור גם "מעדיף/ה לא לענות". אין תשובות נכונות או לא נכונות.';
+  const INTRO = 'לכל היגד: עד כמה הוא מתאר אותך כרגע, מ־1 (כלל לא) עד 5 (במידה רבה מאוד). אין תשובות נכונות או לא נכונות.';
 
   // waveId: אותיות לטיניות בלבד (חוקי השרת). label: מה שהמשתתפים רואים.
   const WAVES = Object.freeze([
@@ -80,5 +87,5 @@
   function waveLabel(id) { const w = byId(id); return w ? w.label : ''; }
   function isStudyItem(item) { return !!item && item.type === 'likert' && item.min === SCALE.min && item.max === SCALE.max; }
 
-  return Object.freeze({ SCALE, ITEMS, WAVES, PLACES, byId, waveLabel, isStudyItem });
+  return Object.freeze({ SCALE, OTHER, ITEMS, WAVES, PLACES, byId, waveLabel, isStudyItem });
 });

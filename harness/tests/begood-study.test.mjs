@@ -29,13 +29,16 @@ test('items follow the protocol: core every time, U and O and open question only
   assert.equal(BG.ITEMS.U2, 'הרגשתי חופשי/ה לבחור בין הגישות שהוצגו לי.');
 });
 
-test('"prefer not to answer" is stored as null, apart from a missing answer', () => {
-  const def = validateInstrument(BG.byId('bg-s2-close').definition);
-  const out = validateAnswers(def, { M1: 4, M2: null });
-  assert.equal(out.M1, 4);
-  assert.equal(out.M2, null);
-  assert.ok(!('M3' in out));
-  assert.throws(() => validateAnswers(def, { M1: 6 }));
+test('no "prefer not to answer"; every choice has "other" with a text field (24/11/2026)', () => {
+  assert.ok(!JSON.stringify(BG.WAVES).includes('לא לענות'));
+  const def = validateInstrument(BG.byId('bg-s1-open').definition);
+  for (const item of def.items.filter(i => i.type === 'choice')) {
+    assert.ok(item.options.includes('אחר'), item.id);
+    assert.ok(def.items.some(i => i.id === item.id + '_other' && i.type === 'text'), item.id);
+  }
+  const out = validateAnswers(def, { bg_experience: 'אחר', bg_experience_other: 'מדריכה בתנועת נוער' });
+  assert.equal(out.bg_experience_other, 'מדריכה בתנועת נוער');
+  assert.throws(() => validateAnswers(validateInstrument(BG.byId('bg-s2-close').definition), { M1: 6 }));
 });
 
 test('buttons sit before and after use, as in the protocol', () => {
@@ -65,7 +68,7 @@ class Node {
 }
 const all = r => { const out = []; const v = n => { out.push(n); n.children.forEach(v); }; v(r); return out; };
 
-test('participant sees only the wave from the button, with the 1 to 5 scale, "prefer not" and a way back', async () => {
+test('participant sees only the wave from the button, with the 1 to 5 scale, no "prefer not", and a way back', async () => {
   globalThis.self = { SBE_BGSTUDY: BG };
   try {
     const UI = createRequire(import.meta.url)('../../app/lib/research-participation-ui.js');
@@ -83,13 +86,13 @@ test('participant sees only the wave from the button, with the 1 to 5 scale, "pr
     const selects = all(root).filter(n => n.tagName === 'select');
     assert.equal(selects.length, 26); // 23 היגדי ליבה ועוד K1 עד K3
     const opts = selects[0].children.map(o => o.textContent);
-    assert.ok(opts.includes('1 · כלל לא') && opts.includes('5 · במידה רבה מאוד') && opts.includes('מעדיף/ה לא לענות'));
-    selects[0].value = '4'; selects[1].value = '__decline';
+    assert.ok(opts.includes('1 · כלל לא') && opts.includes('5 · במידה רבה מאוד') && !opts.some(o => /לא לענות/.test(o)));
+    selects[0].value = '4';
     const save = all(root).find(n => n.tagName === 'button' && n.textContent === 'שמירת מענה לשאלון');
     await save.click();
     const sent = calls.find(([a]) => a === 'surveySubmit')[1];
     assert.equal(sent.waveId, 'bg-s2-close');
-    assert.deepEqual(sent.answers, { M1: 4, M2: null });
+    assert.deepEqual(sent.answers, { M1: 4 });
     const evil = UI.mount({ document: d, root, client, search: '?study=a&wave=bg-s2-close&back=https://x.example/a.html' });
     await evil.load();
     assert.ok(!all(root).some(n => n.tagName === 'a' && /x\.example/.test(n.href || '')));
