@@ -243,3 +243,16 @@ test('one QR for all classes: picks a class, then enters only that class', async
   assert.notEqual(a2.allCode, old);
   const [so] = await run('p.class', { code: old }); assert.equal(so, 404);
 });
+
+test('ההנחיה ל־AI: אותו נוסח בפנקס ובמודל, ובגירסה לסטודנטיות.ים', async () => {
+  const vm = await import('node:vm');
+  const nb = read('credibility-notebook.html');
+  const a = nb.indexOf('  var SCALE = ['), b = nb.indexOf("  ].join('\\n');", nb.indexOf('  var PROMPT = [')) + "  ].join('\\n');".length;
+  const ctx = {}; vm.runInNewContext(nb.slice(a, b) + '\nthis.P = PROMPT;', ctx);
+  assert.equal(ctx.P, M.AI_PROMPT);
+  assert.match(M.AI_PROMPT, /אין לי עוד מידע/);
+  for (const l of M.SCALE) assert.ok(M.AI_PROMPT.includes(l.score + ' = ' + l.name + ': ' + l.d));
+  assert.match(read('credibility-pocket.html'), /M\.AI_PROMPT/);
+  const n = read('credibility-notebook.html');
+  for (const w of ['ד״ר איבנה ריטנר', 'ד״ר עינת שושן־רפאלי', 'ד״ר יעל שדה', 'mailto:yael.sade@gmail.com', 'mailto:ei0509000408@gmail.com', 'mailto:ratnere@gmail.com']) assert.ok(n.includes(w), w);
+});

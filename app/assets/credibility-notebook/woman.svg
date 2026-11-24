@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 460">
+  <!-- איור מקורי לשער הפנקס: אישה בודקת ידיעה בטלפון, בסגנון ובצבעים של המצגת -->
+  <!-- בועת שאלה -->
+  <circle cx="276" cy="118" r="7" fill="#121722"/>
+  <circle cx="296" cy="96" r="10" fill="#121722"/>
+  <circle cx="338" cy="58" r="42" fill="#fff" stroke="#121722" stroke-width="5"/>
+  <text x="338" y="78" text-anchor="middle" font-family="Arial Black,Arial,sans-serif" font-weight="900" font-size="58" fill="#E5483A">?</text>
+  <!-- שיער מאחור -->
+  <path d="M132 140C126 66 274 62 268 140C272 205 284 258 306 300L246 312C240 270 236 240 226 222H174C164 240 160 270 154 312L94 300C116 258 128 205 132 140Z" fill="#1D2A3F"/>
+  <!-- גוף -->
+  <path d="M62 460C62 330 108 256 200 252C292 256 338 330 338 460Z" fill="#2EC4B6"/>
+  <path d="M160 256L200 300L240 256C226 250 174 250 160 256Z" fill="#F3C9A0"/>
+  <path d="M156 258Q200 312 244 258" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <path d="M96 410Q120 420 140 412M304 410Q280 420 260 412" fill="none" stroke="#1FA597" stroke-width="5" stroke-linecap="round"/>
+  <!-- צוואר וראש -->
+  <rect x="181" y="200" width="38" height="56" rx="16" fill="#EBB88A"/>
+  <ellipse cx="200" cy="152" rx="60" ry="70" fill="#F3C9A0"/>
+  <!-- שיער מלפנים: פוני צדדי -->
+  <path d="M138 150C132 82 182 66 222 74C258 82 272 112 264 156C252 128 236 112 214 106C190 116 164 128 138 150Z" fill="#1D2A3F"/>
+  <path d="M214 106C222 120 240 132 262 140" fill="none" stroke="#2B3B55" stroke-width="4" stroke-linecap="round"/>
+  <!-- עגילים -->
+  <circle cx="141" cy="182" r="6" fill="#2EC4B6"/>
+  <circle cx="259" cy="182" r="6" fill="#2EC4B6"/>
+  <!-- פנים: מרימה גבה ובודקת -->
+  <path d="M166 136Q178 126 192 132" stroke="#1D2A3F" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <path d="M210 138Q222 134 234 138" stroke="#1D2A3F" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="179" cy="156" rx="7" ry="8.5" fill="#1D2A3F"/>
+  <ellipse cx="222" cy="157" rx="7" ry="8.5" fill="#1D2A3F"/>
+  <circle cx="181" cy="153" r="2.4" fill="#fff"/>
+  <circle cx="224" cy="154" r="2.4" fill="#fff"/>
+  <path d="M200 164Q205 176 197 180" stroke="#D99A6C" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <path d="M187 196Q194 192 200 195T213 194" stroke="#A8362B" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <circle cx="163" cy="180" r="9" fill="#F2A28C" opacity=".55"/>
+  <circle cx="238" cy="180" r="9" fill="#F2A28C" opacity=".55"/>
+  <!-- זרועות -->
+  <path d="M112 420L170 352" stroke="#22A99C" stroke-width="40" stroke-linecap="round"/>
+  <path d="M288 420L230 352" stroke="#22A99C" stroke-width="40" stroke-linecap="round"/>
+  <!-- טלפון -->
+  <g transform="rotate(-6 200 320)">
+    <rect x="160" y="262" width="80" height="138" rx="12" fill="#121722"/>
+    <rect x="167" y="274" width="66" height="112" rx="5" fill="#F4F4F2"/>
+    <rect x="167" y="274" width="66" height="30" rx="5" fill="#E5483A"/>
+    <text x="200" y="295" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="15" fill="#fff">Fake?</text>
+    <rect x="173" y="312" width="22" height="5" rx="2.5" fill="#2EC4B6"/>
+    <rect x="173" y="323" width="54" height="5" rx="2.5" fill="#CFCFCB"/>
+    <rect x="173" y="334" width="46" height="5" rx="2.5" fill="#CFCFCB"/>
+    <rect x="173" y="345" width="54" height="5" rx="2.5" fill="#CFCFCB"/>
+  </g>
+  <!-- ידיים מחזיקות את הטלפון -->
+  <ellipse cx="166" cy="350" rx="17" ry="21" fill="#F3C9A0"/>
+  <ellipse cx="234" cy="346" rx="17" ry="21" fill="#F3C9A0"/>
+  <path d="M174 338q8 -2 12 4M226 334q-8 -2 -12 4" stroke="#EBB88A" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>
