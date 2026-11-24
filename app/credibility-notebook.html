@@ -5,212 +5,248 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>פנקס לבדיקת אמינות של מקור · Begood</title>
 <!-- פנקס אישי לנייד (24/11/2026: "הכן קובץ כמו פנקס - כל סטודנטית תוכל להוריד מהמערכת ולשמור לעצמה בנייד לתזכורת. יהיה בו רק המודל ותהליך אימות מקור. לא יהיה מנוע האימות כי זה עולה כסף - אלא אם תאפשר לכל אחת לחבר את הפנקס כפרומט לAI שלה").
-     העיצוב (24/11/2026: "עצב באופן מקורי עם האיורים מהמצגת, עם צבעי המצגת, עם שמות החוקרות ופרטים ליצירת קשר"): חדר חדשות, כמו המצגת "רגע. זה נכון?".
+     העיצוב (24/11/2026: "עצב באופן מקורי עם האיורים מהמצגת, עם צבעי המצגת, עם שמות החוקרות ופרטים ליצירת קשר"; "העיצוב עם החורים בצד- לא אלגנטי בכלל. שנה"; "בסגנון צעיר, מושך, דינאמי ואלגנטי"):
+     צבעי המצגת, פתיח כחול באלכסון עם החותמת, בלי מסגרות לכל חלק, קלפי שאלות שגוללים לרוחב, ועמוד ההנחיה ל-AI באדום.
      פתוח לכולם, בלי כניסה ובלי מודל. בהורדה האיורים נכנסים לתוך הקובץ, כדי שיעבוד בלי אינטרנט. -->
-<meta name="theme-color" content="#121722">
+<meta name="theme-color" content="#1D3F63">
 <link rel="manifest" href="credibility-notebook.webmanifest">
 <link rel="apple-touch-icon" href="assets/credibility-notebook/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&family=Secular+One&display=swap">
 <style>
-  :root{--ink:#121722;--ink2:#1C2433;--paper:#F3EFE6;--sheet:#FFFDF7;--news:#E9E3D5;--red:#E5483A;--teal:#2EC4B6;--navy:#1D3F63;--gray:#8A93A3;--txt:#2B3240;--line:#D8D0BC}
+  :root{--ink:#121722;--navy:#1D3F63;--red:#E5483A;--teal:#2EC4B6;--mist:#EEF4F8;--txt:#2B3240;--soft:#5E6878}
   *{box-sizing:border-box}
   html{scroll-behavior:smooth}
-  body{margin:0;font-family:Rubik,Arial,sans-serif;background:var(--paper);color:var(--txt);line-height:1.6;font-size:17px}
-  h1,h2,h3,.disp{font-family:"Secular One",Rubik,Arial,sans-serif;font-weight:400;color:var(--ink);line-height:1.1;margin:0}
+  body{margin:0;font-family:Rubik,Arial,sans-serif;background:#fff;color:var(--txt);line-height:1.65;font-size:17px;-webkit-font-smoothing:antialiased}
+  h1,h2,h3{font-family:"Secular One",Rubik,Arial,sans-serif;font-weight:400;color:var(--ink);line-height:1.08;margin:0}
   a{color:var(--navy)}
-  /* מבזק */
-  .ticker{background:var(--ink);color:#E9ECF2;display:flex;align-items:stretch;overflow:hidden;border-bottom:3px solid #fff;position:sticky;top:0;z-index:6}
-  .ticker .tag{background:var(--red);color:#fff;font-family:"Secular One",Arial,sans-serif;padding:.35rem .9rem;flex:0 0 auto;font-size:1.05rem}
-  .ticker .run{flex:1;overflow:hidden;white-space:nowrap;display:flex;align-items:center}
-  .ticker .run span{display:inline-block;padding-right:100%;animation:crawl 26s linear infinite;font-size:.95rem}
-  @keyframes crawl{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
-  nav{display:flex;gap:.35rem;overflow-x:auto;padding:.55rem .8rem;background:var(--paper);border-bottom:1px solid var(--line);position:sticky;top:2.35rem;z-index:5;scrollbar-width:none}
-  nav a{white-space:nowrap;text-decoration:none;color:var(--ink);font-family:"Secular One",Arial,sans-serif;font-size:.95rem;padding:.15rem .7rem;border-radius:999px;border:1.5px solid var(--ink);background:var(--sheet)}
-  nav a:hover,nav a:focus{background:var(--ink);color:#fff}
-  main{max-width:720px;margin:0 auto;padding:1rem .9rem 2rem}
-  /* דף בפנקס: טבעות בצד ימין */
-  .page{position:relative;background:var(--sheet);border:1.5px solid var(--ink);border-radius:6px 14px 14px 6px;padding:1.2rem 1.2rem 1.3rem 1.2rem;padding-right:2.6rem;margin:0 0 1.3rem;box-shadow:6px 6px 0 #1217221A;scroll-margin-top:6rem}
-  .page::before{content:"";position:absolute;top:14px;bottom:14px;right:.75rem;width:.9rem;background:radial-gradient(circle at 50% 50%,var(--paper) 0 .32rem,var(--ink) .33rem .42rem,transparent .43rem) 0 0/.9rem 1.6rem repeat-y}
-  .page::after{content:"";position:absolute;top:0;bottom:0;right:2.05rem;border-right:1.5px solid #E5483A55}
-  .kicker{font-family:"Secular One",Arial,sans-serif;color:var(--red);letter-spacing:1px;font-size:.95rem;margin:0 0 .15rem}
-  h2{font-size:1.7rem;margin:0 0 .6rem}
+  :focus-visible{outline:3px solid var(--teal);outline-offset:3px;border-radius:6px}
+  .wrap{max-width:760px;margin:0 auto;padding:0 1.25rem}
   p,li{text-align:justify}
-  .muted{color:#6B7282;font-size:.92rem}
-  /* שער */
-  .cover{overflow:hidden;min-height:26rem}
-  .cover h1{font-size:3.4rem;line-height:.98;margin:.3rem 0 .7rem;position:relative;z-index:1}
-  .cover h1 em{font-style:normal;color:var(--red)}
-  .cover .sub{font-family:"Secular One",Arial,sans-serif;color:var(--navy);font-size:1.35rem;margin:0 0 .6rem;position:relative;z-index:1;max-width:62%}
-  .cover p.lead{position:relative;z-index:1;max-width:62%}
-  .cover .stamp{position:absolute;left:-.6rem;top:-.2rem;width:13.5rem;transform:rotate(10deg);opacity:.95}
-  .cover .man{position:absolute;left:1.2rem;bottom:-.3rem;width:10.5rem}
-  .byline{font-size:.85rem;color:#6B7282;font-style:italic;position:relative;z-index:1;max-width:62%}
-  /* המודל */
-  .meter{display:flex;flex-direction:column;gap:.45rem;margin:.4rem 0 .9rem}
-  .bar{display:flex;align-items:stretch;border-radius:10px;overflow:hidden;color:#fff;min-height:3.1rem}
-  .bar .n{flex:0 0 3rem;display:flex;align-items:center;justify-content:center;font-family:"Secular One",Arial,sans-serif;font-size:1.8rem;background:#0000001F}
-  .bar .x{padding:.4rem .75rem;font-size:.93rem;line-height:1.4}
-  .bar .x b{display:block;font-family:"Secular One",Arial,sans-serif;font-weight:400;font-size:1.1rem}
-  .rule{background:#fff;border-right:6px solid var(--red);padding:.7rem .9rem;margin:.7rem 0;border-radius:4px}
-  .rule h3{font-size:1.15rem;margin:0 0 .3rem}
-  .rule ul{margin:0;padding-right:1.1rem}
-  .rule li{margin:.25rem 0}
-  details{margin:.5rem 0}
-  details summary{cursor:pointer;font-family:"Secular One",Arial,sans-serif;color:var(--navy);font-size:1.05rem}
-  .ev{display:grid;gap:.5rem;margin-top:.5rem}
-  .ev div{border-radius:8px;padding:.55rem .75rem;font-size:.95rem}
-  .ev .y{background:#2EC4B61F;border-right:4px solid var(--teal)}
-  .ev .no{background:#E5483A14;border-right:4px solid var(--red)}
-  .ev .q{background:#1D3F6314;border-right:4px solid var(--navy)}
-  /* תהליך: דף כהה */
-  .page.dark{background:var(--ink);color:#C3CAD6;border-color:var(--ink)}
-  .page.dark::before{background:radial-gradient(circle at 50% 50%,var(--paper) 0 .32rem,#3A465C .33rem .42rem,transparent .43rem) 0 0/.9rem 1.6rem repeat-y}
-  .page.dark::after{border-right-color:#2EC4B655}
-  .page.dark h2,.page.dark h3{color:#fff}
-  .page.dark .kicker{color:var(--teal)}
-  .proc-head{display:flex;gap:.6rem;align-items:flex-end}
-  .proc-head > div{flex:1}
-  .proc-head img{flex:0 0 6.2rem;width:6.2rem;margin-bottom:-.3rem}
-  .steps{list-style:none;padding:0;margin:.6rem 0 0;display:flex;flex-direction:column;gap:.7rem;counter-reset:s}
-  .steps>li{background:var(--ink2);border:1px solid #2E384B;border-radius:14px;padding:.8rem .9rem;counter-increment:s;position:relative;padding-right:3.7rem;text-align:right}
-  .steps>li::before{content:counter(s);position:absolute;right:.8rem;top:.75rem;width:2.3rem;height:2.3rem;border-radius:50%;background:var(--teal);color:var(--ink);font-family:"Secular One",Arial,sans-serif;font-size:1.35rem;display:flex;align-items:center;justify-content:center}
-  .steps>li.hot{border-color:var(--teal);background:#26324A}
-  .steps h3{font-size:1.2rem;margin:.1rem 0 .3rem}
-  .steps ul{margin:.3rem 0;padding-right:1.1rem}
-  .steps li li{text-align:right;margin:.2rem 0}
-  .steps b{color:#fff;font-weight:500}
-  .say{border:1.5px dashed var(--teal);border-radius:12px;padding:.6rem .8rem;margin-top:.8rem;color:#E9ECF2}
-  /* 10 שאלות */
-  .qs{list-style:none;padding:0;margin:.5rem 0 0;display:grid;grid-template-columns:1fr 1fr;gap:.6rem;counter-reset:q}
-  .qs li{counter-increment:q;background:#fff;border-top:7px solid var(--red);border-radius:5px;padding:.45rem .65rem .6rem;box-shadow:0 5px 12px #1217221F;text-align:right;font-weight:500;color:var(--ink);font-size:.95rem;line-height:1.4}
-  .qs li:nth-child(3n+2){border-top-color:var(--teal)}
-  .qs li:nth-child(3n){border-top-color:var(--navy)}
-  .qs li::before{content:counter(q);display:block;font-family:"Secular One",Arial,sans-serif;font-size:1.7rem;line-height:1;color:var(--red);margin-bottom:.15rem}
-  .qs li:nth-child(3n+2)::before{color:#138F84}
-  .qs li:nth-child(3n)::before{color:var(--navy)}
-  @media screen and (max-width:440px){.qs{grid-template-columns:1fr}.cover h1{font-size:2.7rem}.cover .sub,.cover p.lead,.byline{max-width:100%}.cover .man{position:static;display:block;width:8.5rem;margin:.4rem 0 .4rem auto}.page{padding-right:2.3rem}.page::after{right:1.8rem}.page::before{right:.55rem}.cover .stamp{width:10rem;left:-1rem;top:-.6rem;opacity:.92}}
+
+  /* פתיח */
+  .hero{position:relative;background:var(--navy);color:#fff;padding:1.4rem 0 5.5rem;clip-path:polygon(0 0,100% 0,100% 88%,0 100%);overflow:hidden}
+  .hero::before{content:"";position:absolute;inset:auto auto -30% -10%;width:60%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle,#2EC4B633 0,transparent 65%)}
+  .brand{display:flex;justify-content:space-between;align-items:center;font-size:.9rem;color:#C9D6E6}
+  .brand b{font-family:"Secular One",Arial,sans-serif;font-weight:400;color:#fff;font-size:1.15rem;letter-spacing:.5px}
+  .hero-in{position:relative;display:grid;grid-template-columns:1fr 15rem;gap:1rem;align-items:center;margin-top:1.6rem}
+  .hero h1{color:#fff;font-size:clamp(3.2rem,11vw,5.6rem);line-height:.92;letter-spacing:-.5px}
+  .hero h1 .q{color:var(--red);display:inline-block;transform:rotate(12deg)}
+  .hero .lead{font-size:1.12rem;color:#DCE6F1;max-width:28rem;margin:1rem 0 1.2rem;text-align:right}
+  .hero .art{position:relative;height:17rem}
+  .hero .stamp{position:absolute;top:-.6rem;left:-1.4rem;width:13.5rem;transform:rotate(12deg);filter:drop-shadow(0 8px 18px #0006);animation:stampin .55s cubic-bezier(.2,.9,.3,1.3) .35s both}
+  .hero .woman{position:absolute;bottom:-1.2rem;right:-.6rem;width:11rem}
+  @keyframes stampin{from{opacity:0;transform:rotate(12deg) scale(1.9)}to{opacity:1;transform:rotate(12deg) scale(1)}}
+  .cta{display:inline-flex;align-items:center;gap:.5rem;background:var(--red);color:#fff;text-decoration:none;font-family:"Secular One",Arial,sans-serif;font-size:1.05rem;padding:.7rem 1.3rem;border-radius:999px;box-shadow:0 10px 24px #E5483A55}
+  .cta:hover{background:#D23B2E}
+  .by{font-size:.85rem;color:#AFC1D6;margin-top:1.1rem}
+
+  /* ניווט צף */
+  nav{position:sticky;top:.6rem;z-index:5;display:flex;gap:.2rem;overflow-x:auto;scrollbar-width:none;margin:-2.2rem auto 0;width:max-content;max-width:calc(100% - 1.5rem);background:#ffffffE6;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:999px;padding:.3rem;box-shadow:0 8px 26px #1D3F6326}
+  nav a{white-space:nowrap;text-decoration:none;color:var(--navy);font-weight:500;font-size:.9rem;padding:.4rem .85rem;border-radius:999px}
+  nav a:hover{background:var(--mist)}
+
+  section{padding:3.2rem 0 1rem;scroll-margin-top:4.5rem}
+  .sec-h{display:flex;align-items:flex-end;gap:.9rem;margin-bottom:1.1rem}
+  .sec-h h2{font-size:clamp(1.9rem,5.5vw,2.6rem)}
+  .sec-h .mark{flex:0 0 auto;width:.55rem;height:2.4rem;border-radius:4px;background:var(--teal)}
+  .note{color:var(--soft);font-size:.95rem;margin:-.4rem 0 1.2rem;text-align:right}
+
+  /* המודל: מד של חמש רמות */
+  .gauge{display:flex;height:.7rem;border-radius:999px;overflow:hidden;margin:0 0 1.4rem}
+  .gauge span{flex:1}
+  .levels{list-style:none;padding:0;margin:0;display:grid;gap:.15rem}
+  .lv{display:grid;grid-template-columns:3.6rem 1fr;gap:1rem;align-items:start;padding:.85rem 0;border-bottom:1px solid #E6EBF1}
+  .lv:last-child{border:0}
+  .lv .n{font-family:"Secular One",Arial,sans-serif;font-size:3rem;line-height:.9;text-align:center}
+  .lv b{display:block;font-family:"Secular One",Arial,sans-serif;font-weight:400;font-size:1.25rem;color:var(--ink);margin-bottom:.1rem}
+  .lv p{margin:0;color:var(--soft);text-align:right}
+  .keep{margin:1.6rem 0 0;background:var(--mist);border-radius:22px;padding:1.2rem 1.3rem}
+  .keep h3{font-size:1.2rem;margin-bottom:.4rem}
+  .keep ul{margin:0;padding-right:1.1rem}
+  .keep li{margin:.35rem 0}
+  details{margin:1rem 0 0}
+  details summary{cursor:pointer;font-family:"Secular One",Arial,sans-serif;color:var(--navy);font-size:1.08rem;list-style:none}
+  details summary::before{content:"+";display:inline-flex;width:1.5rem;height:1.5rem;align-items:center;justify-content:center;border-radius:50%;background:var(--navy);color:#fff;margin-left:.5rem;font-family:Rubik,Arial,sans-serif;transition:transform .2s}
+  details[open] summary::before{transform:rotate(45deg)}
+  .ev{display:grid;gap:.6rem;margin-top:.8rem}
+  .ev p{margin:0;padding:.75rem 1rem;border-radius:16px;font-size:.97rem}
+  .ev .y{background:#2EC4B61A}
+  .ev .no{background:#E5483A12}
+  .ev .q{background:#1D3F6312}
+
+  /* תהליך: ארבעה שלבים על קו */
+  .steps{list-style:none;padding:0;margin:0;position:relative}
+  .steps::before{content:"";position:absolute;right:1.35rem;top:1.4rem;bottom:1.4rem;width:3px;background:linear-gradient(var(--teal),var(--navy));border-radius:3px}
+  .steps>li{position:relative;padding:0 3.9rem 1.6rem 0;text-align:right}
+  .steps>li::before{content:attr(data-n);position:absolute;right:0;top:0;width:2.75rem;height:2.75rem;border-radius:50%;background:#fff;border:3px solid var(--teal);color:var(--navy);font-family:"Secular One",Arial,sans-serif;font-size:1.3rem;display:flex;align-items:center;justify-content:center}
+  .steps>li.hot::before{background:var(--teal);color:#fff}
+  .steps h3{font-size:1.3rem;margin:.35rem 0 .35rem}
+  .steps p{margin:.2rem 0;text-align:right}
+  .steps ul{margin:.4rem 0;padding-right:1.1rem}
+  .steps li li{margin:.25rem 0;text-align:right}
+  .sec-h .mic{margin-right:auto;width:6rem;margin-bottom:-.6rem}
+  .truth{background:var(--ink);color:#fff;border-radius:22px;padding:1.1rem 1.3rem;font-size:1.02rem;margin-top:.4rem}
+  .truth b{color:var(--teal);font-weight:500}
+
+  /* שאלות: קלפים שגוללים לרוחב */
+  .deck{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(13.5rem,1fr);gap:.9rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.4rem .1rem 1.2rem;scrollbar-width:thin}
+  .deck li{list-style:none;scroll-snap-align:start;border-radius:24px;padding:1.1rem 1.15rem 1.3rem;min-height:11rem;display:flex;flex-direction:column;gap:.6rem;color:#fff;font-size:1.02rem;line-height:1.45;text-align:right}
+  .deck li .k{font-family:"Secular One",Arial,sans-serif;font-size:2.3rem;line-height:1;opacity:.55}
+  .deck li:nth-child(3n+1){background:var(--navy)}
+  .deck li:nth-child(3n+2){background:var(--teal);color:var(--ink)}
+  .deck li:nth-child(3n){background:var(--red)}
+  .swipe{font-size:.88rem;color:var(--soft);text-align:right;margin:-.2rem 0 0}
+
   /* ההנחיה ל-AI */
-  .page.red{background:var(--red);border-color:var(--ink);color:#FFF8F2}
-  .page.red::before{background:radial-gradient(circle at 50% 50%,var(--paper) 0 .32rem,#8E2A21 .33rem .42rem,transparent .43rem) 0 0/.9rem 1.6rem repeat-y}
-  .page.red::after{border-right-color:#FFFFFF66}
-  .page.red h2{color:#fff}
-  .page.red .kicker{color:var(--ink)}
-  .page.red p{color:#FFEDE6}
-  .how{display:flex;gap:.5rem;flex-wrap:wrap;margin:.5rem 0}
-  .how span{background:#ffffff26;border:1px solid #ffffff59;border-radius:999px;padding:.2rem .75rem;font-size:.9rem;color:#fff}
-  .how b{font-family:"Secular One",Arial,sans-serif;font-weight:400;margin-left:.3rem}
-  .wire{background:var(--sheet);color:var(--ink);border-radius:4px;margin:.8rem 0 .4rem;position:relative;box-shadow:0 8px 18px #12172240;transform:rotate(-.4deg)}
-  .wire .top{display:flex;align-items:center;justify-content:space-between;gap:.5rem;background:var(--ink);color:#fff;padding:.45rem .7rem;border-radius:4px 4px 0 0}
-  .wire .top b{font-family:"Secular One",Arial,sans-serif;font-weight:400}
-  .wire pre{margin:0;padding:.8rem .9rem;white-space:pre-wrap;word-break:break-word;font-family:Rubik,Arial,sans-serif;font-size:.86rem;line-height:1.55;max-height:22rem;overflow:auto;direction:rtl;text-align:right;background:repeating-linear-gradient(#FFFDF7 0 1.33rem,#EDE6D6 1.33rem calc(1.33rem + 1px))}
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border:0;border-radius:999px;padding:.55rem 1.1rem;font-family:"Secular One",Arial,sans-serif;font-size:1.02rem;cursor:pointer;text-decoration:none;background:var(--teal);color:var(--ink)}
-  .btn.big{width:100%;padding:.8rem 1rem;font-size:1.15rem;background:var(--ink);color:#fff;margin-top:.4rem}
-  .btn.line{background:transparent;color:var(--ink);border:1.5px solid var(--ink)}
-  #ok{color:#fff;font-weight:700;min-height:1.4em;margin:.3rem 0}
-  .warn{background:#ffffff1F;border-right:5px solid var(--ink);padding:.55rem .8rem;border-radius:4px;font-size:.93rem;margin-top:.6rem}
-  /* החוקרות: תעודות עיתונאי */
-  .press{display:grid;gap:.7rem;margin-top:.6rem}
-  .card{display:flex;gap:.8rem;align-items:flex-start;background:#fff;border:1.5px solid var(--ink);border-top:9px solid var(--teal);border-radius:10px;padding:.7rem .85rem}
-  .card:nth-child(2){border-top-color:var(--red)}
-  .card:nth-child(3){border-top-color:var(--navy)}
-  .card .ini{flex:0 0 3.1rem;height:3.1rem;border-radius:50%;background:var(--ink);color:#fff;font-family:"Secular One",Arial,sans-serif;font-size:1.25rem;display:flex;align-items:center;justify-content:center}
-  .card h3{font-size:1.2rem}
-  .card .org{font-size:.9rem;color:#6B7282;margin:.05rem 0 .35rem}
-  .card .c{display:flex;flex-wrap:wrap;gap:.35rem}
-  .card .c a{font-size:.88rem;text-decoration:none;border:1px solid var(--line);border-radius:999px;padding:.12rem .65rem;background:var(--paper);color:var(--navy);direction:ltr;unicode-bidi:isolate}
-  .stamp-t{display:inline-block;font-family:"Secular One",Arial,sans-serif;color:var(--red);border:3px solid var(--red);border-radius:8px;padding:.1rem .7rem;transform:rotate(-6deg);font-size:1.05rem}
-  footer{background:var(--ink);color:#C3CAD6;text-align:center;font-size:.85rem;padding:1rem;border-top:3px solid #fff}
-  footer b{font-family:"Secular One",Arial,sans-serif;font-weight:400;color:#fff}
-  @media (prefers-reduced-motion:reduce){.ticker .run span{animation:none;padding-right:0}html{scroll-behavior:auto}}
-  @media print{.ticker,nav,.btn,#save,#ok{display:none}.page{break-inside:avoid;box-shadow:none}.wire pre{max-height:none}@page{size:A5;margin:14mm}}
+  .ai{background:var(--red);color:#fff;margin-top:3rem;padding:4.2rem 0 4rem;clip-path:polygon(0 4%,100% 0,100% 96%,0 100%)}
+  .ai h2{color:#fff}
+  .ai .sec-h .mark{background:#fff}
+  .ai p{color:#FFF1EC;text-align:right}
+  .how{display:flex;flex-wrap:wrap;gap:.5rem;margin:1rem 0 1.3rem;padding:0;list-style:none}
+  .how li{background:#ffffff2E;border-radius:999px;padding:.35rem .9rem;font-size:.92rem}
+  .how b{font-family:"Secular One",Arial,sans-serif;font-weight:400;margin-left:.35rem}
+  .prompt{background:#fff;color:var(--ink);border-radius:26px;box-shadow:0 22px 44px #7A1C1340;overflow:hidden}
+  .prompt .bar{display:flex;align-items:center;justify-content:space-between;gap:.6rem;padding:.75rem 1rem .75rem 1.2rem;border-bottom:1px solid #F0E3DF}
+  .prompt .bar b{font-family:"Secular One",Arial,sans-serif;font-weight:400;font-size:1.05rem}
+  .prompt pre{margin:0;padding:1rem 1.2rem 1.2rem;white-space:pre-wrap;word-break:break-word;font-family:Rubik,Arial,sans-serif;font-size:.9rem;line-height:1.65;max-height:21rem;overflow:auto;direction:rtl;text-align:right;color:#2B3240}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;border:0;border-radius:999px;padding:.6rem 1.2rem;font-family:"Secular One",Arial,sans-serif;font-size:1rem;cursor:pointer;text-decoration:none;background:var(--ink);color:#fff}
+  .btn:hover{background:var(--navy)}
+  .btn.big{width:100%;padding:.9rem 1rem;font-size:1.15rem;margin-top:1rem;background:var(--ink)}
+  .btn.ghost{background:transparent;color:var(--navy);border:2px solid var(--navy)}
+  .btn.ghost:hover{background:var(--navy);color:#fff}
+  #ok{min-height:1.5em;margin:.6rem 0 0;font-weight:500}
+  .care{margin-top:1rem;font-size:.92rem;opacity:.92}
+
+  /* החוקרות */
+  .team{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem}
+  .person{position:relative;padding-top:4.2rem;text-align:right}
+  .person .av{position:absolute;top:0;right:0;width:3.5rem;height:3.5rem;border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;font-family:"Secular One",Arial,sans-serif;font-size:1.3rem;transform:rotate(-6deg)}
+  .person:nth-child(1) .av{background:var(--teal);color:var(--ink)}
+  .person:nth-child(2) .av{background:var(--red)}
+  .person:nth-child(3) .av{background:var(--navy)}
+  .person h3{font-size:1.2rem}
+  .person .org{margin:.1rem 0 .6rem;color:var(--soft);font-size:.92rem;text-align:right}
+  .person a{display:block;width:max-content;max-width:100%;text-decoration:none;color:var(--navy);font-size:.92rem;padding:.15rem 0;border-bottom:1px solid #CFDCE8;margin-bottom:.35rem;direction:ltr;unicode-bidi:isolate;overflow-wrap:anywhere}
+  .person a:hover{border-color:var(--navy)}
+
+  /* שמירה */
+  .save{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+  .save > div{background:var(--mist);border-radius:22px;padding:1rem 1.2rem}
+  .save h3{font-size:1.1rem;margin-bottom:.3rem}
+  .save ol{margin:0;padding-right:1.2rem}
+  .save li{text-align:right;margin:.2rem 0}
+  .dlrow{display:flex;flex-wrap:wrap;align-items:center;gap:.8rem;margin-top:1.2rem}
+  .dlrow p{margin:0;color:var(--soft);font-size:.92rem;text-align:right}
+
+  footer{margin-top:3.5rem;background:var(--ink);color:#AFB8C6;padding:2rem 0;font-size:.9rem}
+  footer b{font-family:"Secular One",Arial,sans-serif;font-weight:400;color:#fff;font-size:1.2rem}
+  footer p{margin:.2rem 0;text-align:right}
+
+  @media screen and (max-width:620px){
+    .hero{padding-bottom:4.6rem}
+    .hero-in{grid-template-columns:1fr;margin-top:.4rem}
+    .hero .art{order:-1;height:12.5rem}
+    .hero .stamp{width:10.5rem;left:auto;right:-.4rem;top:.2rem}
+    .hero .woman{right:auto;left:0;bottom:-1.2rem;width:9.5rem}
+    .team{grid-template-columns:1fr;gap:1.6rem}
+    .person{padding-top:0;padding-right:4.6rem;min-height:3.6rem}
+    .save{grid-template-columns:1fr}
+    .sec-h .mic{width:3.6rem}
+  }
+  @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hero .stamp{animation:none}details summary::before{transition:none}}
+  @media print{nav,.btn,.cta,#save,#ok{display:none}.hero,.ai{clip-path:none}.prompt pre{max-height:none}.deck{grid-auto-flow:row;grid-template-columns:1fr 1fr}section{break-inside:avoid}@page{size:A5;margin:14mm}}
 </style>
 </head>
 <body>
-<div class="ticker" aria-hidden="true"><b class="tag">מבזק</b><div class="run"><span>כל אדם זכאי לדעה משלו, אבל לא לעובדות משלו · דניאל פטריק מויניהן &nbsp;&nbsp;★&nbsp;&nbsp; "סמכו, אבל בדקו." · פתגם רוסי שרונלד רייגן הפך למפורסם</span></div></div>
-<nav aria-label="תוכן"><a href="#model">המודל</a><a href="#process">תהליך הבדיקה</a><a href="#questions">10 שאלות</a><a href="#ai">ההנחיה ל־AI</a><a href="#team">החוקרות</a><a href="#save">שמירה בנייד</a></nav>
-<main>
-  <section class="page cover" id="intro">
-    <img class="stamp" src="assets/credibility-notebook/stamp.webp" alt="">
-    <img class="man" src="assets/credibility-notebook/woman.svg" alt="">
-    <p class="kicker">פנקס כיס · בדיקת אמינות של מקורות</p>
-    <h1>רגע.<br>זה נכון<em>?</em></h1>
-    <p class="sub">לבדוק מקור לפני שמאמינים לו</p>
-    <p class="lead">לפני שמאמינים לידיעה, לפני שמשתפים אותה ולפני שמלמדים אותה: עוצרים, בודקים מי עומד מאחוריה ועל מה היא נשענת, ונותנים לה ציון מ־1 עד 5.</p>
-    <p class="byline">ד״ר איבנה ריטנר · ד״ר עינת שושן־רפאלי · ד״ר יעל שדה</p>
-  </section>
+<header class="hero">
+  <div class="wrap">
+    <div class="brand"><b>Begood</b><span>פנקס כיס לבדיקת אמינות של מקורות</span></div>
+    <div class="hero-in">
+      <div>
+        <h1>רגע.<br>זה נכון<span class="q">?</span></h1>
+        <p class="lead">לפני שמאמינים לידיעה, משתפים אותה או מלמדים אותה, עוצרים לבדוק: מי פרסם אותה, ועל מה היא נשענת. בסוף הבדיקה נותנים לה ציון אמינות מ־1 עד 5.</p>
+        <a class="cta" href="#ai">ההנחיה ל־AI שלי</a>
+        <p class="by">ד״ר איבנה ריטנר · ד״ר עינת שושן־רפאלי · ד״ר יעל שדה</p>
+      </div>
+      <div class="art" aria-hidden="true">
+        <img class="stamp" src="assets/credibility-notebook/stamp.webp" alt="">
+        <img class="woman" src="assets/credibility-notebook/woman.svg" alt="">
+      </div>
+    </div>
+  </div>
+</header>
+<nav aria-label="תוכן"><a href="#model">המודל</a><a href="#process">הבדיקה</a><a href="#questions">10 שאלות</a><a href="#ai">AI</a><a href="#team">החוקרות</a><a href="#save">שמירה</a></nav>
 
-  <section class="page" id="model">
-    <p class="kicker">המודל</p>
-    <h2>חמש רמות של אמינות</h2>
-    <p class="muted">הציון ניתן למקור בהקשר של הטענה שבודקים, ולא לגוף המפרסם באופן כללי.</p>
-    <div class="meter" id="scale"></div>
-    <div class="rule"><h3>חשוב לזכור</h3><ul id="remember"></ul></div>
+<main>
+  <section id="model"><div class="wrap">
+    <div class="sec-h"><span class="mark"></span><h2>חמש רמות של אמינות</h2></div>
+    <p class="note">הציון ניתן למקור בהקשר של הטענה שבודקים, ולא לגוף המפרסם באופן כללי.</p>
+    <div class="gauge" id="gauge" aria-hidden="true"></div>
+    <ol class="levels" id="scale"></ol>
+    <div class="keep"><h3>חשוב לזכור</h3><ul id="remember"></ul></div>
     <details><summary>מה נחשב ראיה, ומה רק נראה משכנע</summary>
       <div class="ev">
-        <div class="y"><b>ראיה:</b> מסמך רשמי (חוק, פסק דין, נתון רשמי, פרוטוקול), מקור ראשוני שאפשר לקרוא במלואו, והצלבה עם שני מקורות עצמאיים שאינם מעתיקים זה מזה.</div>
-        <div class="no"><b>לא ראיה:</b> תואר או תפקיד של מי שאמר, מספר שיתופים או לייקים, עיצוב מקצועי, לוגו או סיומת של אתר, "מקור בכיר" בלי שם, ו"מחקר מצא" בלי שם המחקר.</div>
-        <div class="q"><b>סימן לבדיקה:</b> טענה שמסבירה הכול בקנוניה סודית, ואי אפשר לחשוב על שום דבר שיפריך אותה.</div>
+        <p class="y"><b>ראיה:</b> מסמך רשמי (חוק, פסק דין, נתון רשמי, פרוטוקול), מקור ראשוני שאפשר לקרוא במלואו, והצלבה עם שני מקורות עצמאיים שאינם מעתיקים זה מזה.</p>
+        <p class="no"><b>לא ראיה:</b> תואר או תפקיד של מי שאמר, מספר שיתופים או לייקים, עיצוב מקצועי, לוגו או סיומת של אתר, "מקור בכיר" בלי שם, ו"מחקר מצא" בלי שם המחקר.</p>
+        <p class="q"><b>סימן לבדיקה:</b> טענה שמסבירה הכול בקנוניה סודית, ואי אפשר לחשוב על שום דבר שיפריך אותה.</p>
       </div>
     </details>
-  </section>
+  </div></section>
 
-  <section class="page dark" id="process">
-    <div class="proc-head"><div><p class="kicker">תהליך הבדיקה</p><h2>ארבעה שלבים, בכל מקור</h2></div><img src="assets/credibility-notebook/mic.webp" alt=""></div>
+  <section id="process"><div class="wrap">
+    <div class="sec-h"><span class="mark"></span><h2>הבדיקה בארבעה שלבים</h2><img class="mic" src="assets/credibility-notebook/mic.webp" alt=""></div>
     <ol class="steps">
-      <li><h3>עוצרים ומתארים</h3>כותבים את הטענה במשפט אחד, ואת מה שידוע על המקור:
+      <li data-n="1"><h3>עוצרים ומתארים</h3><p>כותבים את הטענה במשפט אחד, ואת מה שידוע על המקור:</p>
         <ul><li>מה סוג המקור, ומי פרסם?</li><li>מתי ואיפה פורסם, ואיך הגיע אליי?</li><li>על מה הטענה נשענת: מסמך, נתון, עדות, צילום?</li><li>מה אני מרגיש/ה כשאני קורא/ת, והאם אני רוצה שזה יהיה נכון?</li></ul>
-        נותנים <b>ציון ראשון משלי</b> מ־1 עד 5, עם נימוק קצר. מה שלא ידוע, כותבים "לא ידוע".</li>
-      <li class="hot"><h3>יוצאים מהמקור: קריאה לרוחב</h3>לא מתעמקים בדף עצמו, אלא פותחים לשונית חדשה ובודקים מה אחרים אומרים עליו (SIFT):
+        <p>נותנים <b>ציון ראשון משלי</b> מ־1 עד 5, עם נימוק קצר. מה שלא ידוע, כותבים "לא ידוע".</p></li>
+      <li data-n="2" class="hot"><h3>יוצאים מהמקור: קריאה לרוחב</h3><p>לא מתעמקים בדף עצמו, אלא פותחים לשונית חדשה ובודקים מה אחרים אומרים עליו (SIFT):</p>
         <ul><li><b>מי עומד מאחורי המקור:</b> מה כתוב עליו מחוץ לאתר עצמו.</li><li><b>כיסוי טוב יותר:</b> מה מדווחים מקורות עצמאיים אחרים, ואתרי בדיקת עובדות.</li><li><b>עד המקור הראשוני:</b> המסמך, החוק, המחקר או הסרטון המלא, והאם הטענה תואמת אותם.</li><li><b>תמונה או סרטון:</b> חיפוש תמונה הפוך, תאריך הצילום, סימנים לעריכה או ליצירה ב־AI.</li></ul></li>
-      <li><h3>מוסיפים פריטי מידע</h3>כל דבר שמצאתי נרשם: מה מצאתי ומאיפה. ממשיכים עוד ועוד, עד שאפשר לומר בכנות: <b>אין לי עוד מידע</b>.</li>
-      <li><h3>ציון סופי ונימוק</h3>נותנים ציון מ־1 עד 5 לאור מה שנמצא, ומשווים לציון הראשון: מה השתנה, ולמה? מה עדיין לא ידוע, ומה היה משנה את הציון?</li>
+      <li data-n="3"><h3>מוסיפים פריטי מידע</h3><p>כל דבר שמצאתי נרשם: מה מצאתי ומאיפה. ממשיכים עוד ועוד, עד שאפשר לומר בכנות: <b>אין לי עוד מידע</b>.</p></li>
+      <li data-n="4"><h3>ציון סופי ונימוק</h3><p>נותנים ציון מ־1 עד 5 לאור מה שנמצא, ומשווים לציון הראשון: מה השתנה, ולמה? מה עדיין לא ידוע, ומה היה משנה את הציון?</p></li>
     </ol>
-    <p class="say">ציון 1 אינו "שקר", וציון 5 אינו "אמת מוחלטת". הציון אומר עד כמה הטענה נשענת על ראיות שנבדקו.</p>
-  </section>
+    <p class="truth">ציון 1 אינו "שקר", וציון 5 אינו "אמת מוחלטת". <b>הציון אומר עד כמה הטענה נשענת על ראיות שנבדקו.</b></p>
+  </div></section>
 
-  <section class="page" id="questions">
-    <p class="kicker">לפני שנותנים ציון</p>
-    <h2>10 שאלות לבדיקה עצמית</h2>
-    <p class="muted">עוברים עליהן לפי הסדר.</p>
-    <ol class="qs" id="qs"></ol>
-  </section>
+  <section id="questions"><div class="wrap">
+    <div class="sec-h"><span class="mark"></span><h2>10 שאלות לפני שנותנים ציון</h2></div>
+    <ol class="deck" id="qs"></ol>
+    <p class="swipe">עוברים על הקלפים לפי הסדר. בטלפון גוללים הצידה.</p>
+  </div></section>
 
-  <section class="page red" id="ai">
-    <p class="kicker">להיעזר ב־AI שלי</p>
-    <h2>ההנחיה ל־AI: בודקים מקור לפי המודל</h2>
-    <p>הפנקס אינו מחובר למנוע בדיקה. אפשר לחבר אותו ל־AI שבחרת (ChatGPT, Claude, Gemini או אחר), בחשבון שלך: מעתיקים את ההנחיה, מדביקים אותה בתחילת שיחה חדשה, ואחריה מדביקים או מעלים את המקור. ה־AI יבקש קודם את הציון והנימוק שלך.</p>
-    <div class="how"><span><b>1</b>מעתיקים</span><span><b>2</b>מדביקים בשיחה חדשה</span><span><b>3</b>מביאים את המקור ועונים</span></div>
-    <div class="wire">
-      <div class="top"><b>ההנחיה המלאה</b><button class="btn" id="copy" type="button">העתקה</button></div>
+  <section id="ai" class="ai"><div class="wrap">
+    <div class="sec-h"><span class="mark"></span><h2>בודקים מקור עם ה־AI שלי</h2></div>
+    <p>הפנקס אינו מחובר למנוע בדיקה. אפשר לחבר אותו ל־AI שבחרת (ChatGPT, Claude, Gemini או אחר), בחשבון שלך. ה־AI מבקש קודם את הציון והנימוק שלך, ורק אחר כך נותן ציון משלו.</p>
+    <ol class="how"><li><b>1</b>מעתיקים את ההנחיה</li><li><b>2</b>מדביקים בשיחה חדשה</li><li><b>3</b>מביאים את המקור ועונים</li></ol>
+    <div class="prompt">
+      <div class="bar"><b>ההנחיה המלאה</b><button class="btn" id="copy" type="button">העתקה</button></div>
       <pre id="prompt" tabindex="0" aria-label="ההנחיה ל־AI"></pre>
     </div>
     <button class="btn big" id="copy2" type="button">העתקת ההנחיה ל־AI</button>
-    <div id="ok" aria-live="polite"></div>
-    <p class="warn">ה־AI יכול לטעות ואף להמציא מקורות וקישורים. כל מקור שהוא מציע בודקים בעצמנו, וההכרעה שלך. כדאי לא להדביק פרטים מזהים של אנשים פרטיים.</p>
-  </section>
+    <p id="ok" aria-live="polite"></p>
+    <p class="care">ה־AI יכול לטעות ואף להמציא מקורות וקישורים. כל מקור שהוא מציע בודקים בעצמנו, וההכרעה שלך. כדאי לא להדביק פרטים מזהים של אנשים פרטיים.</p>
+  </div></section>
 
-  <section class="page" id="team">
-    <p class="kicker">מי אנחנו</p>
-    <h2>החוקרות</h2>
-    <p class="muted">הפנקס נכתב במסגרת המחקר "בדיקת אמינות של מקורות". שאלה, הערה או רעיון: נשמח לשמוע.</p>
-    <div class="press">
-      <div class="card"><span class="ini" aria-hidden="true">א״ר</span><div><h3>ד״ר איבנה ריטנר</h3><p class="org">האקדמית גורדון</p></div></div>
-      <div class="card"><span class="ini" aria-hidden="true">ע״ש</span><div><h3>ד״ר עינת שושן־רפאלי</h3><p class="org">המכללה האקדמית אורנים</p><div class="c"><a href="tel:+972509000408">050-9000408</a><a href="mailto:ei0509000408@gmail.com">ei0509000408@gmail.com</a></div></div></div>
-      <div class="card"><span class="ini" aria-hidden="true">י״ש</span><div><h3>ד״ר יעל שדה</h3><p class="org">Begood · חוסן | קהילה | חינוך</p><div class="c"><a href="tel:+972523969417">052-3969417</a><a href="mailto:yael.sade@gmail.com">yael.sade@gmail.com</a><a href="https://be-good.co.il">be-good.co.il</a></div></div></div>
+  <section id="team"><div class="wrap">
+    <div class="sec-h"><span class="mark"></span><h2>החוקרות</h2></div>
+    <p class="note">הפנקס נכתב במסגרת המחקר "בדיקת אמינות של מקורות". שאלה, הערה או רעיון: נשמח לשמוע.</p>
+    <div class="team">
+      <div class="person"><span class="av" aria-hidden="true">א״ר</span><h3>ד״ר איבנה ריטנר</h3><p class="org">האקדמית גורדון</p></div>
+      <div class="person"><span class="av" aria-hidden="true">ע״ש</span><h3>ד״ר עינת שושן־רפאלי</h3><p class="org">המכללה האקדמית אורנים</p><a href="tel:+972509000408">050-9000408</a><a href="mailto:ei0509000408@gmail.com">ei0509000408@gmail.com</a></div>
+      <div class="person"><span class="av" aria-hidden="true">י״ש</span><h3>ד״ר יעל שדה</h3><p class="org">Begood · חוסן, קהילה, חינוך</p><a href="tel:+972523969417">052-3969417</a><a href="mailto:yael.sade@gmail.com">yael.sade@gmail.com</a><a href="https://be-good.co.il">be-good.co.il</a></div>
     </div>
-  </section>
+  </div></section>
 
-  <section class="page" id="save">
-    <p class="kicker">תמיד בכיס</p>
-    <h2>שמירה בנייד</h2>
-    <details open><summary>אייפון</summary><ol><li>פותחים את הדף בספארי.</li><li>לוחצים על כפתור השיתוף (ריבוע עם חץ למעלה).</li><li>בוחרים "הוספה למסך הבית".</li></ol></details>
-    <details><summary>אנדרואיד</summary><ol><li>פותחים את הדף בכרום.</li><li>לוחצים על שלוש הנקודות בפינה העליונה.</li><li>בוחרים "התקנת אפליקציה" או "הוספה למסך הבית".</li></ol></details>
-    <button class="btn line" id="dl" type="button">הורדת הפנקס כקובץ</button>
-    <p class="muted">הקובץ נפתח בכל דפדפן, גם בלי אינטרנט. אפשר גם להדפיס או לשמור כ־PDF.</p>
-  </section>
+  <section id="save"><div class="wrap">
+    <div class="sec-h"><span class="mark"></span><h2>הפנקס בטלפון שלי</h2></div>
+    <div class="save">
+      <div><h3>אייפון</h3><ol><li>פותחים את הדף בספארי.</li><li>לוחצים על כפתור השיתוף (ריבוע עם חץ למעלה).</li><li>בוחרים "הוספה למסך הבית".</li></ol></div>
+      <div><h3>אנדרואיד</h3><ol><li>פותחים את הדף בכרום.</li><li>לוחצים על שלוש הנקודות בפינה העליונה.</li><li>בוחרים "התקנת אפליקציה" או "הוספה למסך הבית".</li></ol></div>
+    </div>
+    <div class="dlrow"><button class="btn ghost" id="dl" type="button">הורדת הפנקס כקובץ</button><p>נפתח בכל דפדפן, גם בלי אינטרנט. אפשר גם להדפיס או לשמור כ־PDF.</p></div>
+  </div></section>
 </main>
-<footer><b>Begood</b> · מחקר "בדיקת אמינות של מקורות" · ד״ר איבנה ריטנר, ד״ר עינת שושן־רפאלי, ד״ר יעל שדה · be-good.co.il</footer>
+<footer><div class="wrap"><b>Begood</b><p>מחקר "בדיקת אמינות של מקורות"</p><p>ד״ר איבנה ריטנר, ד״ר עינת שושן־רפאלי, ד״ר יעל שדה · be-good.co.il</p></div></footer>
 <script>
 (function () {
   // הנוסח של המודל זהה ל-credibility-model.js (SCALE, REMEMBER, QUESTIONS). הקובץ עומד בפני עצמו כדי שיעבוד גם אחרי הורדה.
@@ -264,11 +300,12 @@
   var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
   var $ = function (s) { return document.querySelector(s); };
   if (!$('#scale').children.length) {
+    $('#gauge').innerHTML = SCALE.map(function (l) { return '<span style="background:' + l[3] + '"></span>'; }).join('');
     $('#scale').innerHTML = SCALE.map(function (l) {
-      return '<div class="bar" style="background:' + l[3] + ';width:' + (76 + (l[0] - 1) * 6) + '%"><span class="n" aria-hidden="true">' + l[0] + '</span><span class="x"><b>' + esc(l[1]) + '</b>' + esc(l[2]) + '</span></div>';
+      return '<li class="lv"><span class="n" style="color:' + l[3] + '" aria-hidden="true">' + l[0] + '</span><div><b>' + esc(l[1]) + '</b><p>' + esc(l[2]) + '</p></div></li>';
     }).join('');
     $('#remember').innerHTML = REMEMBER.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('');
-    $('#qs').innerHTML = QUESTIONS.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('');
+    $('#qs').innerHTML = QUESTIONS.map(function (q, i) { return '<li><span class="k" aria-hidden="true">' + (i + 1) + '</span>' + esc(q) + '</li>'; }).join('');
     $('#prompt').textContent = PROMPT;
   }
   function copy() {
