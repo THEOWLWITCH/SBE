@@ -2398,6 +2398,8 @@ function renderCommFeedback(box, r){
       if (draft.tsSig !== sig) Object.assign(draft, { tsSig: sig, questions: [], answers: {}, scenario: null, fromReady: false });
       const bsig = JSON.stringify(["model-v2", H.session, H.modelNames || [], H.modelSteps || []]); // model-v2: תדריך עם טבלת המודל (23/11/2026)
       if (draft.tsBriefSig !== bsig || (H.briefing && draft.tsBriefFrom !== H.briefing.slice(0, 200))) Object.assign(draft, { tsBriefSig: bsig, briefing: H.briefing || "", tsBriefFrom: (H.briefing || "").slice(0, 200), briefingRead: false }); // 23/11/2026: התדריך מטופס התכנון במסלול
+      // 24/11/2026: שיחה שכבר נוצרה ממשיכה עם אותה דמות (נשמרה עם התרגול הקודם), כדי שההשוואה בין המפגשים תהיה על אותה שיחה
+      if (!draft.scenario && H.character && H.character.actor) draft.scenario = H.character;
       draft.form = Object.assign({}, H.fields, { me: H.me || "נקבה" }); saveDraft();
       Object.entries(FIELDS).forEach(([k, id]) => { $(id).value = draft.form[k] || ""; });
       // 22/11/2026 ("זה כלי נפרד שיש לקשר כחלק מהכלי הזה"): פס עליון של המסלול, עם המפגש והשלב, וחזרה למסלול
@@ -2471,7 +2473,7 @@ function renderCommFeedback(box, r){
         const last = rounds[rounds.length - 1] || {};
         const data = { scenario: SCENARIO && SCENARIO.name, subtitle: SCENARIO && SCENARIO.subtitle, actor: SCENARIO && SCENARIO.actor && SCENARIO.actor.roleLabel,
           transcript: last.transcript || "", feedback: last.feedback || null, endingType: last.endingType || null, turns: last.turns || 0, tries: n, model: H.modelNames || [],
-          briefing: (draft.briefing || "").slice(0, 6000), rounds, retries: last.retries || [] };
+          briefing: (draft.briefing || "").slice(0, 6000), rounds, retries: last.retries || [], character: draft.scenario || null };
         try { localStorage.setItem("sbe.ts.result", JSON.stringify({ code: H.code, pid: H.pid, session: H.session, data })); sessionStorage.removeItem("sbe.ts.tries"); sessionStorage.removeItem(RK); localStorage.removeItem(KEY + ".draft"); } catch (e) {}
         location.href = H.back;
       });

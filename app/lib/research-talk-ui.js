@@ -23,20 +23,28 @@
   const dateIL = (iso) => { try { return new Date(iso).toLocaleDateString('he-IL', { day: 'numeric', month: 'numeric', year: '2-digit' }).replace(/\//g, '.'); } catch (_) { return ''; } };
 
   // שורה לכל משתתף/ת ולכל מפגש
+  // מאיזה מפגש השיחה (24/11/2026): שיחה שנבחרה מחדש (reusedFrom), או אותו תיאור בדיוק כמו במפגש קודם, נספרת כאותה שיחה
+  function caseFrom(p, n) {
+    const cs = p.sessions?.[n]?.case; if (!cs || !cs.fields) return '';
+    if (cs.reusedFrom) return cs.reusedFrom;
+    const sig = JSON.stringify(cs.fields);
+    for (let k = 1; k < n; k++) { const o = p.sessions?.[k]?.case; if (o && o.fields && JSON.stringify(o.fields) === sig) return o.reusedFrom || k; }
+    return n;
+  }
   function csvRows(participants) {
     const BG = root.SBE_BGSTUDY, itemIds = BG ? Object.keys(BG.ITEMS) : [];
     const T = root.SBE_TALKSTUDY, refl = T ? [...T.REFLECTION.main, ...T.REFLECTION.short].map((x) => x[0]) : ['contribution', 'feeling', 'tool', 'turn', 'assumption', 'next'];
     const bgIds = BG ? BG.byId('bg-s1-open').definition.items.filter((x) => x.type !== 'likert').map((x) => x.id) : [];
     const head = ['pid', 'group', 'joined', 'report', 'session', ...bgIds, ...itemIds.map((x) => 'pre_' + x),
-      'case_type', 'difficulty', 'prep_aim', 'prep_fear', 'prep_hope', 'models', 'model_reason', 'practice_tries', 'practice_turns', 'ending', ...itemIds.map((x) => 'post_' + x), 'post_open', ...refl.map((x) => 'refl_' + x), 'done_at'];
+      'case_type', 'difficulty', 'prep_aim', 'prep_fear', 'prep_hope', 'case_from_session', 'models', 'model_kept', 'model_switched_in_session', 'model_reason', 'practice_rounds', 'practice_tries', 'practice_turns', 'ending', ...itemIds.map((x) => 'post_' + x), 'post_open', ...refl.map((x) => 'refl_' + x), 'done_at'];
     const rows = [head];
     for (const p of participants) for (const n of [1, 2, 3]) {
       const s = p.sessions?.[n]; if (!s) continue;
       const pre = s.pre?.answers || {}, post = s.post?.answers || {}, cs = s.case || {}, md = s.model || {}, pr = s.practice || {}, rf = s.reflection || {};
       const openKey = Object.keys(post).find((k) => !itemIds.includes(k));
       rows.push([p.pid, p.group, (p.createdAt || '').slice(0, 10), p.report ? 'כן' : '', n, ...bgIds.map((x) => pre[x] ?? ''), ...itemIds.map((x) => pre[x] ?? ''),
-        cs.type || '', cs.difficulty ?? '', cs.prep?.aim || '', cs.prep?.fear || '', cs.prep?.hope || '', (md.ids || []).join('+'), md.reason || '',
-        pr.tries ?? '', pr.turns ?? '', pr.endingType || '', ...itemIds.map((x) => post[x] ?? ''), openKey ? post[openKey] : '', ...refl.map((x) => rf[x] || ''), (s.doneAt || '').slice(0, 10)]);
+        cs.type || '', cs.difficulty ?? '', cs.prep?.aim || '', cs.prep?.fear || '', cs.prep?.hope || '', caseFrom(p, n), (md.ids || []).join('+'), md.kept === true ? 'כן' : md.kept === false ? 'לא' : '', md.switchedInSession ? 'כן' : '', md.reason || '',
+        Array.isArray(pr.rounds) ? pr.rounds.length : (s.practice ? 1 : ''), pr.tries ?? '', pr.turns ?? '', pr.endingType || '', ...itemIds.map((x) => post[x] ?? ''), openKey ? post[openKey] : '', ...refl.map((x) => rf[x] || ''), (s.doneAt || '').slice(0, 10)]);
     }
     return rows;
   }

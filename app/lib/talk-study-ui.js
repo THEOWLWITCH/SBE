@@ -221,6 +221,60 @@
   // ── בחירת מודל: על איזו שיחה מתאמנים, הכנה עצמית, ובחירת המודל ──
   // ── תכנון השיחה (23/11/2026, נבחר: "המסלול עם טופס תכנון השיחה"): טופס התכנון המלא (talk-plan.html),
   // עם בחירת המודל והנימוק, תדריך שהמודל הוא הלב שלו, ומשם ישר לתרגול. הטופס הקצר (modelViewShort) נשאר גיבוי.
+  // ── שיחה שכבר נוצרה (24/11/2026: "אפשר לסטודנטית להגיע לתרגול על שיחה שהיא כבר יצרה מבלי ליצור שוב - זהו חלק מהמחקר"):
+  // במפגשים 2 ו-3 אפשר לבחור שיחה ממפגש קודם, בלי למלא שוב את הטופס. בוחרים מודל (ברירת מחדל: המודל הקודם) וכותבים נימוק,
+  // כמו בטופס המלא. השיחה נשמרת במפגש הזה עם reusedFrom (המפגש שבו נוצרה), כדי שבניתוח יהיה ברור שזו אותה שיחה.
+  // התדריך נשמר רק כשהמודל לא השתנה; מודל אחר מקבל תדריך חדש בכלי התרגול.
+  function priorCases(n) {
+    const out = [], seen = new Set();
+    for (let k = n - 1; k >= 1; k--) {
+      const cs = me.sessions?.[k]?.case, md = me.sessions?.[k]?.model;
+      if (!cs || !cs.fields) continue;
+      const origin = cs.reusedFrom || k;
+      if (seen.has(origin)) continue;
+      seen.add(origin); out.push({ k, origin, cs, md: md || {} });
+    }
+    return out;
+  }
+  function reuseCard(n) {
+    const list = priorCases(n); if (!list.length) return null;
+    const c = card('להתאמן על שיחה שכבר יצרת', ['אפשר להמשיך עם שיחה ממפגש קודם, בלי למלא שוב את טופס התכנון. בוחרים את השיחה ואת המודל, וכותבים משפט או שניים למה.']);
+    let pick = list[0];
+    const rows = el('div');
+    list.forEach((x, i) => {
+      const l = el('label', 'check'), r = el('input'); r.type = 'radio'; r.name = 'reuse'; r.checked = i === 0;
+      r.onchange = () => { pick = x; setModel(x.md.ids || []); };
+      l.append(r, el('span', '', 'השיחה ממפגש ' + x.origin + ': ' + [x.cs.fields?.other, x.cs.type].filter(Boolean).join(' · ') + (x.md.names?.length ? ' · מודל: ' + x.md.names.join(' + ') : '')));
+      rows.append(l);
+    });
+    c.append(rows);
+    c.append(el('h3', '', 'המודל לתרגול הזה'));
+    const picked = new Set(pick.md.ids || []), boxes = [];
+    for (const m of T.MODELS) { const l = el('label', 'check'), cb = el('input'); cb.type = 'checkbox'; cb.value = m.id; cb.onchange = () => { cb.checked ? picked.add(m.id) : picked.delete(m.id); }; boxes.push(cb); l.append(cb, el('span', '', m.name)); c.append(l); }
+    function setModel(ids) { picked.clear(); ids.forEach((x) => picked.add(x)); boxes.forEach((b) => { b.checked = picked.has(b.value); }); }
+    setModel(pick.md.ids || []);
+    const rL = el('label', 'f', 'למה ממשיכים באותו מודל, או למה מחליפים? משפט או שניים'), r = el('textarea'); r.placeholder = 'למשל: התפנית שנתקעתי בה דורשת עוד תרגול באותו מודל';
+    const dk = draftKey(n, 'reuse'); r.value = (store.get(dk) || {}).reason || ''; r.oninput = () => store.set(dk, { reason: r.value });
+    c.append(rL, r);
+    const go = el('button', '', 'ממשיכים לתרגול עם השיחה הזאת ▶'), b = el('div', 'btns'); b.append(go); c.append(b);
+    go.onclick = async () => {
+      const ids = [...picked], reason = r.value.trim();
+      if (!ids.length) return say(c, 'כדי להמשיך, אפשר לבחור מודל אחד לפחות.', true);
+      if (!reason) return say(c, 'נשמח למשפט קצר: למה המודל הזה.', true);
+      const prevIds = me.sessions?.[n - 1]?.model?.ids || pick.md.ids || [];
+      const sameAsCase = sameIds(pick.md.ids || [], ids);
+      const cs = structuredClone(pick.cs); delete cs.at;
+      cs.reusedFrom = pick.origin; cs.reusedAt = n; if (!sameAsCase) cs.briefing = '';
+      busy(go, true);
+      try {
+        await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part: 'case', data: cs });
+        me = (await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part: 'model', data: { ids, names: T.MODELS.filter((m) => ids.includes(m.id)).map((m) => m.name), reason, prevIds, kept: sameIds(prevIds, ids), sameCase: true } })).participant;
+        store.del(dk); render(); window.scrollTo(0, 0);
+      } catch (e) { busy(go, false); say(c, e.message, true); }
+    };
+    return c;
+  }
+
   function modelView(n) {
     const prevCase = me.sessions?.[n - 1]?.case, prevModel = me.sessions?.[n - 1]?.model;
     const c = card('תכנון השיחה', ['ממלאים את טופס תכנון השיחה: על איזו שיחה מתאמנים, מי את/ה בשיחה, מי מולך, מה המטרה ומה מאתגר. בוחרים מודל אחד משלושת המודלים, וכותבים משפט או שניים למה.',
@@ -236,6 +290,8 @@
       store.set('sbe.ts.planctx', { code, pid: cred.pid, session: n, rounds, next: nextLabel(n), back: backUrl(), prevModel: prevModel ? { ids: prevModel.ids, names: prevModel.names } : null, prevPlan: prevCase?.plan || null });
       location.href = 'talk-plan.html';
     };
+    const reuse = n > 1 ? reuseCard(n) : null;
+    if (reuse) { c.querySelector('h2').textContent = 'או: תכנון שיחה חדשה'; root.append(reuse); }
     root.append(c);
   }
   const nextLabel = (n) => n === 1 ? 'סיום המפגש ←' : n === 2 ? 'המשך: שאלון עמדות ←' : 'המשך: שאלון עמדות מסכם ←';
@@ -321,6 +377,7 @@
       busy(go, true);
       try {
         const history = (md.history || []).concat([{ ids: md.ids, names: md.names, reason: md.reason, at: md.at }]);
+        if (!sameIds(md.ids || [], ids) && me.sessions?.[n]?.case?.briefing) { const cs = structuredClone(me.sessions[n].case); delete cs.at; cs.briefing = ''; await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part: 'case', data: cs }); }
         me = (await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part: 'model', data: { ids, names: T.MODELS.filter((m) => ids.includes(m.id)).map((m) => m.name), reason, prevIds: md.ids, kept: sameIds(md.ids || [], ids), switchedInSession: true, history } })).participant;
         render();
       } catch (e) { busy(go, false); say(det, e.message, true); }
@@ -334,12 +391,12 @@
     if (!cs.fields || !md.ids) { root.append(card('תרגול ומשוב', ['התרגול נפתח אחרי תכנון השיחה במפגש הזה.'])); return; }
     const rounds = T.ROUNDS[n] || 1;
     const c = card('תרגול ומשוב', ['קודם קוראים תדריך הכנה קצר לשיחה שלך, לפי המודל שבחרת. אחר כך הכלי בונה מהתיאור שלך דמות, ומדברים איתה. אחרי כל שיחה מקבלים משוב, ואפשר לבחור כל רגע בשיחה ולנסות אותו שוב. כפתור "עצירה" זמין בכל רגע.'].concat(rounds > 1 ? ['במפגש הזה מתרגלים פעמיים: תרגול ומשוב, ואחר כך "תרגול נוסף" ועוד משוב.'] : []));
-    c.append(el('p', '', 'השיחה: ' + (cs.fields?.other || '') + ' · ' + (cs.type || '')), el('p', '', 'המודל: ' + (md.names || []).join(' + ')));
+    c.append(el('p', '', 'השיחה: ' + (cs.fields?.other || '') + ' · ' + (cs.type || '') + (cs.reusedFrom ? ' (אותה שיחה ממפגש ' + cs.reusedFrom + ')' : '')), el('p', '', 'המודל: ' + (md.names || []).join(' + ')));
     c.append(switchModelBox(n, md));
     const go = el('button', '', '▶ לתדריך ולתרגול'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = () => {
       store.set('sbe.ts.cred', { c: code, p: cred.pid, key: cred.key });
-      store.set('sbe.ts.handoff', { code, pid: cred.pid, session: n, rounds, next: nextLabel(n), fields: cs.fields || {}, me: cs.me || 'נקבה', prep: cs.prep || {}, type: cs.type || '', modelNote: T.modelNote(md), modelNames: md.names || [], modelSteps: T.MODELS.filter((m) => (md.ids || []).includes(m.id)).map((m) => m.name + ': ' + m.steps.map((x) => x[1] + ' (' + x[2] + ')').join(' · ')), back: backUrl(), briefing: cs.briefing || '' });
+      store.set('sbe.ts.handoff', { code, pid: cred.pid, session: n, rounds, next: nextLabel(n), fields: cs.fields || {}, me: cs.me || 'נקבה', prep: cs.prep || {}, type: cs.type || '', modelNote: T.modelNote(md), modelNames: md.names || [], modelSteps: T.MODELS.filter((m) => (md.ids || []).includes(m.id)).map((m) => m.name + ': ' + m.steps.map((x) => x[1] + ' (' + x[2] + ')').join(' · ')), back: backUrl(), briefing: cs.briefing || '', character: (cs.reusedFrom && me.sessions?.[cs.reusedFrom]?.practice?.character) || null });
       location.href = 'talk-practice.html';
     };
     const pending = store.get('sbe.ts.result');
