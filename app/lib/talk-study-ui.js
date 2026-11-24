@@ -39,16 +39,62 @@
     let token = '';
     try { token = sessionStorage.getItem('sbe.session.token') || ''; if (!token) { const m = JSON.parse(localStorage.getItem('sbe.session.mirror') || 'null'); token = (m && m.data && m.data['sbe.session.token']) || ''; } } catch (e) {}
     let dev = null; try { dev = JSON.parse(localStorage.getItem('sbe.sys.device') || 'null'); } catch (e) {}
-    const relogin = () => location.replace('entry.html?' + (dev ? '' : 'expired=1&') + 'next=' + encodeURIComponent('talk-study.html?c=7777'));
-    if (!token) return relogin();
+    // כניסה ישירה בלי מסך הכניסה של Be Good (24/11/2026: "אני צריכה כניסה ישירה לכלי הזה לא דרך מסך הכניסה של בי גוד.
+    // עינת מסתבכת"): הקוד האישי מוקלד כאן, ונשמר במכשיר (sbe.remember.code), כך שבפעם הבאה נכנסים לבד.
+    // מנהלת המערכת עם מכשיר מוכר עדיין עוברת דרך entry.html, שנכנס לבד וחוזר לכאן.
+    if (!token && dev) return location.replace('entry.html?next=' + encodeURIComponent('talk-study.html?c=7777'));
+    if (!token) {
+      let saved = ''; try { const r = JSON.parse(localStorage.getItem('sbe.remember.code') || 'null'); saved = (r && r.code) || ''; } catch (e) {}
+      if (saved) { const res = await codeLogin(saved); if (res.token) token = res.token; else if (res.error === 'wrong') { try { localStorage.removeItem('sbe.remember.code'); } catch (e) {} } }
+      if (!token) return staffLogin();
+    }
     root.replaceChildren(el('p', 'sub', 'פותחים את קבוצת הבדיקה…'));
     try {
       const r = await fetch(SERVER + '/api/access', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'tsCall', op: 'f.test', input: {}, token }) });
       const j = await r.json().catch(() => ({}));
-      if (r.status === 401 || r.status === 403) { root.replaceChildren(card('הקוד 7777 פתוח רק לצוות המחקר', ['אפשר להיכנס עם הקוד האישי שלך ב־Be Good ולנסות שוב.'])); return; }
+      if (r.status === 401 || r.status === 403) { try { sessionStorage.removeItem('sbe.session.token'); } catch (e) {} if (r.status === 401) return staffLogin(); root.replaceChildren(card('הקוד 7777 פתוח רק לצוות המחקר', ['הקוד האישי הזה לא מורשה למצב הבדיקה.'])); return; }
       if (!r.ok || !j.class) throw new Error(j.error || 'הפעולה לא הושלמה');
       location.replace('talk-study.html?c=' + j.class.code);
     } catch (e) { root.replaceChildren(card('לא הצלחנו לפתוח את קבוצת הבדיקה', [e.message])); }
+  }
+
+  async function codeLogin(secret) {
+    try {
+      const r = await fetch(SERVER + '/api/access', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ action: 'login', kind: 'code', secret }) });
+      const d = await r.json().catch(() => ({}));
+      if (r.ok && d.token) {
+        try {
+          sessionStorage.setItem('sbe.session.token', d.token);
+          sessionStorage.setItem('sbe.session.perms', JSON.stringify(d.perms || []));
+          sessionStorage.setItem('sbe.session.info', JSON.stringify({ kind: d.kind, inst: d.inst, label: d.label, notices: d.notices || [], sub: d.sub || null, space: d.space || null }));
+          sessionStorage.setItem('sbe.session.role', d.label || d.inst || '');
+          sessionStorage.setItem('sbe.session.homeUrl', 'home.html');
+        } catch (e) {}
+        return d;
+      }
+      return { error: r.status === 403 ? 'wrong' : 'down' };
+    } catch (e) { return { error: 'down' }; }
+  }
+  function staffLogin() {
+    const inp = el('input'); inp.type = 'text'; inp.autocomplete = 'off'; inp.setAttribute('aria-label', 'הקוד האישי ב־Be Good');
+    const stay = el('input'); stay.type = 'checkbox'; stay.checked = true;
+    const btn = el('button', 'primary', 'כניסה למצב הבדיקה');
+    const c = card('כניסה לצוות המחקר', ['מצב הבדיקה פתוח לצוות המחקר בלבד. אפשר להקליד כאן את הקוד האישי ב־Be Good, בלי לעבור דרך מסך הכניסה.']);
+    const lab = el('label', ''); lab.style.cssText = 'display:flex;gap:8px;align-items:center;margin:10px 0;font-size:14px'; lab.append(stay, document.createTextNode('להישאר מחובר/ת במכשיר הזה, בלי קוד בפעם הבאה'));
+    inp.style.cssText = 'width:100%;font-size:18px;padding:10px;margin-top:8px;direction:ltr;text-align:center';
+    c.append(inp, lab, btn);
+    root.replaceChildren(c); inp.focus();
+    const go = async () => {
+      const v = inp.value.replace(/[\u200e\u200f\u061c\s]/g, '').toUpperCase();
+      if (!v) { say(c, 'אפשר להקליד את הקוד האישי.', true); return; }
+      busy(btn, true, 'נכנסים… (עד כ־30 שניות)');
+      const res = await codeLogin(v);
+      busy(btn, false);
+      if (!res.token) { say(c, res.error === 'wrong' ? 'הקוד לא נמצא. אפשר לבדוק אותו ולנסות שוב.' : 'אין כרגע חיבור לשרת. אפשר לנסות שוב בעוד רגע.', true); return; }
+      try { if (stay.checked) localStorage.setItem('sbe.remember.code', JSON.stringify({ code: v, at: new Date().toISOString() })); } catch (e) {}
+      sysTest();
+    };
+    btn.onclick = go; inp.onkeydown = (e) => { if (e.key === 'Enter') go(); };
   }
 
   async function start() {
