@@ -9,7 +9,12 @@
   app.addEventListener('input', (e) => trackDraft(e)); app.addEventListener('change', (e) => trackDraft(e));
   const qs = new URLSearchParams(location.search);
   let classCode = (qs.get('c') || '').toUpperCase().trim();
-  const S = { cred: null, data: null, open: null, tab: 'checks', busy: false, files: {}, timer: null };
+  const S = { cred: null, data: null, open: null, tab: 'checks', busy: false, files: {}, timer: null, preview: '' };
+  // ── מצב בדיקה (7777, 24/11/2026: "אני רוצה דף כזה גם למחקר הזה - זה פותר הרבה בעיות", כמו talk-study.html?c=7777):
+  // מעבר חופשי לכל שלב: הסכמה ופתיחת צוות, שאלון העמדות הראשוני, ארבעת שלבי הבדיקה, והשאלון המסכם והרפלקציה (נפתחת מיד).
+  // רק בפעילות הבדיקה של צוות המחקר (sys-test-7777.js), בלי איסוף למחקר. לביטול: יחד עם שאר הבלוקים של 7777.
+  const TEST_KEY = 'sbe.crd.test.';
+  const testAct = () => { try { return sessionStorage.getItem(TEST_KEY + classCode) || ''; } catch (e) { return ''; } };
   const credKey = (c) => 'sbe.crd.team.' + c;
   const loadCred = (c) => { try { return JSON.parse(localStorage.getItem(credKey(c)) || 'null'); } catch (e) { return null; } };
   const saveCred = (c, v) => { try { if (v) localStorage.setItem(credKey(c), JSON.stringify(v)); else localStorage.removeItem(credKey(c)); } catch (e) {} };
@@ -39,6 +44,8 @@
           let act = a ? (await f('f.get', { id: a.id })).activity : (await f('f.create', { title, dilemma: 'דילמה לבדיקה', research: false })).activity;
           if (!act.classes.length) act = (await f('f.classAdd', { id: act.id, name: 'כיתת בדיקה' })).activity;
           if (act.status !== 'open') await f('f.status', { id: act.id, status: 'open' });
+          if (!act.reflectOpen) await f('f.update', { id: act.id, reflectOpen: true });
+          try { sessionStorage.setItem(TEST_KEY + act.classes[0].code, act.id); } catch (e) {}
           return act.classes[0].code;
         } });
         if (!code) return;
@@ -59,6 +66,7 @@
     }
     const a = info.activity;
     $('#topTitle').textContent = a.title;
+    if (testAct()) return newTeam(info);
     app.innerHTML = '<div class="dlm-card"><h1>' + esc(a.title) + '</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
       + (a.dilemma ? '<p><b>הדילמה:</b> ' + esc(a.dilemma) + '</p>' : '')
       + (a.status !== 'open' ? msg('הפעילות סגורה כרגע. המרצה תפתח אותה.') : '')
@@ -88,18 +96,22 @@
   }
   function newTeam(info) {
     const rows = [{}, {}, {}, {}];
-    app.innerHTML = '<div class="dlm-card"><h1>פתיחת צוות</h1>' + consentHTML(info.activity)
+    app.innerHTML = testBar() + '<div class="dlm-card"><h1>פתיחת צוות</h1>' + consentHTML(info.activity)
       + '<label for="tn">שם הצוות</label><input type="text" id="tn" maxlength="80" placeholder="למשל: צוות 3">'
       + '<h3>המשתתפים בצוות</h3><p class="dlm-hint">לכל משתתף/ת: שם, וחתימה על ההסכמה.</p>'
       + '<div id="mrows">' + rows.map(memberRow).join('') + '</div><p><button class="crd-link" id="addm">➕ משתתף/ת נוסף/ת</button></p>'
       + '<p><button class="dlm-btn main" id="save">פתיחת הצוות</button> <button class="dlm-btn" id="back">חזרה</button></p><div id="m"></div></div>';
     $('#addm').onclick = () => { const n = $('#mrows').children.length; if (n < 8) $('#mrows').insertAdjacentHTML('beforeend', memberRow({}, n)); };
-    $('#back').onclick = start;
+    $('#back').onclick = () => { if (S.cred) { S.preview = ''; load(); } else if (testAct()) newTeam(info); else start(); };
+    if (testAct()) { $('#back').hidden = !S.cred; bindTest(); }
     $('#save').onclick = async () => {
       const members = readMembers($('#mrows'));
       if (members.some((m) => !m.consent)) { $('#m').innerHTML = msg('כדי לפתוח את הצוות, כל משתתף/ת חותם/ת על ההסכמה.', 'err'); return; }
       try {
+        const old = S.cred;
         const r = await U.api('p.teamCreate', { code: classCode, name: $('#tn').value, members });
+        if (old && testAct()) { try { await testCall('f.teamRemove', { teamId: old.t }); } catch (e) {} }
+        S.preview = ''; S.tab = 'checks'; S.open = null;
         S.cred = { a: r.a, t: r.t, key: r.key }; saveCred(classCode, S.cred);
         await U.say('הצוות נפתח. קוד הצוות: ' + r.team.code + '\nשאר חברי הצוות נכנסים עם הקוד הזה, מהמכשיר שלהם.');
         load();
@@ -149,13 +161,15 @@
     let body = '';
     const missingPre = t.members.filter((m) => !(D.reflections[m.id] || {}).pre);
     const myPreDone = me() && !missingPre.some((m) => m.id === me()) && t.members.some((m) => m.id === me());
-    if (S.tab === 'checks') body = missingPre.length && !(t.workOpen && myPreDone) ? preView(missingPre) : (S.open ? checkView(D.checks.find((k) => k.id === S.open)) : checksList());
+    if (S.preview === 'pre') body = preView(t.members);
+    else if (S.tab === 'checks') body = missingPre.length && !(t.workOpen && myPreDone) ? preView(missingPre) : (S.open ? checkView(D.checks.find((k) => k.id === S.open)) : checksList());
     else if (S.tab === 'reflect') body = reflectView();
     else if (S.tab === 'team') body = teamView();
     else body = '<div class="dlm-card">' + M.aboutHTML() + '</div>';
-    app.innerHTML = head + '<div id="body">' + body + '</div>';
+    app.innerHTML = testBar() + head + '<div id="body">' + body + '</div>';
+    bindTest();
     $('#who').onchange = (e) => { setMe(e.target.value); };
-    app.querySelectorAll('[data-tab]').forEach((b) => { b.onclick = () => { S.tab = b.dataset.tab; S.open = null; render(); }; });
+    app.querySelectorAll('[data-tab]').forEach((b) => { b.onclick = () => { S.tab = b.dataset.tab; S.open = null; S.preview = ''; render(); }; });
     bind(); restoreDrafts(); if (S.focus) { const f = document.getElementById(S.focus); if (f) { f.focus(); try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) {} } S.focus = null; }
   }
   // שאלון עמדות: כל היגד בשורה, סולם 1–5
@@ -253,6 +267,61 @@
   }
   const nameOf = (id) => ((S.data.team.members.find((m) => m.id === id) || {}).name || '');
 
+  // ── מצב בדיקה: הסרגל ──
+  async function testCall(op, input) {
+    const tk = window.SBE_SYS7777 && SBE_SYS7777.token();
+    return U.api(op, { id: testAct(), ...(input || {}) }, { token: tk });
+  }
+  function testBar() {
+    if (!testAct()) return '';
+    const D = S.data, ks = (S.cred && D && D.checks) || [];
+    const k = ks.find((x) => x.id === S.open) || ks[ks.length - 1];
+    const cur = (v) => (v ? ' aria-current="true"' : '');
+    const lnk = (go, label, on, off) => '<button type="button" class="crd-link" data-tgo="' + go + '"' + cur(on) + (off ? ' disabled title="' + esc(off) + '"' : '') + '>' + esc(label) + '</button>';
+    const stOn = (s) => S.cred && !S.preview && S.tab === 'checks' && S.open && (S.stage && S.stageFor === S.open ? S.stage : stageOf(k || {})) === s;
+    const sep = (x, i) => '<span class="crd-test-i">' + (i ? '· ' : '') + x + '</span> ';
+    const gated = S.cred && D && D.team.members.some((m) => !(D.reflections[m.id] || {}).pre) && !D.team.workOpen;
+    const need = 'קודם משלימים את השלב הקודם במקור';
+    const reach = { describe: !!k, first: !!(k && k.team), inquiry: !!(k && k.first), final: !!(k && k.done) };
+    const noTeam = S.cred ? '' : 'קודם פותחים צוות';
+    return '<div class="dlm-card crd-test"><h2>מצב בדיקה (7777): כל המסלול</h2>'
+      + '<p class="dlm-hint">אפשר לפתוח כל שלב. מה ששומרים כאן נשמר בפעילות הבדיקה בלבד, ולא נכנס למחקר. הרפלקציה כבר פתוחה.</p>'
+      + '<p><b>מפגש 1: </b>' + [lnk('consent', 'הסכמה ופתיחת צוות', !S.cred || S.preview === 'consent'),
+        lnk('pre', 'שאלון עמדות ראשוני', S.preview === 'pre' || (gated && !S.preview && S.tab === 'checks'), noTeam),
+        lnk('list', 'המקורות', S.cred && !gated && !S.preview && S.tab === 'checks' && !S.open, noTeam || (gated ? 'קודם ממלאים את שאלון העמדות הראשוני (אחד/ת מספיק/ה), ופותחים את אזור העבודה' : '')),
+        lnk('describe', 'שלב 1: פרטים וציון', stOn('describe'), noTeam || (reach.describe ? '' : 'קודם מעלים מקור ברשימת המקורות')),
+        lnk('first', 'שלב 2: בדיקת AI', stOn('first'), noTeam || (reach.first ? '' : need)),
+        lnk('inquiry', 'שלב 3: פריטי מידע', stOn('inquiry'), noTeam || (reach.inquiry ? '' : need)),
+        lnk('final', 'שלב 4: בדיקת AI חוזרת', stOn('final'), noTeam || (reach.final ? '' : need))].map(sep).join('') + '</p>'
+      + '<p><b>מפגש 2: </b>' + [lnk('reflect', 'שאלון עמדות מסכם ורפלקציה', S.cred && !S.preview && S.tab === 'reflect', noTeam),
+        lnk('team', 'הצוות', S.cred && !S.preview && S.tab === 'team', noTeam), lnk('scale', 'המחוון', S.cred && !S.preview && S.tab === 'scale', noTeam)].map(sep).join('') + '</p>'
+      + '<p class="crd-test-b"><button type="button" class="dlm-btn" data-tgo="flow"' + (S.cred ? '' : ' disabled') + '>המסלול כפי שמשתתף/ת רואה אותו</button> '
+      + '<button type="button" class="dlm-btn" data-tgo="reset"' + (S.cred ? '' : ' disabled') + '>התחלה מחדש מההסכמה</button></p><div id="tmm"></div></div>';
+  }
+  function bindTest() {
+    app.querySelectorAll('[data-tgo]').forEach((b) => { b.onclick = () => testGo(b.dataset.tgo); });
+  }
+  async function testGo(go) {
+    const top = () => window.scrollTo(0, 0);
+    if (go === 'consent' || go === 'reset') {
+      if (go === 'reset' && S.cred) {
+        try { await testCall('f.teamRemove', { teamId: S.cred.t }); } catch (e) {}
+        try { localStorage.removeItem(DK()); } catch (e) {}
+        saveCred(classCode, null); S.cred = null; S.data = null; DR = null; clearInterval(S.timer);
+      }
+      S.preview = S.cred ? 'consent' : ''; S.tab = 'checks'; S.open = null;
+      let info; try { info = await U.api('p.class', { code: classCode }); } catch (e) { $('#tmm').innerHTML = msg(e.message, 'err'); return; }
+      newTeam(info); top(); return;
+    }
+    S.preview = ''; S.open = null; S.stage = null;
+    if (go === 'pre') S.preview = 'pre';
+    else if (go === 'flow' || go === 'list') S.tab = 'checks';
+    else if (['describe', 'first', 'inquiry', 'final'].includes(go)) {
+      const ks = S.data.checks, k = ks.find((x) => x.id === S.open) || ks[ks.length - 1];
+      S.tab = 'checks'; if (k) { S.open = k.id; S.stage = go; S.stageFor = k.id; }
+    } else S.tab = go;
+    render(); top();
+  }
   const reflectReady = () => !!S.data.activity.reflectOpen;
   function reflectView() {
     const t = S.data.team, sel = S.rm || me();
@@ -428,7 +497,7 @@
       if (!init) throw new Error('כדי לשלוח, אפשר לכתוב את עמדתך לגבי ספקולציות, פייק ניוז, קונספירציות ודיסאינפורמציה.');
       await call('p.reflect', { member: id, pre, initial: init }); clearDrafts();
       if (!me()) setMe(id);
-      S.pm = ''; window.scrollTo(0, 0); await load();
+      S.pm = ''; if (S.preview === 'pre') { S.preview = ''; S.tab = 'checks'; } window.scrollTo(0, 0); await load();
     }, $('#pmm')));
     on('#saveRefl', () => act(async () => {
       const r = {}; for (const q of M.REFLECT) r[q.k] = q.opts ? ((app.querySelector('input[name=rf-' + q.k + ']:checked') || {}).value || '') : $('#rf-' + q.k).value;
