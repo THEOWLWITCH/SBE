@@ -279,22 +279,25 @@
     const cur = (v) => (v ? ' aria-current="true"' : '');
     const lnk = (go, label, on, off) => '<button type="button" class="crd-link" data-tgo="' + go + '"' + cur(on) + (off ? ' disabled title="' + esc(off) + '"' : '') + '>' + esc(label) + '</button>';
     const stOn = (s) => S.cred && !S.preview && S.tab === 'checks' && S.open && (S.stage && S.stageFor === S.open ? S.stage : stageOf(k || {})) === s;
-    const sep = (x, i) => '<span class="crd-test-i">' + (i ? '· ' : '') + x + '</span> ';
     const gated = S.cred && D && D.team.members.some((m) => !(D.reflections[m.id] || {}).pre) && !D.team.workOpen;
     const need = 'קודם משלימים את השלב הקודם במקור';
     const reach = { describe: !!k, first: !!(k && k.team), inquiry: !!(k && k.first), final: !!(k && k.done) };
     const noTeam = S.cred ? '' : 'קודם פותחים צוות';
     return '<div class="dlm-card crd-test"><h2>מצב בדיקה (7777): כל המסלול</h2>'
       + '<p class="dlm-hint">אפשר לפתוח כל שלב. מה ששומרים כאן נשמר בפעילות הבדיקה בלבד, ולא נכנס למחקר. הרפלקציה כבר פתוחה.</p>'
-      + '<p><b>מפגש 1: </b>' + [lnk('consent', 'הסכמה ופתיחת צוות', !S.cred || S.preview === 'consent'),
-        lnk('pre', 'שאלון עמדות ראשוני', S.preview === 'pre' || (gated && !S.preview && S.tab === 'checks'), noTeam),
-        lnk('list', 'המקורות', S.cred && !gated && !S.preview && S.tab === 'checks' && !S.open, noTeam || (gated ? 'קודם ממלאים את שאלון העמדות הראשוני (אחד/ת מספיק/ה), ופותחים את אזור העבודה' : '')),
-        lnk('describe', 'שלב 1: פרטים וציון', stOn('describe'), noTeam || (reach.describe ? '' : 'קודם מעלים מקור ברשימת המקורות')),
-        lnk('first', 'שלב 2: בדיקת AI', stOn('first'), noTeam || (reach.first ? '' : need)),
-        lnk('inquiry', 'שלב 3: פריטי מידע', stOn('inquiry'), noTeam || (reach.inquiry ? '' : need)),
-        lnk('final', 'שלב 4: בדיקת AI חוזרת', stOn('final'), noTeam || (reach.final ? '' : need))].map(sep).join('') + '</p>'
-      + '<p><b>מפגש 2: </b>' + [lnk('reflect', 'שאלון עמדות מסכם ורפלקציה', S.cred && !S.preview && S.tab === 'reflect', noTeam),
-        lnk('team', 'הצוות', S.cred && !S.preview && S.tab === 'team', noTeam), lnk('scale', 'המחוון', S.cred && !S.preview && S.tab === 'scale', noTeam)].map(sep).join('') + '</p>'
+      + '<ul class="crd-tree">'
+      + '<li><b>מפגש 1</b><ul>'
+      + '<li>' + lnk('consent', 'הסכמה ופתיחת צוות', !S.cred || S.preview === 'consent') + '</li>'
+      + '<li>' + lnk('pre', 'שאלון עמדות ראשוני', S.preview === 'pre' || (gated && !S.preview && S.tab === 'checks'), noTeam) + '</li>'
+      + '<li>' + lnk('list', 'בדיקת מקורות', S.cred && !gated && !S.preview && S.tab === 'checks' && !S.open, noTeam || (gated ? 'קודם ממלאים את שאלון העמדות הראשוני (אחד/ת מספיק/ה), ופותחים את אזור העבודה' : '')) + '<ul>'
+      + '<li>' + lnk('describe', 'שלב 1: פרטים וציון', stOn('describe'), noTeam || (reach.describe ? '' : 'קודם מעלים מקור ברשימת המקורות')) + '</li>'
+      + '<li>' + lnk('first', 'שלב 2: בדיקת AI', stOn('first'), noTeam || (reach.first ? '' : need)) + '</li>'
+      + '<li>' + lnk('inquiry', 'שלב 3: פריטי מידע', stOn('inquiry'), noTeam || (reach.inquiry ? '' : need)) + '</li>'
+      + '<li>' + lnk('final', 'שלב 4: בדיקת AI חוזרת', stOn('final'), noTeam || (reach.final ? '' : need)) + '</li>'
+      + '</ul></li></ul></li>'
+      + '<li><b>מפגש 2</b><ul><li>' + lnk('reflect', 'שאלון עמדות מסכם ורפלקציה', S.cred && !S.preview && S.tab === 'reflect', noTeam) + '</li></ul></li>'
+      + '<li><b>בכל שלב</b><ul><li>' + lnk('team', 'הצוות', S.cred && !S.preview && S.tab === 'team', noTeam) + '</li><li>' + lnk('scale', 'המחוון', S.cred && !S.preview && S.tab === 'scale', noTeam) + '</li></ul></li>'
+      + '</ul>'
       + '<p class="crd-test-b"><button type="button" class="dlm-btn" data-tgo="flow"' + (S.cred ? '' : ' disabled') + '>המסלול כפי שמשתתף/ת רואה אותו</button> '
       + '<button type="button" class="dlm-btn" data-tgo="reset"' + (S.cred ? '' : ' disabled') + '>התחלה מחדש מההסכמה</button></p><div id="tmm"></div></div>';
   }
