@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 460 480">
+  <!-- איור מקורי לפנקס: אישה מופתעת מול עיתון "Fake news", בסגנון האיורים במצגת -->
+  <!-- שיער מאחור -->
+  <path d="M132 120c-14 40-12 104 6 150 20 6 44 4 60-6l-10-120z" fill="#1D2A3F"/>
+  <path d="M250 112c18 40 20 100 4 152-18 8-40 8-56 0l6-130z" fill="#1D2A3F"/>
+  <!-- גוף -->
+  <path d="M110 300c0-44 40-70 90-70h20c52 0 92 26 92 72v178H110z" fill="#E5483A"/>
+  <path d="M182 232h56l-28 34z" fill="#F3C9A0"/>
+  <path d="M176 232c10 20 58 20 68 0" fill="none" stroke="#fff" stroke-width="7" stroke-linecap="round"/>
+  <path d="M120 360c22 10 40 10 54 4" fill="none" stroke="#C93A2E" stroke-width="6" stroke-linecap="round"/>
+  <!-- צוואר וראש -->
+  <rect x="196" y="196" width="28" height="40" rx="12" fill="#EBB88A"/>
+  <ellipse cx="210" cy="148" rx="58" ry="66" fill="#F3C9A0"/>
+  <ellipse cx="152" cy="156" rx="9" ry="13" fill="#EBB88A"/>
+  <ellipse cx="268" cy="156" rx="9" ry="13" fill="#EBB88A"/>
+  <circle cx="152" cy="174" r="5" fill="#2EC4B6"/>
+  <circle cx="268" cy="174" r="5" fill="#2EC4B6"/>
+  <!-- שיער מלפנים וקוקו -->
+  <path d="M150 140c-4-52 30-84 64-84 38 0 66 30 62 84-20-12-34-30-40-50-20 30-52 46-86 50z" fill="#1D2A3F"/>
+  <circle cx="214" cy="52" r="26" fill="#1D2A3F"/>
+  <path d="M196 62c10 6 26 6 36 0" stroke="#E5483A" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <!-- פנים מופתעות -->
+  <path d="M176 128q12-10 24-2M222 126q12-8 24 2" stroke="#1D2A3F" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <ellipse cx="188" cy="150" rx="7" ry="9" fill="#1D2A3F"/>
+  <ellipse cx="234" cy="150" rx="7" ry="9" fill="#1D2A3F"/>
+  <circle cx="190" cy="147" r="2.4" fill="#fff"/>
+  <circle cx="236" cy="147" r="2.4" fill="#fff"/>
+  <path d="M206 160q4 10 -4 14" stroke="#D99A6C" stroke-width="4" fill="none" stroke-linecap="round"/>
+  <ellipse cx="210" cy="190" rx="11" ry="14" fill="#8E2A21"/>
+  <ellipse cx="210" cy="196" rx="6" ry="5" fill="#E5483A"/>
+  <circle cx="172" cy="176" r="9" fill="#F2A28C" opacity=".55"/>
+  <circle cx="250" cy="176" r="9" fill="#F2A28C" opacity=".55"/>
+  <!-- זרוע ימין: יד על הראש -->
+  <path d="M124 290c-30-40-34-100-6-160" stroke="#E5483A" stroke-width="40" fill="none" stroke-linecap="round"/>
+  <path d="M118 132c4-20 22-34 42-30" stroke="#F3C9A0" stroke-width="26" fill="none" stroke-linecap="round"/>
+  <circle cx="164" cy="104" r="16" fill="#F3C9A0"/>
+  <!-- זרוע שמאל: מחזיקה עיתון -->
+  <path d="M300 300c30-14 46-40 50-74" stroke="#E5483A" stroke-width="38" fill="none" stroke-linecap="round"/>
+  <!-- עיתון -->
+  <g transform="rotate(-8 380 170)">
+    <path d="M318 86h118v170H318z" fill="#F4F4F2"/>
+    <path d="M436 92c14 30 16 120 4 168" stroke="#D9D9D6" stroke-width="10" fill="none"/>
+    <rect x="326" y="96" width="102" height="50" fill="#E5483A"/>
+    <text x="377" y="120" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="24" fill="#fff">Fake</text>
+    <text x="377" y="140" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-weight="700" font-size="16" fill="#fff">news</text>
+    <rect x="330" y="156" width="36" height="6" rx="3" fill="#2EC4B6"/>
+    <rect x="372" y="156" width="54" height="6" rx="3" fill="#CFCFCB"/>
+    <rect x="330" y="172" width="96" height="6" rx="3" fill="#DADAD6"/>
+    <rect x="330" y="188" width="80" height="6" rx="3" fill="#DADAD6"/>
+    <rect x="330" y="204" width="96" height="8" rx="3" fill="#B9B9B5"/>
+    <rect x="330" y="222" width="70" height="6" rx="3" fill="#DADAD6"/>
+  </g>
+  <ellipse cx="346" cy="218" rx="17" ry="21" fill="#F3C9A0"/>
+  <path d="M336 202q10-8 22 0" stroke="#EBB88A" stroke-width="5" fill="none" stroke-linecap="round"/>
+</svg>
