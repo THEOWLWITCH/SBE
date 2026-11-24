@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-no-topbar data-no-theme>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>פנקס לבדיקת אמינות של מקור · Begood</title>
+<!-- פנקס אישי לנייד (24/11/2026: "הכן קובץ כמו פנקס - כל סטודנטית תוכל להוריד מהמערכת ולשמור לעצמה בנייד לתזכורת. יהיה בו רק המודל ותהליך אימות מקור. לא יהיה מנוע האימות כי זה עולה כסף - אלא אם תאפשר לכל אחת לחבר את הפנקס כפרומט לAI שלה").
+     פתוח לכולם, בלי כניסה ובלי מודל. הכול בתוך הקובץ, כדי שגם הקובץ שמורידים יעבוד בלי אינטרנט. -->
+<meta name="theme-color" content="#1d3f63">
+<link rel="manifest" href="credibility-notebook.webmanifest">
+<link rel="apple-touch-icon" href="assets/credibility-notebook/icon-192.png">
+<style>
+  :root{--navy:#1d3f63;--teal:#2a9d8f;--ink:#1f2a33;--muted:#5f6b76;--line:#e3e7eb}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Assistant,"Segoe UI",Arial,sans-serif;background:#f4f7f9;color:var(--ink);line-height:1.55;font-size:17px}
+  header{background:#fff;border-bottom:1px solid var(--line);padding:.8rem 1rem;position:sticky;top:0;z-index:5}
+  header b{display:block;font-size:1.15rem;color:var(--navy)}
+  header span{font-size:.85rem;color:var(--muted)}
+  nav{display:flex;gap:.4rem;overflow-x:auto;padding:.5rem 1rem;background:#fff;border-bottom:1px solid var(--line);position:sticky;top:62px;z-index:4}
+  nav a{white-space:nowrap;text-decoration:none;color:var(--navy);border:1px solid #cfd8e0;border-radius:999px;padding:.25rem .8rem;font-size:.92rem;background:#fff}
+  main{max-width:680px;margin:0 auto;padding:1rem}
+  section{background:#fff;border:1px solid var(--line);border-top:2px solid var(--teal);border-radius:14px;padding:1rem 1.1rem;margin:0 0 1rem;scroll-margin-top:120px}
+  h1{font-size:1.5rem;color:var(--navy);margin:.1rem 0 .4rem}
+  h2{font-size:1.2rem;color:var(--navy);margin:.1rem 0 .6rem}
+  p,li{text-align:justify}
+  .muted{color:var(--muted);font-size:.92rem}
+  .lvl{display:flex;gap:.75rem;align-items:flex-start;padding:.55rem 0;border-bottom:1px solid #eef1f4}
+  .lvl:last-child{border:0}
+  .dot{flex:0 0 2.2rem;height:2.2rem;border-radius:50%;color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:1.1rem}
+  ol.steps>li{margin:.6rem 0}
+  ol.steps>li>b{color:var(--navy)}
+  ul.sub{margin:.3rem 0;padding-right:1.1rem}
+  ul.sub li{text-align:right;margin:.15rem 0}
+  .note{background:#f4f8fb;border-right:3px solid var(--navy);padding:.55rem .8rem;border-radius:6px;margin:.6rem 0}
+  .btn{display:block;width:100%;text-align:center;background:var(--navy);color:#fff;border:0;border-radius:999px;padding:.8rem 1rem;font-weight:700;font-size:1.05rem;margin:.6rem 0;cursor:pointer;font-family:inherit;text-decoration:none}
+  .btn.sec{background:#fff;color:var(--navy);border:1px solid var(--navy)}
+  textarea{width:100%;min-height:9rem;font-family:inherit;font-size:.88rem;border:1px solid #cfd8e0;border-radius:10px;padding:.6rem;direction:rtl;background:#fbfcfd}
+  details summary{cursor:pointer;font-weight:700;color:var(--navy);margin:.3rem 0}
+  #ok{color:var(--teal);font-weight:700;min-height:1.4em}
+  footer{text-align:center;color:var(--muted);font-size:.82rem;padding:1rem}
+  @media print{header,nav,.btn,#ai textarea,#save{display:none}section{break-inside:avoid;border-top-width:1px}@page{size:A5;margin:14mm}}
+</style>
+</head>
+<body>
+<header><b>פנקס לבדיקת אמינות של מקור</b><span>המודל ותהליך הבדיקה, לתזכורת בנייד · Begood</span></header>
+<nav aria-label="תוכן"><a href="#model">המודל</a><a href="#process">תהליך הבדיקה</a><a href="#questions">10 שאלות</a><a href="#ai">עם ה־AI שלי</a><a href="#save">שמירה בנייד</a></nav>
+<main>
+  <section id="intro">
+    <h1>רגע. זה נכון?</h1>
+    <p>לפני שמאמינים לידיעה, לפני שמשתפים אותה ולפני שמלמדים אותה: עוצרים, בודקים מי עומד מאחוריה ועל מה היא נשענת, ונותנים לה ציון מ־1 עד 5.</p>
+    <p class="muted">הפנקס עובד גם בלי אינטרנט, אחרי ששומרים אותו בנייד.</p>
+  </section>
+
+  <section id="model">
+    <h2>המודל: חמש רמות של אמינות</h2>
+    <p class="muted">הציון ניתן למקור בהקשר של הטענה שבודקים, ולא לגוף המפרסם באופן כללי.</p>
+    <div id="scale"></div>
+    <div class="note"><b>חשוב לזכור</b><ul class="sub" id="remember"></ul></div>
+    <details><summary>מה נחשב ראיה, ומה רק נראה משכנע</summary>
+      <ul class="sub">
+        <li><b>ראיה:</b> מסמך רשמי (חוק, פסק דין, נתון רשמי, פרוטוקול), מקור ראשוני שאפשר לקרוא במלואו, והצלבה עם שני מקורות עצמאיים שאינם מעתיקים זה מזה.</li>
+        <li><b>לא ראיה:</b> תואר או תפקיד של מי שאמר, מספר שיתופים או לייקים, עיצוב מקצועי, לוגו או סיומת של אתר, "מקור בכיר" בלי שם, ו"מחקר מצא" בלי שם המחקר.</li>
+        <li><b>סימן לבדיקה:</b> טענה שמסבירה הכול בקנוניה סודית, ואי אפשר לחשוב על שום דבר שיפריך אותה.</li>
+      </ul>
+    </details>
+  </section>
+
+  <section id="process">
+    <h2>תהליך הבדיקה: ארבעה שלבים</h2>
+    <ol class="steps">
+      <li><b>עוצרים ומתארים.</b> כותבים את הטענה במשפט אחד, ואת מה שידוע על המקור:
+        <ul class="sub"><li>מה סוג המקור, ומי פרסם?</li><li>מתי ואיפה פורסם, ואיך הגיע אליי?</li><li>על מה הטענה נשענת: מסמך, נתון, עדות, צילום?</li><li>מה אני מרגיש/ה כשאני קורא/ת, והאם אני רוצה שזה יהיה נכון?</li></ul>
+        נותנים <b>ציון ראשון משלי</b> מ־1 עד 5, עם נימוק קצר. מה שלא ידוע, כותבים "לא ידוע".</li>
+      <li><b>יוצאים מהמקור: קריאה לרוחב.</b> לא מתעמקים בדף עצמו, אלא פותחים לשונית חדשה ובודקים מה אחרים אומרים עליו (SIFT):
+        <ul class="sub"><li><b>מי עומד מאחורי המקור:</b> מה כתוב עליו מחוץ לאתר עצמו.</li><li><b>כיסוי טוב יותר:</b> מה מדווחים מקורות עצמאיים אחרים, ואתרי בדיקת עובדות.</li><li><b>עד המקור הראשוני:</b> המסמך, החוק, המחקר או הסרטון המלא, והאם הטענה תואמת אותם.</li><li><b>תמונה או סרטון:</b> חיפוש תמונה הפוך, תאריך הצילום, סימנים לעריכה או ליצירה ב־AI.</li></ul></li>
+      <li><b>מוסיפים פריטי מידע.</b> כל דבר שמצאתי נרשם: מה מצאתי ומאיפה. ממשיכים עוד ועוד, עד שאפשר לומר בכנות: <b>אין לי עוד מידע</b>.</li>
+      <li><b>ציון סופי ונימוק.</b> נותנים ציון מ־1 עד 5 לאור מה שנמצא, ומשווים לציון הראשון: מה השתנה, ולמה? ומה עדיין לא ידוע, ומה היה משנה את הציון?</li>
+    </ol>
+    <div class="note">ציון 1 אינו "שקר", וציון 5 אינו "אמת מוחלטת". הציון אומר עד כמה הטענה נשענת על ראיות שנבדקו.</div>
+  </section>
+
+  <section id="questions">
+    <h2>10 שאלות לבדיקה עצמית</h2>
+    <p class="muted">עוברים עליהן לפי הסדר, לפני שנותנים ציון.</p>
+    <ol id="qs"></ol>
+  </section>
+
+  <section id="ai">
+    <h2>להיעזר ב־AI שלי</h2>
+    <p>הפנקס אינו מחובר למנוע בדיקה. אפשר לחבר אותו ל־AI שבחרת (ChatGPT, Claude, Gemini או אחר), בחשבון שלך: מעתיקים את ההנחיה, מדביקים אותה בתחילת שיחה חדשה, ואחריה מדביקים או מעלים את המקור.</p>
+    <ol class="steps">
+      <li>לוחצים על <b>העתקת ההנחיה</b>.</li>
+      <li>פותחים שיחה חדשה ב־AI שלך ומדביקים.</li>
+      <li>מדביקים את המקור (טקסט, קישור או צילום מסך), ועונים על השאלות שה־AI שואל. הוא יבקש קודם את הציון והנימוק שלך.</li>
+    </ol>
+    <button class="btn" id="copy" type="button">העתקת ההנחיה ל־AI</button>
+    <div id="ok" aria-live="polite"></div>
+    <details><summary>לקרוא את ההנחיה</summary><textarea id="prompt" readonly aria-label="ההנחיה ל־AI"></textarea></details>
+    <div class="note">ה־AI יכול לטעות ואף להמציא מקורות וקישורים. כל מקור שהוא מציע בודקים בעצמנו. ההכרעה שלך. כדאי לא להדביק פרטים מזהים של אנשים פרטיים.</div>
+  </section>
+
+  <section id="save">
+    <h2>שמירה בנייד</h2>
+    <details open><summary>אייפון</summary><ol><li>פותחים את הדף בספארי.</li><li>לוחצים על כפתור השיתוף (ריבוע עם חץ למעלה).</li><li>בוחרים "הוספה למסך הבית".</li></ol></details>
+    <details><summary>אנדרואיד</summary><ol><li>פותחים את הדף בכרום.</li><li>לוחצים על שלוש הנקודות בפינה העליונה.</li><li>בוחרים "התקנת אפליקציה" או "הוספה למסך הבית".</li></ol></details>
+    <button class="btn sec" id="dl" type="button">הורדת הפנקס כקובץ</button>
+    <p class="muted">הקובץ נפתח בכל דפדפן, גם בלי אינטרנט. אפשר גם להדפיס או לשמור כ־PDF.</p>
+  </section>
+</main>
+<footer>מחקר "בדיקת אמינות של מקורות" · ד״ר איבנה ריטנר, ד״ר עינת שושן־רפאלי, ד״ר יעל שדה · Begood · be-good.co.il</footer>
+<script>
+(function () {
+  // הנוסח של המודל זהה ל-credibility-model.js (SCALE, REMEMBER, QUESTIONS). הקובץ עומד בפני עצמו כדי שיעבוד גם אחרי הורדה.
+  var SCALE = [
+    [1, 'לא ניתן לאמת', 'אין מקור מזוהה, או שהמקור מזוהה ואין שום בסיס ראייתי לטענה.', '#C62828'],
+    [2, 'אמינות נמוכה', 'מקור מזוהה, אבל התמיכה בטענה חלשה, חלקית או עקיפה.', '#EF6C00'],
+    [3, 'אמינות בינונית', 'יש ראיות שאפשר לבדוק, אבל חסרים פרטים חשובים, או שיש סתירות שלא הוסברו.', '#B88500'],
+    [4, 'אמינות טובה', 'ראיות מבוססות ורלוונטיות לטענה, ומגבלות ידועות שנאמרות בגלוי.', '#558B2F'],
+    [5, 'אמינות גבוהה', 'מקור שקוף עם ראיות חזקות, שנתמכות במקורות עצמאיים נוספים או במסמך רשמי (חקיקה, פסיקה, נתון רשמי).', '#2E7D32']
+  ];
+  var REMEMBER = [
+    '1 אינו "שקר": פירושו שלא נמצא בסיס שאפשר לאמת. 5 אינו "אמת מוחלטת": פירושו שהראיות נבדקו ונמצאו חזקות ועקביות.',
+    'תפקיד או תואר של מי שאמר את הדברים, גם של ראש ממשלה, אינו ראיה.',
+    'ציון של AI הוא הצעה לבדיקה. ההכרעה שלך.'
+  ];
+  var QUESTIONS = [
+    'מה בדיוק נטען כאן, במשפט אחד?',
+    'מה אני מרגיש/ה כשאני קורא/ת את זה, והאם אני רוצה שזה יהיה נכון?',
+    'מי עומד/ת מאחורי המקור, לפי מה שכתוב עליו מחוץ למקור?',
+    'האם למקור יש מומחיות בנושא הזה דווקא, ומה יש לו להרוויח מהטענה?',
+    'האם אפשר להגיע למקור הראשוני: המסמך, החוק, פסק הדין, המחקר או הסרטון המלא?',
+    'האם הטענה תואמת את מה שכתוב במקור הראשוני, בלי קיצור שמשנה את המשמעות?',
+    'מה אומרים על זה שני מקורות עצמאיים שאינם מעתיקים זה מזה?',
+    'מתי ואיפה צולם או נכתב הדבר? האם יש סימנים לעריכה, להקשר ישן או ליצירה ב־AI?',
+    'אם הטענה מסבירה הכול בקנוניה סודית, מה היה מוכיח שהיא לא נכונה?',
+    'מה עוד לא ידוע, ומה היה משנה את הציון שלי?'
+  ];
+  var PROMPT = [
+    'את/ה עוזר/ת לי לבדוק אמינות של מקור מידע בהקשר של טענה מסוימת. אני סטודנט/ית להוראה, והמטרה שלי היא ללמוד לבדוק בעצמי, לא לקבל פסק דין.',
+    '',
+    'הסולם (ציון למקור בהקשר הטענה, לא לגוף המפרסם באופן כללי):',
+    SCALE.map(function (l) { return l[0] + ' = ' + l[1] + ': ' + l[2]; }).join('\n'),
+    '',
+    'כללים:',
+    '- אם אין לך גישה לאינטרנט בשיחה הזאת, אמור/אמרי זאת ואל תכתוב/י שבדקת משהו ברשת. אל תמציא/י קישורים, שמות של כתבות, מחקרים או נתונים. אם את/ה כן מחפש/ת ברשת, ציין/צייני כל מקור עם קישור, כדי שאוכל לבדוק אותו.',
+    '- אין לך כלי טכני לזיהוי זיוף או דיפ־פייק. אפשר להצביע על סימנים שכדאי לבדוק, לא לקבוע שתמונה או סרטון מזויפים.',
+    '- תואר של תפקיד, פופולריות, עיצוב מקצועי או סיומת של אתר אינם ראיה. מסמך רשמי (חוק, פסק דין, נתון רשמי) והצלבה עם מקורות עצמאיים הם ראיה.',
+    '- טענה שמסבירה הכול בקנוניה סודית ואי אפשר להפריך אותה: ציין/צייני זאת כסימן לבדיקה, בלי ללעוג.',
+    '- אל תנקוט/י עמדה פוליטית. בודקים ראיות, לא מחנות.',
+    '- כשאין מספיק מידע, אמור/אמרי זאת. עדיף ציון זהיר עם הסבר מה חסר.',
+    '- עברית פשוטה וברורה, משפטים קצרים.',
+    '',
+    'סדר העבודה (שלב אחד בכל פעם, וחכה/י לתשובה שלי בין שלב לשלב):',
+    '1. בקש/י ממני את המקור, ואת מה שידוע לי עליו: מה הטענה במשפט אחד, מי פרסם, מתי ואיפה, איך הגיע אליי ועל מה הטענה נשענת. אחר כך בקש/י ממני ציון משלי מ־1 עד 5 ונימוק קצר, לפני שאת/ה נותן/ת ציון.',
+    '2. רק אחרי שנתתי ציון: תן/תני ציון ראשון מ־1 עד 5 והסבר/י על מה הוא נשען. פרט/י מה חסר כדי לדעת יותר, אילו סימני הטעיה כדאי לבדוק, ו־2 עד 4 בדיקות חיצוניות מעשיות: מה לבדוק, איפה ואיך לחפש. התייחס/י לציון ולנימוק שלי.',
+    '3. שאל/י אותי מה מצאתי. על כל פריט שאביא, אמור/אמרי מה הוא מוסיף והאם הוא מקור עצמאי או מעתיק. הצע/י בדיקה אחת נוספת בכל פעם. אל תסכם/י עד שאכתוב "אין לי עוד מידע".',
+    '4. אחרי "אין לי עוד מידע": תן/תני הערכה חוזרת מ־1 עד 5, הסבר/י מה השתנה מההערכה הראשונה ולמה, ומה עדיין חסר. בסוף, משוב קצר על תהליך הבדיקה שלי: מה עשיתי טוב, מה אפשר לעשות אחרת בבדיקה הבאה, ועצה אחת. משוב על הפעולות, לא עליי.',
+    '',
+    'נתחיל: בקש/י ממני את המקור.'
+  ].join('\n');
+  var esc = function (s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); };
+  var $ = function (s) { return document.querySelector(s); };
+  $('#scale').innerHTML = SCALE.map(function (l) {
+    return '<div class="lvl"><span class="dot" style="background:' + l[3] + '" aria-hidden="true">' + l[0] + '</span><div><b>' + l[0] + ' · ' + esc(l[1]) + '</b><br>' + esc(l[2]) + '</div></div>';
+  }).join('');
+  $('#remember').innerHTML = REMEMBER.map(function (r) { return '<li>' + esc(r) + '</li>'; }).join('');
+  $('#qs').innerHTML = QUESTIONS.map(function (q) { return '<li>' + esc(q) + '</li>'; }).join('');
+  $('#prompt').value = PROMPT;
+  $('#copy').addEventListener('click', function () {
+    var done = function () { $('#ok').textContent = '✓ ההנחיה הועתקה. אפשר להדביק אותה בשיחה חדשה ב־AI שלך.'; };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(PROMPT).then(done, fallback); else fallback();
+    function fallback() { var t = $('#prompt'); t.closest('details').open = true; t.focus(); t.select(); try { document.execCommand('copy'); done(); } catch (e) { $('#ok').textContent = 'אפשר לסמן את ההנחיה ולהעתיק אותה ידנית.'; } }
+  });
+  $('#dl').addEventListener('click', function () {
+    var html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+    a.download = 'begood-credibility-notebook.html';
+    document.body.appendChild(a); a.click(); a.remove();
+  });
+  if ('serviceWorker' in navigator && location.protocol === 'https:') {
+    navigator.serviceWorker.register('credibility-notebook-sw.js', { scope: './credibility-notebook' }).catch(function () {});
+  }
+})();
+</script>
+</body>
+</html>
