@@ -282,7 +282,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <!-- תרחיש מוכן (16/11/2026): למי שאין מקרה משלו/ה בראש. ממלא את "מקרה משלך" (SBE_PCUSTOM.READY) -->
   <div class="own-card" id="readyCard" hidden>
     <div><b id="readyTitle">⏳ תרחיש מוכן</b><span id="readyTeaser"></span></div>
-    <select id="readyMe" aria-label="איך לפנות אליי" data-closed><option value="נקבה">בלשון נקבה</option><option value="זכר">בלשון זכר</option></select>
+    <select id="readyMe" aria-label="איך לפנות אליי" data-closed><option value="נקבה">בלשון נקבה</option><option value="זכר">בלשון זכר</option><option value="כוללת">אחר: בלשון כוללת</option></select>
     <button type="button" class="primary" id="bReady">▶ מתחילים להתאמן</button>
     <button type="button" id="bReadyEdit">לשנות פרטים</button>
   </div>
@@ -301,7 +301,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
     <div class="grid2">
       <div class="f"><label for="ownRole">התפקיד שלי</label><input id="ownRole" list="ownRoles" placeholder="למשל: מחנך/ת"></div>
       <div class="f"><label for="ownOther">מי מולי בשיחה</label><input id="ownOther" list="ownOthers" placeholder="למשל: אבא של תלמיד"></div>
-      <div class="f"><label for="ownMe">איך לפנות אליי</label><select id="ownMe" data-closed><option value="נקבה">בלשון נקבה</option><option value="זכר">בלשון זכר</option></select></div>
+      <div class="f"><label for="ownMe">איך לפנות אליי</label><select id="ownMe" data-closed><option value="נקבה">בלשון נקבה</option><option value="זכר">בלשון זכר</option><option value="כוללת">אחר: בלשון כוללת</option></select></div>
     </div>
     <div class="f"><label for="ownGoal">מה הייתי רוצה שיקרה בסוף השיחה</label><input id="ownGoal" placeholder="למשל: שנסכים על צעד אחד לשבוע הקרוב"></div>
     <div class="f"><label for="ownHard">מה מאתגר אותי בשיחה הזאת (רשות)</label><input id="ownHard" placeholder="למשל: חשש שהוא יכעס"></div>
@@ -1548,14 +1548,15 @@ function composeCore(core){
 }
 // מגדר (12/10/2026, בדיקת הלקוחה): ההנחיות כתובות בלשון נקבה, אבל הדמות והמתנסה לפי התרחיש
 // "את:" או "אתה:" לפי הפנייה שנבחרה
-function youL(sc){ return /זכר|גבר/.test((sc && sc.trainee && sc.trainee.gender) || "") ? "אתה: " : "את: "; }
+function youL(sc){ const g = (sc && sc.trainee && sc.trainee.gender) || ""; return /כוללת/.test(g) ? "את.ה: " : /זכר|גבר/.test(g) ? "אתה: " : "את: "; }
 function genderNote(sc){
   const male = /זכר|גבר/.test((sc.actor && sc.actor.gender) || ""), trMale = /זכר|גבר/.test((sc.trainee && sc.trainee.gender) || "");
   const L = [];
   if (male) L.push("הדמות שלך היא גבר. דבר בלשון זכר על עצמך (\"אני חושב\", \"אני לא יודע\"), גם אם ההנחיות כאן כתובות בלשון נקבה.");
   // 16/11/2026 ("הפניה תהיה בזכר או בנקבה אל המתנסה"): תמיד ביחיד ולפי לשון הפנייה, לא "אתם"
   const v = male ? "פנה" : "פני";
-  if (trMale) L.push("מי שמולך הוא גבר: " + v + " אליו ביחיד ובלשון זכר (\"אתה\", \"תגיד\"), לא בלשון רבים.");
+  if (/כוללת/.test((sc.trainee && sc.trainee.gender) || "")) L.push("מי שמולך ביקש/ה פנייה בלשון כוללת: " + v + " ביחיד, בלי לשון זכר או נקבה. העדיפו ניסוח סתמי (\"מה דעתך?\", \"אפשר לספר לי\"), ורק כשאין ברירה \"את.ה\", \"תגיד.י\". לא בלשון רבים.");
+  else if (trMale) L.push("מי שמולך הוא גבר: " + v + " אליו ביחיד ובלשון זכר (\"אתה\", \"תגיד\"), לא בלשון רבים.");
   else L.push("מי שמולך היא אישה: " + v + " אליה ביחיד ובלשון נקבה (\"את\", \"תגידי\"), לא בלשון רבים.");
   return L.length ? "\n\n" + L.join("\n") : "";
 }
@@ -2415,14 +2416,14 @@ function renderCommFeedback(box, r){
         if (draft.scenario) step(3); else { draft.questions = []; draft.answers = {}; saveDraft(); step(2); $("ownQs").textContent = ""; build(false); }
         $("scenarioSubtitle").textContent = "המודל שבחרת: " + (H.modelNames || []).join(" + ") + ". הסיפור נבנה מהמקרה שתיארת במסלול."; };
       function briefSystem(){
-        const male = (H.me || "נקבה") === "זכר";
+        const male = (H.me || "נקבה") === "זכר", incl = H.me === "כוללת";
         return ["את מנחה מנוסה של אנשי ונשות חינוך. כתבי תדריך הכנה אישי וקצר לשיחה מאתגרת שהמתנסה עומד/ת לתרגל, לפי המודל שבחר/ה. התדריך נקרא פעם אחת לפני התרגול.",
           "המודל שנבחר ושלביו:\n" + (H.modelSteps || []).join("\n"),
           "חמישה חלקים, כל אחד בכותרת מודגשת בשורה משלה, בסדר הזה: **מה המטרה** (משפט אחד) · החלק של המודל (ההנחיה המלאה בהמשך) · **איך לפתוח** (ברכת שלום ומשהו טוב לומר, ומשפט פתיחה במרכאות) · **אם השיחה מסתבכת** (שתיים או שלוש שורות שמתחילות ב-\"- \", לפי מה שמאתגר את המתנסה) · **איך לסיים** (צעד המשך מוסכם).",
           // לב התדריך (23/11/2026: "קריטי להוסיף לתדריך ניראות למודל - ממש בפירוט"): lib/model-brief.js
           (window.SBE_MODELBRIEF && window.SBE_TALKSTUDY) ? SBE_MODELBRIEF.rule(SBE_TALKSTUDY.MODELS.filter((m) => (H.modelNames || []).includes(m.name))) : "",
           "המודל הוא מסגרת ולא תסריט: כתבי כך שיהיה ברור שאפשר לסטות ממנו לפי מה שקורה. השתמשי בהכנה העצמית של המתנסה (המטרה, החשש, מה הוא/היא מקווה), בלי להעתיק אותה.",
-          "עד 650 מילים, ורובן בחלק של המודל. גוף שני, " + (male ? "בלשון זכר" : "בלשון נקבה") + ". בלי שמות אמיתיים: במקום שם כותבים [שם]. בלי סימני #. החזירי רק את טקסט התדריך."].join("\n\n");
+          "עד 650 מילים, ורובן בחלק של המודל. גוף שני, " + (incl ? "בלשון כוללת, בלי לשון זכר או נקבה (ניסוח סתמי, או \"את.ה\", \"תכין.י\")" : male ? "בלשון זכר" : "בלשון נקבה") + ". בלי שמות אמיתיים: במקום שם כותבים [שם]. בלי סימני #. החזירי רק את טקסט התדריך."].join("\n\n");
       }
       function briefInput(){
         const f = H.fields || {}, pr = H.prep || {};

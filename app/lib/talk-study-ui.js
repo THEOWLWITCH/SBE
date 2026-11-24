@@ -334,7 +334,7 @@
       const l = el('label', 'f', label), i = k === 'story' ? el('textarea') : el('input'); if (k !== 'story') i.type = 'text';
       i.placeholder = ph; i.value = d[k] || ''; f[k] = i; c1.append(l, i);
     }
-    const meL = el('label', 'f', 'איך לפנות אליי'), meS = el('select'); meS.append(new Option('בלשון נקבה', 'נקבה'), new Option('בלשון זכר', 'זכר')); meS.value = d.me || 'נקבה'; c1.append(meL, meS);
+    const meL = el('label', 'f', 'איך לפנות אליי'), meS = el('select'); meS.append(new Option('בלשון נקבה', 'נקבה'), new Option('בלשון זכר', 'זכר'), new Option('אחר: בלשון כוללת', 'כוללת')); meS.value = d.me || 'נקבה'; c1.append(meL, meS);
     const tL = el('label', 'f', 'סוג השיחה'), tS = el('select'); tS.append(new Option('בחירה', '')); for (const t of T.CASE.types) tS.append(new Option(t, t)); tS.append(new Option('אחר', 'אחר'));
     // "אחר": כותבים סוג שיחה שלא ברשימה (24/11/2026)
     const tO = el('input'); tO.type = 'text'; tO.placeholder = 'אחר: איזו שיחה?'; const known = !d.type || T.CASE.types.includes(d.type); tS.value = known ? (d.type || '') : 'אחר'; tO.value = known ? '' : d.type; tO.hidden = tS.value !== 'אחר'; tS.addEventListener('change', () => { tO.hidden = tS.value !== 'אחר'; if (!tO.hidden) tO.focus(); }); c1.append(tL, tS, tO);
