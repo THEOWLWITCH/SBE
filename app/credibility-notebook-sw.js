@@ -1,5 +1,5 @@
 // Offline cache for the credibility notebook only (registered with scope "./credibility-notebook").
-const CACHE = 'credibility-notebook-v5';
+const CACHE = 'credibility-notebook-v6';
 const FILES = ['credibility-notebook.html', 'credibility-notebook.webmanifest', 'assets/credibility-notebook/icon-192.png', 'assets/credibility-notebook/icon-512.png', 'assets/credibility-notebook/woman.svg', 'assets/credibility-notebook/stamp.webp', 'assets/credibility-notebook/mic.webp'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES)).then(() => self.skipWaiting()));

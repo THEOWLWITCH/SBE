@@ -77,10 +77,17 @@
 
   /* תהליך: ארבעה שלבים על קו */
   .steps{list-style:none;padding:0;margin:0;position:relative}
-  .steps::before{content:"";position:absolute;right:1.35rem;top:1.4rem;bottom:1.4rem;width:3px;background:linear-gradient(var(--teal),var(--navy));border-radius:3px}
+  .steps::before{content:"";position:absolute;right:1.35rem;top:1.4rem;bottom:1.4rem;width:3px;background:linear-gradient(var(--teal),var(--navy) 40%,var(--red) 70%,var(--ink));border-radius:3px}
   .steps>li{position:relative;padding:0 3.9rem 1.6rem 0;text-align:right}
   .steps>li::before{content:attr(data-n);position:absolute;right:0;top:0;width:2.75rem;height:2.75rem;border-radius:50%;background:#fff;border:3px solid var(--teal);color:var(--navy);font-family:"Secular One",Arial,sans-serif;font-size:1.3rem;display:flex;align-items:center;justify-content:center}
-  .steps>li.hot::before{background:var(--teal);color:#fff}
+  .steps>li::before{background:var(--c);border-color:var(--c);color:#fff}
+  .steps>li:nth-child(1){--c:var(--teal)}
+  .steps>li:nth-child(1)::before{color:var(--ink)}
+  .steps>li:nth-child(2){--c:var(--navy)}
+  .steps>li:nth-child(3){--c:var(--red)}
+  .steps>li:nth-child(4){--c:var(--ink)}
+  .steps h3{color:var(--c)}
+  .steps>li:nth-child(1) h3{color:#138F84}
   .steps h3{font-size:1.3rem;margin:.35rem 0 .35rem}
   .steps p{margin:.2rem 0;text-align:right}
   .steps ul{margin:.4rem 0;padding-right:1.1rem}
@@ -200,7 +207,7 @@
       <li data-n="1"><h3>עוצרים ומתארים</h3><p>כותבים את הטענה במשפט אחד, ואת מה שידוע על המקור:</p>
         <ul><li>מה סוג המקור, ומי פרסם?</li><li>מתי ואיפה פורסם, ואיך הגיע אליי?</li><li>על מה הטענה נשענת: מסמך, נתון, עדות, צילום?</li><li>מה אני מרגיש/ה כשאני קורא/ת, והאם אני רוצה שזה יהיה נכון?</li></ul>
         <p>נותנים <b>ציון ראשון משלי</b> מ־1 עד 5, עם נימוק קצר. מה שלא ידוע, כותבים "לא ידוע".</p></li>
-      <li data-n="2" class="hot"><h3>יוצאים מהמקור: קריאה לרוחב</h3><p>לא מתעמקים בדף עצמו, אלא פותחים לשונית חדשה ובודקים מה אחרים אומרים עליו (SIFT):</p>
+      <li data-n="2"><h3>יוצאים מהמקור: קריאה לרוחב</h3><p>לא מתעמקים בדף עצמו, אלא פותחים לשונית חדשה ובודקים מה אחרים אומרים עליו (SIFT):</p>
         <ul><li><b>מי עומד מאחורי המקור:</b> מה כתוב עליו מחוץ לאתר עצמו.</li><li><b>כיסוי טוב יותר:</b> מה מדווחים מקורות עצמאיים אחרים, ואתרי בדיקת עובדות.</li><li><b>עד המקור הראשוני:</b> המסמך, החוק, המחקר או הסרטון המלא, והאם הטענה תואמת אותם.</li><li><b>תמונה או סרטון:</b> חיפוש תמונה הפוך, תאריך הצילום, סימנים לעריכה או ליצירה ב־AI.</li></ul></li>
       <li data-n="3"><h3>מוסיפים פריטי מידע</h3><p>כל דבר שמצאתי נרשם: מה מצאתי ומאיפה. ממשיכים עוד ועוד, עד שאפשר לומר בכנות: <b>אין לי עוד מידע</b>.</p></li>
       <li data-n="4"><h3>ציון סופי ונימוק</h3><p>נותנים ציון מ־1 עד 5 לאור מה שנמצא, ומשווים לציון הראשון: מה השתנה, ולמה? מה עדיין לא ידוע, ומה היה משנה את הציון?</p></li>
