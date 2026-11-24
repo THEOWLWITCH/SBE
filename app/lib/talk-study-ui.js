@@ -77,7 +77,8 @@
     if (!me) return;
     const res = store.get('sbe.ts.result');
     if (!res || res.code !== code || res.pid !== me.pid) return;
-    try { const r = await api('p.save', { code, pid: cred.pid, key: cred.key, session: res.session, part: 'practice', data: res.data }); me = r.participant; store.del('sbe.ts.result'); if (res.session < 3) justDone = res.session; }
+    try { const r = await api('p.save', { code, pid: cred.pid, key: cred.key, session: res.session, part: res.extra ? 'extra' : 'practice', data: res.data }); me = r.participant; store.del('sbe.ts.result'); if (!res.extra && res.session < 3) justDone = res.session;
+      try { me = (await api('p.save', { code, pid: cred.pid, key: cred.key, session: res.session, part: 'autosave', data: { consumed: true } })).participant; } catch (e) {} }
     catch (e) { /* נשאר במכשיר, וננסה שוב בפעם הבאה */ }
   }
 
@@ -94,17 +95,22 @@
     if (!me) { head.append(el('p', 'sub', 'מסלול תרגול במחקר' + (cls.group ? ' · ' + cls.group : ''))); root.append(head); return consentView(); }
     if (cls.test) root.append(testBar());
     const n = preview ? preview.n : currentSession();
-    if (n > 3) { head.append(el('p', 'sub', 'שלושת המפגשים הושלמו')); root.append(head, card('תודה רבה!', ['סיימת את כל שלושת המפגשים של המחקר. התרומה שלך חשובה לנו מאוד.', 'פנקס הכיס נשאר אצלך, לכל שיחה מאתגרת שתבוא.']), pocketCard()); return footer(); }
+    if (n > 3) { head.append(el('p', 'sub', 'שלושת המפגשים הושלמו')); root.append(head, card('תודה רבה!', ['סיימת את כל שלושת המפגשים של המחקר. התרומה שלך חשובה לנו מאוד.', 'פנקס הכיס נשאר אצלך, לכל שיחה מאתגרת שתבוא.'])); if (cls.status === 'open') root.append(autosaveCard(3), myExercises(4, 'done')); root.append(pocketCard()); return footer(); }
     head.append(el('p', 'sub', 'מפגש ' + n + ' מתוך 3' + (cls.group ? ' · ' + cls.group : '')));
     root.append(head);
     const step = preview ? preview.step : currentStep(n);
     root.append(stepper(n, step === 'done' ? 'done' : step));
     if (step === 'consent') { const C = T.CONSENT, cc = card(C.title, C.intro); const ul = el('ul'); for (const [, t] of C.items) ul.append(el('li', '', t)); cc.append(el('h3', '', 'התיבות לסימון:'), ul, el('p', 'sub', C.report)); root.append(cc, pocketCard()); return footer(); }
     if (cls.status !== 'open') root.append(card('המסלול סגור כרגע', ['אפשר לפנות למרצה. מה שכבר נשמר נשאר שמור.']));
-    else if (step === 'pre' || step === 'post') questionnaireView(n, step);
-    else if (step === 'model') modelView(n);
+    else {
+      root.append(autosaveCard(n));
+      if (switchTo) { const st = switchTo; switchTo = null; modelView(n, st.origin); }
+      else if (step === 'pre' || step === 'post') questionnaireView(n, step);
+      else if (step === 'model') modelView(n);
     else if (step === 'practice') practiceView(n);
-    else if (step === 'reflection') reflectionView(n);
+      else if (step === 'reflection') reflectionView(n);
+      root.append(myExercises(n, step), questionnairesCard(n, step));
+    }
     root.append(pocketCard());
     footer();
   }
@@ -225,26 +231,36 @@
   // במפגשים 2 ו-3 אפשר לבחור שיחה ממפגש קודם, בלי למלא שוב את הטופס. בוחרים מודל (ברירת מחדל: המודל הקודם) וכותבים נימוק,
   // כמו בטופס המלא. השיחה נשמרת במפגש הזה עם reusedFrom (המפגש שבו נוצרה), כדי שבניתוח יהיה ברור שזו אותה שיחה.
   // התדריך נשמר רק כשהמודל לא השתנה; מודל אחר מקבל תדריך חדש בכלי התרגול.
-  function priorCases(n) {
+  // כל השיחות שהסטודנט/ית יצר/ה: בכל מפגש עד n (כולל n כש-withCurrent), וגם בתרגילים הנוספים (extras)
+  function priorCases(n, withCurrent) {
     const out = [], seen = new Set();
-    for (let k = n - 1; k >= 1; k--) {
-      const cs = me.sessions?.[k]?.case, md = me.sessions?.[k]?.model;
+    const idsOf = (names) => T.MODELS.filter((m) => (names || []).includes(m.name)).map((m) => m.id);
+    for (let k = withCurrent ? Math.min(n, 3) : n - 1; k >= 1; k--) {
+      const ss = me.sessions?.[k] || {};
+      (ss.extras || []).slice().reverse().forEach((x, i) => {
+        const cs = x.extraCase; if (!cs || !cs.fields) return;
+        const origin = cs.reusedFrom || (k + 'x' + ((ss.extras.length - 1) - i)); const sig = JSON.stringify(cs.fields);
+        if (seen.has(origin) || seen.has(sig)) return; seen.add(origin); seen.add(sig);
+        out.push({ k, origin, cs, md: { ids: idsOf(x.extraModel), names: x.extraModel || [] }, extra: true });
+      });
+      const cs = ss.case, md = ss.model;
       if (!cs || !cs.fields) continue;
-      const origin = cs.reusedFrom || k;
-      if (seen.has(origin)) continue;
-      seen.add(origin); out.push({ k, origin, cs, md: md || {} });
+      const origin = cs.reusedFrom || k, sig = JSON.stringify(cs.fields);
+      if (seen.has(origin) || seen.has(sig)) continue;
+      seen.add(origin); seen.add(sig); out.push({ k, origin, cs, md: md || {} });
     }
     return out;
   }
-  function reuseCard(n) {
-    const list = priorCases(n); if (!list.length) return null;
+  const originLabel = (o) => /x/.test(String(o)) ? 'תרגיל נוסף במפגש ' + String(o).split('x')[0] : 'מפגש ' + o;
+  function reuseCard(n, pre) {
+    const list = priorCases(n, !!pre); if (!list.length) return null;
     const c = card('להתאמן על שיחה שכבר יצרת', ['אפשר להמשיך עם שיחה ממפגש קודם, בלי למלא שוב את טופס התכנון. בוחרים את השיחה ואת המודל, וכותבים משפט או שניים למה.']);
-    let pick = list[0];
+    let pick = list.find((x) => String(x.origin) === String(pre)) || list[0];
     const rows = el('div');
     list.forEach((x, i) => {
-      const l = el('label', 'check'), r = el('input'); r.type = 'radio'; r.name = 'reuse'; r.checked = i === 0;
+      const l = el('label', 'check'), r = el('input'); r.type = 'radio'; r.name = 'reuse'; r.checked = x === pick;
       r.onchange = () => { pick = x; setModel(x.md.ids || []); };
-      l.append(r, el('span', '', 'השיחה ממפגש ' + x.origin + ': ' + [x.cs.fields?.other, x.cs.type].filter(Boolean).join(' · ') + (x.md.names?.length ? ' · מודל: ' + x.md.names.join(' + ') : '')));
+      l.append(r, el('span', '', 'השיחה מ' + originLabel(x.origin) + ': ' + [x.cs.fields?.other, x.cs.type].filter(Boolean).join(' · ') + (x.md.names?.length ? ' · מודל: ' + x.md.names.join(' + ') : '')));
       rows.append(l);
     });
     c.append(rows);
@@ -275,7 +291,7 @@
     return c;
   }
 
-  function modelView(n) {
+  function modelView(n, pre) {
     const prevCase = me.sessions?.[n - 1]?.case, prevModel = me.sessions?.[n - 1]?.model;
     const c = card('תכנון השיחה', ['ממלאים את טופס תכנון השיחה: על איזו שיחה מתאמנים, מי את/ה בשיחה, מי מולך, מה המטרה ומה מאתגר. בוחרים מודל אחד משלושת המודלים, וכותבים משפט או שניים למה.',
       'בסוף הטופס מקבלים תדריך לשיחה, שהמודל שבחרת הוא הלב שלו: מה בשיחה שלך קשור לכל שלב, ואיך זה בא לידי ביטוי. מהתדריך ממשיכים ישר לתרגול.']
@@ -290,8 +306,8 @@
       store.set('sbe.ts.planctx', { code, pid: cred.pid, session: n, rounds, next: nextLabel(n), back: backUrl(), prevModel: prevModel ? { ids: prevModel.ids, names: prevModel.names } : null, prevPlan: prevCase?.plan || null });
       location.href = 'talk-plan.html';
     };
-    const reuse = n > 1 ? reuseCard(n) : null;
-    if (reuse) { c.querySelector('h2').textContent = 'או: תכנון שיחה חדשה'; root.append(reuse); }
+    const reuse = (n > 1 || pre) ? reuseCard(n, pre) : null;
+    if (reuse) { c.querySelector('h2').textContent = 'או: תכנון שיחה חדשה'; root.append(reuse); if (pre) setTimeout(() => reuse.scrollIntoView({ behavior: 'smooth' }), 50); }
     root.append(c);
   }
   const nextLabel = (n) => n === 1 ? 'סיום המפגש ←' : n === 2 ? 'המשך: שאלון עמדות ←' : 'המשך: שאלון עמדות מסכם ←';
@@ -385,13 +401,90 @@
     return det;
   }
 
+  // ── התרגילים שלי (24/11/2026: "סטודנטית שולטת בתרגילים שלה. היא תמיד יכולה לפתוח תרגיל שכבר הופק או ליצור תרגיל חדש") ──
+  // לפני שהתרגול של המפגש נרשם: בחירת שיחה קיימת או חדשה היא השיחה של המפגש (עם מודל ונימוק).
+  // אחרי שהתרגול של המפגש נרשם: תרגיל נוסף (part: extra), שלא משנה את נתוני המפגש.
+  let switchTo = null;
+  function sessionOpenForPractice(n, step) { return n <= 3 && (step === 'model' || step === 'practice') && !me.sessions?.[n]?.practice; }
+  function myExercises(n, step) {
+    const list = priorCases(Math.min(n, 3), true);
+    const c = el('section', 'card soft');
+    c.append(el('h2', '', 'התרגילים שלי'));
+    const inSession = sessionOpenForPractice(n, step);
+    c.append(el('p', 'sub', inSession ? 'אפשר לבחור שיחה שכבר יצרת, או לתכנן שיחה חדשה. מה שנבחר כאן הוא השיחה של המפגש הזה.' : 'אפשר תמיד לפתוח שוב שיחה שכבר יצרת, או ליצור שיחה חדשה. זה תרגיל נוסף, והוא לא משנה את מה שכבר נרשם במפגש.'));
+    if (!list.length) c.append(el('p', 'sub', 'עוד אין כאן שיחות. השיחה הראשונה נוצרת בתכנון השיחה.'));
+    for (const x of list) {
+      const row = el('div', 'btns'); row.style.alignItems = 'center';
+      row.append(el('span', '', [x.cs.fields?.other, x.cs.type].filter(Boolean).join(' · ') + ' · ' + originLabel(x.origin) + (x.md.names?.length ? ' · ' + x.md.names.join(' + ') : '')));
+      const b = el('button', 'soft', inSession ? 'לבחור לתרגול במפגש' : 'לתרגל שוב');
+      b.onclick = () => { if (inSession) { switchTo = { origin: x.origin }; render(); } else extraPractice(n, x); };
+      row.append(b); c.append(row);
+    }
+    const nb = el('button', 'link', '➕ תרגיל חדש: תכנון שיחה חדשה'), b2 = el('div', 'btns'); b2.append(nb); c.append(b2);
+    nb.onclick = () => {
+      if (inSession) { root.replaceChildren(); modelView(Math.min(n, 3)); root.append(pocketCard()); footer(); return; }
+      store.set('sbe.ts.cred', { c: code, p: cred.pid, key: cred.key });
+      store.set('sbe.ts.planctx', { code, pid: cred.pid, session: Math.min(n, 3), rounds: 1, extra: true, next: 'חזרה למסלול ←', back: backUrl(), prevModel: null, prevPlan: null });
+      location.href = 'talk-plan.html';
+    };
+    return c;
+  }
+  function extraPractice(n, x) {
+    const cs = x.cs, md = x.md, sn = Math.min(n, 3);
+    const prevPractice = /x/.test(String(x.origin)) ? null : me.sessions?.[x.origin]?.practice;
+    store.set('sbe.ts.cred', { c: code, p: cred.pid, key: cred.key });
+    store.set('sbe.ts.handoff', { code, pid: cred.pid, session: sn, rounds: 1, extra: true, next: 'חזרה למסלול ←', fields: cs.fields || {}, me: cs.me || 'נקבה', prep: cs.prep || {}, type: cs.type || '', plan: cs.plan || null,
+      modelNote: T.modelNote(md), modelNames: md.names || [], modelSteps: T.MODELS.filter((m) => (md.ids || []).includes(m.id)).map((m) => m.name + ': ' + m.steps.map((y) => y[1] + ' (' + y[2] + ')').join(' · ')),
+      back: backUrl(), briefing: cs.briefing || '', character: (prevPractice && prevPractice.character) || null });
+    location.href = 'talk-practice.html';
+  }
+  // תרגול שנשמר אוטומטית ולא נרשם (הדף נסגר לפני "המשך")
+  function autosaveCard(n) {
+    for (const k of [1, 2, 3]) {
+      const ss = me.sessions?.[k] || {}, a = ss.autosave;
+      if (!a || a.consumed || !a.at || (!a.extra && !ss.case)) continue;
+      const after = a.extra ? (ss.extras || []).some((x) => x.at > a.at) : (ss.practice && ss.practice.at > a.at);
+      if (after) continue;
+      const pending = store.get('sbe.ts.result'); if (pending && pending.code === code && pending.pid === cred.pid) continue;
+      const c = card('יש תרגול שנשמר אוטומטית', ['התרגול ' + (a.extra ? 'הנוסף ' : '') + 'במפגש ' + k + ' נשמר תוך כדי, אבל לא נרשם במסלול, כנראה כי הדף נסגר לפני הכפתור בסוף המשוב. אפשר לרשום אותו עכשיו.']);
+      const go = el('button', '', 'רישום התרגול שנשמר'), b = el('div', 'btns'); b.append(go); c.append(b);
+      go.onclick = async () => {
+        busy(go, true);
+        try {
+          const data = { ...a }; delete data.at; delete data.consumed; const extra = !!data.extra; if (!extra) { delete data.extraCase; delete data.extraModel; }
+          data.fromAutosave = true;
+          await api('p.save', { code, pid: cred.pid, key: cred.key, session: k, part: extra ? 'extra' : 'practice', data });
+          me = (await api('p.save', { code, pid: cred.pid, key: cred.key, session: k, part: 'autosave', data: { consumed: true } })).participant;
+          render(); window.scrollTo(0, 0);
+        } catch (e) { busy(go, false); say(c, e.message, true); }
+      };
+      return c;
+    }
+    return document.createDocumentFragment();
+  }
+  // השאלונים: מה מולא, ומה פתוח עכשיו (24/11/2026: "כפתורי השאלונים")
+  function questionnairesCard(n, step) {
+    const c = el('section', 'card soft'); c.append(el('h2', '', 'השאלונים שלי'));
+    for (const k of [1, 2, 3]) for (const part of ['pre', 'post']) {
+      if (!T.stepsFor(k).some((x) => x.id === part)) continue;
+      const done = me.sessions?.[k]?.[part], def = T.questionnaire(k, part);
+      const row = el('div', 'btns'); row.style.alignItems = 'center';
+      row.append(el('span', '', (done ? '✓ ' : '') + def.title + ' · מפגש ' + k));
+      if (done) row.append(el('span', 'sub', 'מולא'));
+      else if (k === n && step === part) { const b = el('button', 'soft', 'למילוי עכשיו'); b.onclick = () => { const q = root.querySelector('.q'); (q ? q.closest('section') : root).scrollIntoView({ behavior: 'smooth' }); }; row.append(b); }
+      else row.append(el('span', 'sub', k < n ? 'לא מולא' : part === 'pre' ? 'בתחילת המפגש' : 'אחרי התרגול במפגש ' + k));
+      c.append(row);
+    }
+    return c;
+  }
+
   // ── תרגול: בכלי התרגול, ומשם חוזרים לכאן ──
   function practiceView(n) {
     const s = me.sessions?.[n] || {}, cs = s.case || {}, md = s.model || {};
     if (!cs.fields || !md.ids) { root.append(card('תרגול ומשוב', ['התרגול נפתח אחרי תכנון השיחה במפגש הזה.'])); return; }
     const rounds = T.ROUNDS[n] || 1;
     const c = card('תרגול ומשוב', ['קודם קוראים תדריך הכנה קצר לשיחה שלך, לפי המודל שבחרת. אחר כך הכלי בונה מהתיאור שלך דמות, ומדברים איתה. אחרי כל שיחה מקבלים משוב, ואפשר לבחור כל רגע בשיחה ולנסות אותו שוב. כפתור "עצירה" זמין בכל רגע.'].concat(rounds > 1 ? ['במפגש הזה מתרגלים פעמיים: תרגול ומשוב, ואחר כך "תרגול נוסף" ועוד משוב.'] : []));
-    c.append(el('p', '', 'השיחה: ' + (cs.fields?.other || '') + ' · ' + (cs.type || '') + (cs.reusedFrom ? ' (אותה שיחה ממפגש ' + cs.reusedFrom + ')' : '')), el('p', '', 'המודל: ' + (md.names || []).join(' + ')));
+    c.append(el('p', '', 'השיחה: ' + (cs.fields?.other || '') + ' · ' + (cs.type || '') + (cs.reusedFrom ? ' (אותה שיחה מ' + originLabel(cs.reusedFrom) + ')' : '')), el('p', '', 'המודל: ' + (md.names || []).join(' + ')));
     c.append(switchModelBox(n, md));
     const go = el('button', '', '▶ לתדריך ולתרגול'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = () => {

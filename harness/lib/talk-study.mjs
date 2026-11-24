@@ -11,7 +11,8 @@ export const TS_PRACTICE_PAGE = 'talk-practice.html';
 export const TS_PLAN_PAGE = 'talk-plan.html';
 const TS_PAGES = [TS_PRACTICE_PAGE, TS_PLAN_PAGE];
 const LIM = { classes: 60, participants: 400, part: 220_000, text: 4000 };
-const PARTS = ['pre', 'case', 'model', 'practice', 'post', 'reflection'];
+// autosave: התרגול נשמר תוך כדי (24/11/2026: "תוסיף שמירה אוטומטית"); extra: תרגיל נוסף שהסטודנט/ית פתח/ה מעבר לשלבי המפגש ("סטודנטית שולטת בתרגילים שלה")
+const PARTS = ['pre', 'case', 'model', 'practice', 'post', 'reflection', 'autosave', 'extra'];
 const ALPH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const genCode = (n) => { let s = ''; for (const b of randomBytes(n)) s += ALPH[b % ALPH.length]; return s; };
 const hash = (v) => createHash('sha256').update(String(v)).digest('hex');
@@ -157,7 +158,8 @@ export async function handleTalkStudy(store, body, { isSys = false, tester = fal
       if (JSON.stringify(data).length > LIM.part) throw new TsError('התוכן ארוך מדי', 413);
       p.sessions = p.sessions || {};
       const s = p.sessions[n] = p.sessions[n] || { startedAt: now() };
-      s[part] = { ...structuredClone(data), at: now() };
+      if (part === 'extra') s.extras = (s.extras || []).concat([{ ...structuredClone(data), at: now() }]).slice(-20);
+      else s[part] = { ...structuredClone(data), at: now() };
       if (part === 'reflection' || (part === 'practice' && n === 1) || (part === 'post' && n === 2)) s.doneAt = s.doneAt || now();
       p.updatedAt = now();
       await store.set('tsp:' + c.code + ':' + p.pid, p);

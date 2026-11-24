@@ -1330,7 +1330,8 @@ async function tsToPractice(d, briefing, btn, join) {
     const j = await r.json().catch(() => ({})); if (!r.ok) throw new Error(j.error || "השמירה לא הושלמה"); return j;
   };
   btn.disabled = true; const label = btn.textContent; btn.textContent = "שומרים…";
-  try {
+  const extra = !!TS_CTX.extra; // 24/11/2026: תרגיל נוסף, אחרי שהתרגול של המפגש נרשם. לא משנה את נתוני המפגש; נשמר עם התרגול (part: extra)
+  if (!extra) try {
     const base = { code: cred.c, pid: cred.p, key: cred.key, session: TS_CTX.session };
     const plan = {}; FIELDS.forEach((f, k) => { if (d[k]) plan[k] = d[k]; });
     await call({ ...base, part:"case", data:{ fields, me: d.tsMe || "נקבה", type: d.tsType, difficulty: Number(d.tsDiff) || null, prep, plan, briefing: briefing.slice(0, 8000) } });
@@ -1339,7 +1340,7 @@ async function tsToPractice(d, briefing, btn, join) {
   try {
     localStorage.setItem("sbe.ts.handoff", JSON.stringify({ code: cred.c, pid: cred.p, session: TS_CTX.session, rounds: TS_CTX.rounds || 1, next: TS_CTX.next || "",
       fields, me: d.tsMe || "נקבה", prep, type: d.tsType, modelNote: TSM.modelNote({ ids:[M.id] }), modelNames:[M.name],
-      modelSteps:[M.name + ": " + M.steps.map(x => x[1] + " (" + x[2] + ")").join(" · ")], briefing, back: TS_CTX.back }));
+      modelSteps:[M.name + ": " + M.steps.map(x => x[1] + " (" + x[2] + ")").join(" · ")], briefing, back: TS_CTX.back, extra, modelReason: d.tsReason, plan: extra ? (() => { const pl = {}; FIELDS.forEach((f, k) => { if (d[k]) pl[k] = d[k]; }); return pl; })() : null }));
   } catch (e) {}
   location.href = "talk-practice.html";
 }

@@ -2462,19 +2462,20 @@ function renderCommFeedback(box, r){
       // אחרי המשוב: חוזרים למסלול עם התרגול (התמליל, המשוב ומספר הניסיונות)
       const fb = document.getElementById("screen-feedback");
       const box = el("div", { class: "ts-next", style: "margin:22px 0 6px;padding:16px 18px;border:1px solid #dbe4ea;border-top:2px solid #317c7a;border-radius:12px;background:#fff" },
-        el("p", { style: "margin:0 0 10px" }, (H.rounds > 1 ? "במפגש הזה מתרגלים פעמיים: \"תרגול נוסף\" למטה, ועוד משוב. " : "אפשר לתרגל שוב, או לחזור לרגע המאתגר. ") + "כשמסיימים:"));
+        el("p", { style: "margin:0 0 10px" }, (H.rounds > 1 && !H.extra ? "במפגש הזה מתרגלים פעמיים: \"תרגול נוסף\" למטה, ועוד משוב. " : "אפשר לתרגל שוב, או לחזור לרגע המאתגר. ") + "התרגול נשמר אוטומטית, אבל רק הכפתור הזה רושם אותו במסלול. כשמסיימים, לא לסגור את הדף לפני שלוחצים עליו:"));
       const go = el("button", { type: "button", class: "primary" }, H.next || "המשך ←");
       const note = el("p", { class: "fb-note", hidden: "" });
       go.addEventListener("click", () => {
         let n = 0; try { n = Number(sessionStorage.getItem("sbe.ts.tries") || 0); } catch (e) {}
         if (!state.commFb && !state.commFbFailed && !go.dataset.ok) { go.dataset.ok = "1"; note.hidden = false; note.textContent = "המשוב על התקשורת עוד נכתב. אפשר לחכות לו, או ללחוץ שוב כדי להמשיך בלעדיו."; return; }
-        if (n < (H.rounds || 1) && !go.dataset.ok2) { go.dataset.ok2 = "1"; note.hidden = false; note.textContent = "במפגש הזה יש עוד תרגול ומשוב: \"תרגול נוסף\" למטה. אפשר גם ללחוץ שוב ולהמשיך."; return; }
+        if (!H.extra && n < (H.rounds || 1) && !go.dataset.ok2) { go.dataset.ok2 = "1"; note.hidden = false; note.textContent = "במפגש הזה יש עוד תרגול ומשוב: \"תרגול נוסף\" למטה. אפשר גם ללחוץ שוב ולהמשיך."; return; }
         const rounds = loadRounds().concat(state.turn ? [roundNow()] : []);
         const last = rounds[rounds.length - 1] || {};
         const data = { scenario: SCENARIO && SCENARIO.name, subtitle: SCENARIO && SCENARIO.subtitle, actor: SCENARIO && SCENARIO.actor && SCENARIO.actor.roleLabel,
           transcript: last.transcript || "", feedback: last.feedback || null, endingType: last.endingType || null, turns: last.turns || 0, tries: n, model: H.modelNames || [],
           briefing: (draft.briefing || "").slice(0, 6000), rounds, retries: last.retries || [], character: draft.scenario || null };
-        try { localStorage.setItem("sbe.ts.result", JSON.stringify({ code: H.code, pid: H.pid, session: H.session, data })); sessionStorage.removeItem("sbe.ts.tries"); sessionStorage.removeItem(RK); localStorage.removeItem(KEY + ".draft"); } catch (e) {}
+        if (H.extra) Object.assign(data, { extraCase: { fields: H.fields, me: H.me, type: H.type, prep: H.prep, plan: H.plan || null, briefing: (draft.briefing || "").slice(0, 6000) }, extraModel: H.modelNames || [], modelReason: H.modelReason || "" });
+        try { localStorage.setItem("sbe.ts.result", JSON.stringify({ code: H.code, pid: H.pid, session: H.session, extra: !!H.extra, data })); sessionStorage.removeItem("sbe.ts.tries"); sessionStorage.removeItem(RK); localStorage.removeItem(KEY + ".draft"); } catch (e) {}
         location.href = H.back;
       });
       box.append(go, note); fb.append(box);
@@ -2485,8 +2486,33 @@ function renderCommFeedback(box, r){
         return { transcript: tx.slice(0, 50000), feedback: state.commFb || null, endingType: state.endingType || null, turns: state.turn, retries: (state.retries || []).slice(0, 10) }; };
       const saveRound = () => { if (state.ended && state.turn) { const r = loadRounds(); r.push(roundNow()); try { sessionStorage.setItem(RK, JSON.stringify(r.slice(-4))); } catch (e) {} } };
       document.addEventListener("click", (e) => { if (e.target.closest && e.target.closest("#bAgain,#bEndedAgain")) saveRound(); }, true);
+      // שמירה אוטומטית (24/11/2026: "תוסיף שמירה אוטומטית. כתוב הנחיה ותזכורת לשמירה"): כל 15 שניות כשהשיחה התקדמה,
+      // במשוב וכשיוצאים מהדף, התרגול נשמר בשרת (part: autosave). אם הדף נסגר לפני "המשך", המסלול מציע לרשום את מה שנשמר.
+      let lastSig = "", lastAt = "";
+      const asNote = el("span", { class: "ts-autosave", style: "font-size:13px;color:#4b5b66" }, "התרגול נשמר אוטומטית תוך כדי.");
+      bar.insertBefore(asNote, bar.lastChild);
+      const autosave = (beacon) => {
+        try {
+          const cred = JSON.parse(localStorage.getItem("sbe.ts.cred") || "null"); if (!cred || !state.turn) return;
+          const rounds = loadRounds().concat([roundNow()]); const last = rounds[rounds.length - 1] || {};
+          const sig = JSON.stringify([rounds.length, last.turns, (last.transcript || "").length, !!last.feedback]); if (sig === lastSig) return;
+          let n = 0; try { n = Number(sessionStorage.getItem("sbe.ts.tries") || 0); } catch (e) {}
+          const data = { scenario: SCENARIO && SCENARIO.name, actor: SCENARIO && SCENARIO.actor && SCENARIO.actor.roleLabel, transcript: last.transcript || "", feedback: last.feedback || null,
+            endingType: last.endingType || null, turns: last.turns || 0, tries: n, model: H.modelNames || [], briefing: (draft.briefing || "").slice(0, 6000), rounds, retries: last.retries || [],
+            character: draft.scenario || null, extra: !!H.extra, extraCase: H.extra ? { fields: H.fields, me: H.me, type: H.type, prep: H.prep, plan: H.plan || null } : null, extraModel: H.extra ? H.modelNames || [] : null };
+          const body = JSON.stringify({ action: "tsCall", op: "p.save", input: { code: cred.c, pid: cred.p, key: cred.key, session: H.session, part: "autosave", data } });
+          const url = (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) ? "" : AI_SERVER) + "/api/access";
+          lastSig = sig;
+          fetch(url, { method: "POST", headers: { "content-type": "application/json" }, body, keepalive: !!beacon && body.length < 60000 })
+            .then(r => { if (!r.ok) throw 0; lastAt = new Date().toLocaleTimeString("he-IL", { hour: "2-digit", minute: "2-digit" }); asNote.textContent = "✓ נשמר אוטומטית " + lastAt; })
+            .catch(() => { lastSig = ""; asNote.textContent = "השמירה האוטומטית לא הצליחה כרגע. ננסה שוב בעוד רגע."; });
+        } catch (e) {}
+      };
+      setInterval(() => autosave(false), 15000);
+      document.addEventListener("visibilitychange", () => { if (document.visibilityState === "hidden") autosave(true); });
+      window.addEventListener("pagehide", () => autosave(true));
       const _show = window.showFeedback;
-      if (typeof _show === "function") window.showFeedback = function(){ try { sessionStorage.setItem("sbe.ts.tries", String(Number(sessionStorage.getItem("sbe.ts.tries") || 0) + 1)); } catch (e) {} delete go.dataset.ok; delete go.dataset.ok2; note.hidden = true; return _show.apply(this, arguments); };
+      if (typeof _show === "function") window.showFeedback = function(){ try { sessionStorage.setItem("sbe.ts.tries", String(Number(sessionStorage.getItem("sbe.ts.tries") || 0) + 1)); } catch (e) {} delete go.dataset.ok; delete go.dataset.ok2; note.hidden = true; const out = _show.apply(this, arguments); setTimeout(() => autosave(false), 1500); setTimeout(() => autosave(false), 30000); return out; };
     }
   }
 
