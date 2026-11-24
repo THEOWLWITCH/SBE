@@ -38,13 +38,13 @@
   p,li{text-align:justify}
   .muted{color:#6B7282;font-size:.92rem}
   /* שער */
-  .cover{overflow:hidden;min-height:20rem}
+  .cover{overflow:hidden;min-height:26rem}
   .cover h1{font-size:3.4rem;line-height:.98;margin:.3rem 0 .7rem;position:relative;z-index:1}
   .cover h1 em{font-style:normal;color:var(--red)}
   .cover .sub{font-family:"Secular One",Arial,sans-serif;color:var(--navy);font-size:1.35rem;margin:0 0 .6rem;position:relative;z-index:1;max-width:62%}
   .cover p.lead{position:relative;z-index:1;max-width:62%}
-  .cover .stamp{position:absolute;left:-.4rem;top:.4rem;width:9.5rem;transform:rotate(10deg);opacity:.95}
-  .cover .man{position:absolute;left:.4rem;bottom:-.3rem;width:9.6rem}
+  .cover .stamp{position:absolute;left:-.6rem;top:-.2rem;width:13.5rem;transform:rotate(10deg);opacity:.95}
+  .cover .man{position:absolute;left:1.2rem;bottom:-.3rem;width:10.5rem}
   .byline{font-size:.85rem;color:#6B7282;font-style:italic;position:relative;z-index:1;max-width:62%}
   /* המודל */
   .meter{display:flex;flex-direction:column;gap:.45rem;margin:.4rem 0 .9rem}
@@ -89,7 +89,7 @@
   .qs li::before{content:counter(q);display:block;font-family:"Secular One",Arial,sans-serif;font-size:1.7rem;line-height:1;color:var(--red);margin-bottom:.15rem}
   .qs li:nth-child(3n+2)::before{color:#138F84}
   .qs li:nth-child(3n)::before{color:var(--navy)}
-  @media screen and (max-width:440px){.qs{grid-template-columns:1fr}.cover h1{font-size:2.7rem}.cover .sub,.cover p.lead,.byline{max-width:100%}.cover .man{position:static;display:block;width:8rem;margin:.2rem auto .4rem}.page{padding-right:2.3rem}.page::after{right:1.8rem}.page::before{right:.55rem}.cover .stamp{width:6.5rem;left:-.8rem;top:-.4rem;opacity:.9}}
+  @media screen and (max-width:440px){.qs{grid-template-columns:1fr}.cover h1{font-size:2.7rem}.cover .sub,.cover p.lead,.byline{max-width:100%}.cover .man{position:static;display:block;width:8.5rem;margin:.4rem 0 .4rem auto}.page{padding-right:2.3rem}.page::after{right:1.8rem}.page::before{right:.55rem}.cover .stamp{width:10rem;left:-1rem;top:-.6rem;opacity:.92}}
   /* ההנחיה ל-AI */
   .page.red{background:var(--red);border-color:var(--ink);color:#FFF8F2}
   .page.red::before{background:radial-gradient(circle at 50% 50%,var(--paper) 0 .32rem,#8E2A21 .33rem .42rem,transparent .43rem) 0 0/.9rem 1.6rem repeat-y}
