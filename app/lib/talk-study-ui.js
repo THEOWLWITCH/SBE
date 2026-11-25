@@ -209,16 +209,18 @@
   function consentView() {
     const C = T.CONSENT, c = card(C.title, []);
     if (cls.status !== 'open') { c.append(el('p', 'status bad', 'ההצטרפות סגורה כרגע. אפשר לפנות למרצה.')); root.append(c); return footer(); }
+    const il = el('label', 'f', 'ראשי תיבות של השם הפרטי ושם המשפחה'), ini = el('input'); ini.maxLength = 10; ini.placeholder = 'למשל: י.ש'; c.append(il, ini);
     const rl = el('label', 'check'), want = el('input'); want.type = 'checkbox'; rl.append(want, el('span', '', C.report)); c.append(el('h3', '', 'דו״ח משוב אישי (רשות)'), rl);
     const ml = el('label', 'f', 'כתובת מייל לדו״ח'), mail = el('input'); mail.type = 'email'; mail.placeholder = 'למשל: name@example.com'; ml.hidden = mail.hidden = true;
     want.onchange = () => { ml.hidden = mail.hidden = !want.checked; };
     c.append(ml, mail);
     const go = el('button', '', 'מתחילים'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = async () => {
+      if (!ini.value.trim()) return say(c, 'כדי להתחיל, אפשר לכתוב ראשי תיבות של השם הפרטי ושם המשפחה.', true);
       if (want.checked && !/^\S+@\S+\.\S+$/.test(mail.value.trim())) return say(c, 'אפשר לבדוק את כתובת המייל, או להוריד את הסימון של הדו״ח.', true);
       busy(go, true, 'מצטרפים…');
       try {
-        const r = await api('p.join', { code, report: { want: want.checked, email: mail.value.trim() } });
+        const r = await api('p.join', { code, initials: ini.value.trim(), report: { want: want.checked, email: mail.value.trim() } });
         cred = { pid: r.pid, key: r.key }; store.set(KEY, cred); me = r.participant; render();
       } catch (e) { busy(go, false); say(c, e.message, true); }
     };

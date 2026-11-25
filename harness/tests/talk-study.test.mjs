@@ -23,7 +23,8 @@ test('research center creates a link; students join without a consent step; data
   const code = made.class.code;
   assert.match(code, /^[A-Z2-9]{8}$/);
   assert.equal((await call(store, 'p.info', { code }))[1].class.group, 'ייעוץ חינוכי');
-  const [js, joined] = await call(store, 'p.join', { code, consent, report: { want: true, email: 'a@b.co' } });
+  const [js, joined] = await call(store, 'p.join', { code, initials: 'י.ש', consent, report: { want: true, email: 'a@b.co' } });
+  assert.equal((await call(store, 'p.join', { code }))[0], 400);
   assert.equal(js, 200);
   const cred = { code, pid: joined.pid, key: joined.key };
   assert.equal((await call(store, 'p.get', { ...cred, key: 'x'.repeat(48) }))[0], 404);
@@ -62,7 +63,7 @@ test('research center creates a link; students join without a consent step; data
   assert.equal((await authorizeModel(store, { page: 'talk-practice.html', ts: { ...ts, key: 'z'.repeat(48) } }, '/api/complete')).ok, false);
   await call(store, 'f.status', { code, status: 'closed' }, { token: sys.token });
   assert.equal((await authorizeModel(store, { page: 'talk-practice.html', ts }, '/api/complete')).ok, false);
-  assert.equal((await call(store, 'p.join', { code, consent }))[0], 403);
+  assert.equal((await call(store, 'p.join', { code, initials: 'י.ש', consent }))[0], 403);
   // יציאה מהמחקר מוחקת את הנתונים
   assert.equal((await call(store, 'p.withdraw', cred))[0], 200);
   assert.equal((await call(store, 'p.get', cred))[0], 404);

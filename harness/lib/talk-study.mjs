@@ -29,7 +29,7 @@ const keyOk = (p, key) => {
   return a.length === b.length && timingSafeEqual(a, b);
 };
 const classView = (c) => ({ code: c.code, studyId: c.studyId, studyTitle: c.studyTitle, group: c.group, label: c.label, status: c.status, createdAt: c.createdAt });
-const participantView = (p) => ({ pid: p.pid, code: p.code, group: p.group, createdAt: p.createdAt, consent: p.consent, report: !!p.report, sessions: p.sessions || {} });
+const participantView = (p) => ({ pid: p.pid, code: p.code, group: p.group, createdAt: p.createdAt, initials: p.initials || '', consent: p.consent, report: !!p.report, sessions: p.sessions || {} });
 
 async function participant(store, d) {
   const code = String(d.code || ''), pid = String(d.pid || '');
@@ -127,12 +127,14 @@ export async function handleTalkStudy(store, body, { isSys = false, tester = fal
       const c = okCode(code) ? await store.get('tsc:' + code) : null;
       if (!c) { await pause(); throw new TsError('הקישור לא נמצא', 404); }
       if (c.status !== 'open') throw new TsError('ההצטרפות סגורה כרגע. אפשר לפנות למרצה.', 403);
+      const initials = clip(String(d.initials || '').replace(/[^\p{L}.\s'"״׳-]/gu, '').trim(), 10);
+      if (!initials) throw new TsError('כדי להתחיל, אפשר לכתוב ראשי תיבות של השם הפרטי ושם המשפחה');
       if ((await store.list('tsp:' + code + ':', { keysOnly: true })).length >= LIM.participants) throw new TsError('הקבוצה מלאה', 429);
       let pid = genCode(6); while (await store.get('tsp:' + code + ':' + pid)) pid = genCode(6);
       const key = randomBytes(24).toString('hex');
       const email = clip(d.report?.email, 200);
       const wants = d.report?.want === true && /^\S+@\S+\.\S+$/.test(email);
-      const p = { pid, code, group: c.group, keyHash: hash(key), createdAt: now(), report: wants,
+      const p = { pid, code, group: c.group, initials, keyHash: hash(key), createdAt: now(), report: wants,
         sessions: {} };
       await store.set('tsp:' + code + ':' + pid, p);
       if (wants) await store.set('tse:' + code + ':' + pid, { pid, email, at: now() });
