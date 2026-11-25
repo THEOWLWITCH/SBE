@@ -9,17 +9,18 @@
   'use strict';
   const BG = () => root.SBE_BGSTUDY || (typeof require === 'function' ? require('./begood-study.js') : null);
 
-  // 25/11/2026: שאלון העמדות של סוף מפגש 2 הוסר ("זה יותר מידי"). 18/11/2026: שאלון עמדות בפתיחת מפגש 1 ובסוף מפגש 3; משוב מהמודל אחרי כל תרגול; רפלקציה רק במפגש 3.
+  // 25/11/2026 ("מפגש 1 - הקניה- מצגת + כניסה למערכת + שאלון עמדות. מפגש 2 - שני תרגולים. מפגש 3- תרגול +שאלון + רפלקציה"):
+  // במפגש 1 אין תכנון ותרגול; המפגש נגמר בשאלון העמדות. 25/11/2026: שאלון העמדות של סוף מפגש 2 הוסר ("זה יותר מידי"). 18/11/2026: שאלון עמדות בפתיחת מפגש 1 ובסוף מפגש 3; משוב מהמודל אחרי כל תרגול; רפלקציה רק במפגש 3.
   // במפגש 2 מתרגלים פעמיים (תרגול ומשוב, ועוד תרגול ומשוב).
   const STEPS = Object.freeze([
     { id: 'pre', label: 'שאלון עמדות', sessions: [1] },
-    { id: 'model', label: 'תכנון השיחה', sessions: [1, 2, 3] },
-    { id: 'practice', label: 'תרגול ומשוב', sessions: [1, 2, 3] },
+    { id: 'model', label: 'תכנון השיחה', sessions: [2, 3] },
+    { id: 'practice', label: 'תרגול ומשוב', sessions: [2, 3] },
     { id: 'post', label: 'שאלון עמדות', sessions: [3] },
     { id: 'reflection', label: 'רפלקציה', sessions: [3] }
   ]);
   const stepsFor = (session) => STEPS.filter((s) => s.sessions.includes(session));
-  const ROUNDS = Object.freeze({ 1: 1, 2: 2, 3: 1 });
+  const ROUNDS = Object.freeze({ 2: 2, 3: 1 });
 
   const MODELS = Object.freeze([
     { id: 'spikes', name: 'SPIKES, ולצדו NURSE', tag: 'מסירת מידע קשה',

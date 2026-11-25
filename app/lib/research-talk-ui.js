@@ -9,7 +9,7 @@
   const GROUPS = ['ייעוץ חינוכי', 'חינוך', 'אחר'];
   // התיקייה המשותפת של צוות המחקר ב־Google Drive (ד״ר עינת שושן־רפאלי וד״ר יעל שדה, 19/11/2026)
   const TEAM_FOLDER = 'https://drive.google.com/drive/folders/1jifxe6Id8J2moFq7a0zN-spcKpdrtCNp';
-  const PARTS = [['pre', 'שאלון עמדות'], ['model', 'בחירת מודל'], ['practice', 'תרגול ומשוב'], ['post', 'שאלון עמדות מסכם (סוף מפגש 3)'], ['reflection', 'רפלקציה']];
+  const PARTS = [['pre', 'שאלון עמדות (מפגש 1)'], ['model', 'בחירת מודל'], ['practice', 'תרגול ומשוב (מפגשים 2 ו־3)'], ['post', 'שאלון עמדות מסכם (סוף מפגש 3)'], ['reflection', 'רפלקציה']];
   const endpoint = () => (typeof location !== 'undefined' && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)) ? '/api/access' : 'https://sbe-server.onrender.com/api/access';
   const token = () => { try { return sessionStorage.getItem('sbe.session.token') || ''; } catch (_) { return ''; } };
   async function call(op, input) {
@@ -59,7 +59,7 @@
 
   function view(box, ctx) {
     const { D, study, ask } = ctx, node = D.node;
-    D.paragraph(box, 'מסלול לסטודנטיות ולסטודנטים, בלי קוד Begood, בשלושה מפגשים: שאלון עמדות בפתיחה; בכל מפגש בחירת מודל, תרגול ומשוב (במפגש 2 פעמיים); בסוף מפגש 3 שאלון עמדות מסכם ורפלקציה. לכל קבוצה קישור ו־QR משלה. הכניסה היא רק למסלול הזה, בלי מעבר לכלים אחרים.');
+    D.paragraph(box, 'מסלול לסטודנטיות ולסטודנטים, בלי קוד Begood, בשלושה מפגשים: במפגש 1 הקניה, כניסה למסלול ושאלון עמדות; במפגש 2 תכנון שיחה ושני תרגולים עם משוב; במפגש 3 תרגול ומשוב, שאלון עמדות מסכם ורפלקציה. לכל קבוצה קישור ו־QR משלה. הכניסה היא רק למסלול הזה, בלי מעבר לכלים אחרים.');
     const links = node('p', 'r-muted');
     const a2 = node('a', '', 'פנקס הכיס'); a2.href = 'pocket-talk.html'; a2.target = '_blank'; a2.rel = 'noopener';
     links.append(a2); box.append(links);

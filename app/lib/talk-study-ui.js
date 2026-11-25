@@ -97,9 +97,25 @@
     btn.onclick = go; inp.onkeydown = (e) => { if (e.key === 'Enter') go(); };
   }
 
+  // 25/11/2026 ("תוסיף למצגת ברקוד"): QR אחד במצגת מוביל לכאן בלי קוד כיתה, ומקלידים את קוד הכיתה (8 תווים)
+  function codeEntry() {
+    const last = store.get('sbe.ts.cred');
+    const c = card('כניסה למסלול', ['מקלידים את קוד הכיתה שהתקבל מהמרצה (8 תווים, אותיות וספרות).']);
+    const i = el('input'); i.type = 'text'; i.autocomplete = 'off'; i.maxLength = 8; i.placeholder = 'קוד כיתה'; i.dir = 'ltr'; i.style.textTransform = 'uppercase'; i.style.maxWidth = '220px';
+    const go = el('button', '', 'כניסה'), b = el('div', 'btns'); b.append(go);
+    const enter = () => { const v = i.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+      if (v === '7777') { location.search = '?c=7777'; return; }
+      if (!/^[A-Z2-9]{8}$/.test(v)) { say(c, 'קוד הכיתה הוא 8 תווים. כדאי לבדוק שוב.', true); return; }
+      location.search = '?c=' + v; };
+    go.onclick = enter; i.onkeydown = (e) => { if (e.key === 'Enter') enter(); };
+    c.append(i, b);
+    if (last && last.c) { const again = el('button', 'link', 'להמשיך בכיתה שבה כבר התחלתי'); again.onclick = () => { location.search = '?c=' + last.c; }; c.append(again); }
+    root.replaceChildren(c); i.focus();
+  }
+
   async function start() {
     if (code === '7777') return sysTest();
-    if (!code) { root.replaceChildren(card('הקישור לא שלם', ['אפשר לבקש מהמרצה את הקישור לקבוצה שלכם.'])); return; }
+    if (!code) return codeEntry();
     const m = /[#&]p=([A-Z2-9]{6})\.([a-f0-9]{48})/.exec(location.hash || '');
     if (m) { store.set(KEY, { pid: m[1], key: m[2] }); history.replaceState(null, '', location.pathname + location.search); }
     cred = store.get(KEY);
@@ -271,7 +287,7 @@
         return;
       }
       busy(go, true);
-      try { me = (await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part, data: { answers, title: def.title } })).participant; store.del(draftKey(n, part)); render(); window.scrollTo(0, 0); }
+      try { me = (await api('p.save', { code, pid: cred.pid, key: cred.key, session: n, part, data: { answers, title: def.title } })).participant; store.del(draftKey(n, part)); if (part === 'pre' && n === 1 && !preview) { doneView(1); window.scrollTo(0, 0); return; } render(); window.scrollTo(0, 0); }
       catch (e) { busy(go, false); say(c, e.message, true); }
     };
     root.append(c);
@@ -581,7 +597,7 @@
     root.replaceChildren();
     root.append(el('h1', '', cls.studyTitle || 'הכנה לשיחות מאתגרות'));
     if (n >= 3) { render(); return; }
-    const c = card('מפגש ' + n + ' הושלם. תודה!', ['המפגש הבא בשיעור הבא, בעוד כשבוע. נכנסים באותו קישור, באותו מכשיר.', 'במכשיר אחר: אפשר לשמור את הקישור האישי שלך.']);
+    const c = card('מפגש ' + n + ' הושלם. תודה!', [n === 1 ? 'במפגש הבא מתכננים שיחה ומתרגלים אותה פעמיים, עם משוב אחרי כל תרגול. נכנסים באותו קישור, באותו מכשיר.' : 'המפגש הבא בשיעור הבא, בעוד כשבוע. נכנסים באותו קישור, באותו מכשיר.', 'במכשיר אחר: אפשר לשמור את הקישור האישי שלך.']);
     const b = el('div', 'btns'), cp = el('button', 'soft', 'העתקת הקישור האישי'), nx = el('button', 'link', 'אני כבר במפגש הבא: להמשיך');
     cp.onclick = async () => { const u = location.origin + location.pathname + '?c=' + code + '#p=' + cred.pid + '.' + cred.key; try { await navigator.clipboard.writeText(u); say(c, '✓ הקישור הועתק. כדאי לשמור אותו רק לעצמך.'); } catch (e) { say(c, u); } };
     nx.onclick = () => { render(); window.scrollTo(0, 0); };

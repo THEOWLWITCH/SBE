@@ -28,15 +28,17 @@ test('research center creates a link; students join without a consent step; data
   assert.equal(js, 200);
   const cred = { code, pid: joined.pid, key: joined.key };
   assert.equal((await call(store, 'p.get', { ...cred, key: 'x'.repeat(48) }))[0], 404);
+  // 25/11/2026: מפגש 1 הוא הקניה ושאלון עמדות; אין בו תכנון ותרגול, והוא נגמר בשאלון
+  assert.equal((await call(store, 'p.save', { ...cred, session: 1, part: 'practice', data: { tries: 1 } }))[0], 400);
+  assert.equal((await call(store, 'p.save', { ...cred, session: 1, part: 'model', data: { ids: ['spikes'] } }))[0], 400);
   const [, saved] = await call(store, 'p.save', { ...cred, session: 1, part: 'pre', data: { answers: { M1: 4 } } });
   assert.equal(saved.participant.sessions[1].pre.answers.M1, 4);
+  assert.ok(saved.participant.sessions[1].doneAt);
   assert.equal((await call(store, 'p.save', { ...cred, session: 4, part: 'pre', data: {} }))[0], 400);
   assert.equal((await call(store, 'p.save', { ...cred, session: 1, part: 'secret', data: {} }))[0], 400);
   // רפלקציה ושאלון מסכם רק במפגש 3; מפגש 1 ו־2 נגמרים בתרגול (משוב אחרי כל תרגול)
   assert.equal((await call(store, 'p.save', { ...cred, session: 1, part: 'reflection', data: { contribution: 'עזר' } }))[0], 400);
   assert.equal((await call(store, 'p.save', { ...cred, session: 2, part: 'pre', data: { answers: {} } }))[0], 400);
-  const [, p1] = await call(store, 'p.save', { ...cred, session: 1, part: 'practice', data: { tries: 1 } });
-  assert.ok(p1.participant.sessions[1].doneAt);
   assert.equal((await call(store, 'p.save', { ...cred, session: 1, part: 'post', data: { answers: {} } }))[0], 400);
   const [, p2] = await call(store, 'p.save', { ...cred, session: 2, part: 'practice', data: { tries: 2 } });
   assert.ok(p2.participant.sessions[2].doneAt);
@@ -49,6 +51,7 @@ test('research center creates a link; students join without a consent step; data
   assert.equal(list.classes[0].participants, 1);
   assert.equal(list.classes[0].progress[2].reflection, 1);
   assert.equal(list.classes[0].progress[0].reflection, null);
+  assert.equal(list.classes[0].progress[0].practice, null);
   const [, exp] = await call(store, 'f.export', { code }, { token: sys.token });
   assert.equal(exp.participants.length, 1);
   assert.ok(!JSON.stringify(exp).includes('keyHash') && !JSON.stringify(exp).includes('a@b.co'));

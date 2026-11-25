@@ -89,7 +89,7 @@ export async function handleTalkStudy(store, body, { isSys = false, tester = fal
           const mine = parts.filter((p) => p.code === c.code);
           const step = (n, part) => mine.filter((p) => p.sessions?.[n]?.[part]).length;
           return { ...classView(c), participants: mine.length,
-            progress: [1, 2, 3].map((n) => ({ session: n, pre: n === 1 ? step(1, 'pre') : null, model: step(n, 'model'), practice: step(n, 'practice'), post: n === 3 ? step(3, 'post') : null, reflection: n === 3 ? step(3, 'reflection') : null })) };
+            progress: [1, 2, 3].map((n) => ({ session: n, pre: n === 1 ? step(1, 'pre') : null, model: n > 1 ? step(n, 'model') : null, practice: n > 1 ? step(n, 'practice') : null, post: n === 3 ? step(3, 'post') : null, reflection: n === 3 ? step(3, 'reflection') : null })) };
         }) }];
       }
       const code = String(d.code || '');
@@ -151,7 +151,8 @@ export async function handleTalkStudy(store, body, { isSys = false, tester = fal
       const n = Number(d.session), part = String(d.part || '');
       if (![1, 2, 3].includes(n) || !PARTS.includes(part)) throw new TsError('חלק לא מוכר');
       // 25/11/2026 ("תוריד שאלון עמדות שני - זה יותר מידי"): שאלון עמדות רק בפתיחת מפגש 1 ובסוף מפגש 3. 18/11/2026: שאלון עמדות בפתיחת מפגש 1 ובסוף מפגש 3 (22/11/2026: גם בסוף מפגש 2); רפלקציה רק במפגש 3; משוב אחרי כל תרגול
-      if ((part === 'pre' && n !== 1) || ((part === 'post' && n !== 3) || (part === 'reflection' && n !== 3))) throw new TsError('החלק הזה לא שייך למפגש הזה');
+      // 25/11/2026: מפגש 1 הוא הקניה ושאלון עמדות בלבד, בלי תכנון ותרגול.
+      if ((n === 1 && part !== 'pre') || (part === 'pre' && n !== 1) || ((part === 'post' && n !== 3) || (part === 'reflection' && n !== 3))) throw new TsError('החלק הזה לא שייך למפגש הזה');
       const data = d.data && typeof d.data === 'object' && !Array.isArray(d.data) ? d.data : null;
       if (!data) throw new TsError('אין מה לשמור');
       if (JSON.stringify(data).length > LIM.part) throw new TsError('התוכן ארוך מדי', 413);
@@ -159,7 +160,7 @@ export async function handleTalkStudy(store, body, { isSys = false, tester = fal
       const s = p.sessions[n] = p.sessions[n] || { startedAt: now() };
       if (part === 'extra') s.extras = (s.extras || []).concat([{ ...structuredClone(data), at: now() }]).slice(-20);
       else s[part] = { ...structuredClone(data), at: now() };
-      if (part === 'reflection' || (part === 'practice' && (n === 1 || n === 2))) s.doneAt = s.doneAt || now();
+      if (part === 'reflection' || (part === 'pre' && n === 1) || (part === 'practice' && n === 2)) s.doneAt = s.doneAt || now();
       p.updatedAt = now();
       await store.set('tsp:' + c.code + ':' + p.pid, p);
       return [200, { participant: participantView(p) }];
