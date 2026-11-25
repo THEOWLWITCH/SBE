@@ -127,16 +127,12 @@ export async function handleTalkStudy(store, body, { isSys = false, tester = fal
       const c = okCode(code) ? await store.get('tsc:' + code) : null;
       if (!c) { await pause(); throw new TsError('הקישור לא נמצא', 404); }
       if (c.status !== 'open') throw new TsError('ההצטרפות סגורה כרגע. אפשר לפנות למרצה.', 403);
-      const items = d.consent && typeof d.consent.items === 'object' ? d.consent.items : {};
-      const required = Array.isArray(d.consent?.required) ? d.consent.required.map(String).slice(0, 12) : [];
-      if (!required.length || !required.every((k) => items[k] === true)) throw new TsError('כדי להצטרף, אפשר לסמן את כל תיבות ההסכמה');
       if ((await store.list('tsp:' + code + ':', { keysOnly: true })).length >= LIM.participants) throw new TsError('הקבוצה מלאה', 429);
       let pid = genCode(6); while (await store.get('tsp:' + code + ':' + pid)) pid = genCode(6);
       const key = randomBytes(24).toString('hex');
       const email = clip(d.report?.email, 200);
       const wants = d.report?.want === true && /^\S+@\S+\.\S+$/.test(email);
       const p = { pid, code, group: c.group, keyHash: hash(key), createdAt: now(), report: wants,
-        consent: { at: now(), version: clip(d.consent?.version, 40), items: Object.fromEntries(Object.entries(items).slice(0, 12).map(([k, v]) => [clip(k, 40), v === true])) },
         sessions: {} };
       await store.set('tsp:' + code + ':' + pid, p);
       if (wants) await store.set('tse:' + code + ':' + pid, { pid, email, at: now() });

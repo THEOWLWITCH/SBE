@@ -14,7 +14,7 @@ function memoryStore() {
 const call = (store, op, input, extra = {}) => handleAccess(store, { action: 'tsCall', op, input, ...extra });
 const consent = { version: 'v1', required: ['read', 'stop', 'data', 'names', 'agree'], items: { read: true, stop: true, data: true, names: true, agree: true } };
 
-test('research center creates a link; students join with consent only; data saved by part; model gate', async () => {
+test('research center creates a link; students join without a consent step; data saved by part; model gate', async () => {
   const store = memoryStore(); await seedOwnerPassword(store);
   const [, sys] = await handleAccess(store, { action: 'login', kind: 'sys', secret: SYNTHETIC_OWNER_PASSWORD });
   assert.equal((await call(store, 'f.create', { studyId: 's1' }))[0], 403);
@@ -23,7 +23,6 @@ test('research center creates a link; students join with consent only; data save
   const code = made.class.code;
   assert.match(code, /^[A-Z2-9]{8}$/);
   assert.equal((await call(store, 'p.info', { code }))[1].class.group, 'ייעוץ חינוכי');
-  assert.equal((await call(store, 'p.join', { code, consent: { ...consent, items: { ...consent.items, agree: false } } }))[0], 400);
   const [js, joined] = await call(store, 'p.join', { code, consent, report: { want: true, email: 'a@b.co' } });
   assert.equal(js, 200);
   const cred = { code, pid: joined.pid, key: joined.key };

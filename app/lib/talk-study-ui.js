@@ -129,7 +129,7 @@
   }
 
   function currentSession() { for (const n of [1, 2, 3]) if (!me.sessions?.[n]?.doneAt) return n; return 4; }
-  function currentStep(n) { const s = me.sessions?.[n] || {}; for (const st of T.stepsFor(n)) { if (st.id === 'consent') continue; if (!s[st.id]) return st.id; } return 'done'; }
+  function currentStep(n) { const s = me.sessions?.[n] || {}; for (const st of T.stepsFor(n)) { if (!s[st.id]) return st.id; } return 'done'; }
   let justDone = 0;
 
   function render() {
@@ -146,7 +146,6 @@
     root.append(head);
     const step = preview ? preview.step : currentStep(n);
     root.append(stepper(n, step === 'done' ? 'done' : step));
-    if (step === 'consent') { const C = T.CONSENT, cc = card(C.title, C.intro); const ul = el('ul'); for (const [, t] of C.items) ul.append(el('li', '', t)); cc.append(el('h3', '', 'התיבות לסימון:'), ul, el('p', 'sub', C.report)); root.append(cc, pocketCard()); return footer(); }
     if (cls.status !== 'open') root.append(card('המסלול סגור כרגע', ['אפשר לפנות למרצה. מה שכבר נשמר נשאר שמור.']));
     else {
       root.append(autosaveCard(n));
@@ -162,7 +161,7 @@
   }
 
   // ── מצב בדיקה (7777, 23/11/2026: "תאפשר לראות את כל התהליך והשאלונים בקוד 7777"): מעבר חופשי לכל מפגש ולכל שלב,
-  // כולל השאלונים של מפגשים 2 ו-3, והתחלה מחדש מההסכמה. רק בקבוצת הבדיקה (sys-test), מחוץ לכל מחקר.
+  // כולל השאלונים של מפגשים 2 ו-3, והתחלה מחדש. רק בקבוצת הבדיקה (sys-test), מחוץ לכל מחקר.
   let preview = null;
   function testBar() {
     const c = el('section', 'card soft');
@@ -180,7 +179,7 @@
     }
     const b = el('div', 'btns');
     const flow = el('button', 'soft', 'המסלול כפי שמשתתף/ת רואה אותו'); flow.onclick = () => { preview = null; render(); };
-    const reset = el('button', 'soft', 'התחלה מחדש מההסכמה');
+    const reset = el('button', 'soft', 'התחלה מחדש מההתחלה');
     reset.onclick = async () => { busy(reset, true, 'מתחילים מחדש…'); try { await api('p.withdraw', { code, pid: cred.pid, key: cred.key }); } catch (e) {} store.del(KEY); cred = null; me = null; preview = null; render(); window.scrollTo(0, 0); };
     b.append(flow, reset); c.append(b);
     return c;
@@ -198,7 +197,7 @@
     const ol = el('ol', 'steps'), list = T.stepsFor(n);
     for (const st of list) {
       const li = el('li', '', st.label);
-      const done = st.id === 'consent' || !!me.sessions?.[n]?.[st.id];
+      const done = !!me.sessions?.[n]?.[st.id];
       if (st.id === now) li.className = 'now'; else if (done) li.className = 'done';
       ol.append(li);
     }
@@ -206,25 +205,20 @@
   }
   function card(title, paras, cls2) { const c = el('section', 'card' + (cls2 ? ' ' + cls2 : '')); c.append(el('h2', '', title)); for (const p of paras || []) c.append(el('p', '', p)); return c; }
 
-  // ── הסכמה ──
+  // ── הצטרפות (25/11/2026: שלב ההסכמה הוסר מהכלי ומהמצגת) ──
   function consentView() {
-    const C = T.CONSENT, c = card(C.title, C.intro);
+    const C = T.CONSENT, c = card(C.title, []);
     if (cls.status !== 'open') { c.append(el('p', 'status bad', 'ההצטרפות סגורה כרגע. אפשר לפנות למרצה.')); root.append(c); return footer(); }
-    c.append(el('h3', '', 'לפני שמתחילים, אפשר לסמן את כל התיבות:'));
-    const boxes = {};
-    for (const [k, t] of C.items) { const l = el('label', 'check'), i = el('input'); i.type = 'checkbox'; boxes[k] = i; l.append(i, el('span', '', t)); c.append(l); }
     const rl = el('label', 'check'), want = el('input'); want.type = 'checkbox'; rl.append(want, el('span', '', C.report)); c.append(el('h3', '', 'דו״ח משוב אישי (רשות)'), rl);
     const ml = el('label', 'f', 'כתובת מייל לדו״ח'), mail = el('input'); mail.type = 'email'; mail.placeholder = 'למשל: name@example.com'; ml.hidden = mail.hidden = true;
     want.onchange = () => { ml.hidden = mail.hidden = !want.checked; };
     c.append(ml, mail);
-    const go = el('button', '', 'מסכים/ה, מתחילים'), b = el('div', 'btns'); b.append(go); c.append(b);
+    const go = el('button', '', 'מתחילים'), b = el('div', 'btns'); b.append(go); c.append(b);
     go.onclick = async () => {
-      const items = Object.fromEntries(Object.entries(boxes).map(([k, i]) => [k, i.checked]));
-      if (!Object.values(items).every(Boolean)) return say(c, 'כדי להתחיל, אפשר לסמן את כל התיבות.', true);
       if (want.checked && !/^\S+@\S+\.\S+$/.test(mail.value.trim())) return say(c, 'אפשר לבדוק את כתובת המייל, או להוריד את הסימון של הדו״ח.', true);
       busy(go, true, 'מצטרפים…');
       try {
-        const r = await api('p.join', { code, consent: { version: C.version, required: C.items.map((x) => x[0]), items }, report: { want: want.checked, email: mail.value.trim() } });
+        const r = await api('p.join', { code, report: { want: want.checked, email: mail.value.trim() } });
         cred = { pid: r.pid, key: r.key }; store.set(KEY, cred); me = r.participant; render();
       } catch (e) { busy(go, false); say(c, e.message, true); }
     };
