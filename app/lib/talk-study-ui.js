@@ -363,7 +363,7 @@
     if (reuse) { c.querySelector('h2').textContent = 'או: תכנון שיחה חדשה'; root.append(reuse); if (pre) setTimeout(() => reuse.scrollIntoView({ behavior: 'smooth' }), 50); }
     root.append(c);
   }
-  const nextLabel = (n) => n === 1 ? 'סיום המפגש ←' : n === 2 ? 'המשך: שאלון עמדות ←' : 'המשך: שאלון עמדות מסכם ←';
+  const nextLabel = (n) => n < 3 ? 'סיום המפגש ←' : 'המשך: שאלון עמדות מסכם ←';
   const backUrl = () => location.pathname.split('/').pop() + '?c=' + code;
 
   function modelViewShort(n) {

@@ -39,9 +39,9 @@ test('research center creates a link; students join without a consent step; data
   assert.ok(p1.participant.sessions[1].doneAt);
   assert.equal((await call(store, 'p.save', { ...cred, session: 1, part: 'post', data: { answers: {} } }))[0], 400);
   const [, p2] = await call(store, 'p.save', { ...cred, session: 2, part: 'practice', data: { tries: 2 } });
-  assert.ok(!p2.participant.sessions[2].doneAt);
-  const [, p2b] = await call(store, 'p.save', { ...cred, session: 2, part: 'post', data: { answers: { M1: 4 } } });
-  assert.ok(p2b.participant.sessions[2].doneAt);
+  assert.ok(p2.participant.sessions[2].doneAt);
+  // 25/11/2026: בלי שאלון עמדות בסוף מפגש 2
+  assert.equal((await call(store, 'p.save', { ...cred, session: 2, part: 'post', data: { answers: { M1: 4 } } }))[0], 400);
   await call(store, 'p.save', { ...cred, session: 3, part: 'post', data: { answers: { M1: 5 } } });
   await call(store, 'p.save', { ...cred, session: 3, part: 'reflection', data: { contribution: 'עזר' } });
   // מרכז המחקר: התקדמות וייצוא בלי מפתחות ובלי מיילים; המיילים בנפרד

@@ -2504,10 +2504,14 @@ function renderCommFeedback(box, r){
         el("p", { style: "margin:0 0 10px" }, (H.rounds > 1 && !H.extra ? "במפגש הזה מתרגלים פעמיים: \"תרגול נוסף\" למטה, ועוד משוב. " : "אפשר לתרגל שוב, או לחזור לרגע המאתגר. ") + "התרגול נשמר אוטומטית, אבל רק הכפתור הזה רושם אותו במסלול. כשמסיימים, לא לסגור את הדף לפני שלוחצים עליו:"));
       const go = el("button", { type: "button", class: "primary" }, H.next || "המשך ←");
       const note = el("p", { class: "fb-note", hidden: "" });
-      go.addEventListener("click", () => {
+      // 25/11/2026 ("תאפשר להמשיך לשאלון עמדות אחרי התרגול"): גם "→ חזרה למסלול" בפס העליון רושם את התרגול
+      // כשיש כבר שיחה שהסתיימה, כדי שהמסלול ימשיך לשלב הבא (השאלון) ולא יחזור לתרגול.
+      const noteTop = el("p", { class: "fb-note", hidden: "" });
+      const say = (t) => { [note, noteTop].forEach(x => { x.hidden = false; x.textContent = t; }); };
+      const finish = (force) => {
         let n = 0; try { n = Number(sessionStorage.getItem("sbe.ts.tries") || 0); } catch (e) {}
-        if (!state.commFb && !state.commFbFailed && !go.dataset.ok) { go.dataset.ok = "1"; note.hidden = false; note.textContent = "המשוב על התקשורת עוד נכתב. אפשר לחכות לו, או ללחוץ שוב כדי להמשיך בלעדיו."; return; }
-        if (!H.extra && n < (H.rounds || 1) && !go.dataset.ok2) { go.dataset.ok2 = "1"; note.hidden = false; note.textContent = "במפגש הזה יש עוד תרגול ומשוב: \"תרגול נוסף\" למטה. אפשר גם ללחוץ שוב ולהמשיך."; return; }
+        if (!force && !state.commFb && !state.commFbFailed && !go.dataset.ok) { go.dataset.ok = "1"; say("המשוב על התקשורת עוד נכתב. אפשר לחכות לו, או ללחוץ שוב כדי להמשיך בלעדיו."); return; }
+        if (!force && !H.extra && n < (H.rounds || 1) && !go.dataset.ok2) { go.dataset.ok2 = "1"; say("במפגש הזה יש עוד תרגול ומשוב: \"תרגול נוסף\" למטה. אפשר גם ללחוץ שוב ולהמשיך."); return; }
         const rounds = loadRounds().concat(state.turn ? [roundNow()] : []);
         const last = rounds[rounds.length - 1] || {};
         const data = { scenario: SCENARIO && SCENARIO.name, subtitle: SCENARIO && SCENARIO.subtitle, actor: SCENARIO && SCENARIO.actor && SCENARIO.actor.roleLabel,
@@ -2516,7 +2520,14 @@ function renderCommFeedback(box, r){
         if (H.extra) Object.assign(data, { extraCase: { fields: H.fields, me: H.me, type: H.type, prep: H.prep, plan: H.plan || null, briefing: (draft.briefing || "").slice(0, 6000) }, extraModel: H.modelNames || [], modelReason: H.modelReason || "" });
         try { localStorage.setItem("sbe.ts.result", JSON.stringify({ code: H.code, pid: H.pid, session: H.session, extra: !!H.extra, data })); sessionStorage.removeItem("sbe.ts.tries"); sessionStorage.removeItem(RK); localStorage.removeItem(KEY + ".draft"); } catch (e) {}
         location.href = H.back;
-      });
+      };
+      go.addEventListener("click", () => finish(false));
+      const backA = bar.querySelector('a[href="' + H.back + '"]');
+      if (backA) backA.addEventListener("click", (e) => { if (state.turn && (state.ended || loadRounds().length)) { e.preventDefault(); finish(true); } });
+      // אותו כפתור גם בראש מסך המשוב, כדי שלא יצטרכו לגלול עד סוף המשוב
+      const goTop = el("button", { type: "button", class: "primary", style: "margin:0 0 14px" }, H.next || "המשך ←");
+      goTop.addEventListener("click", () => go.click());
+      fb.prepend(goTop, noteTop);
       box.append(go, note); fb.append(box);
       // 22/11/2026: כל סבב נשמר (במפגש 2 שני סבבים), עם התמליל, המשוב והניסיונות החוזרים
       const RK = "sbe.ts.rounds." + H.code + "." + H.pid + "." + H.session;

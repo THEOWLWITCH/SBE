@@ -9,13 +9,13 @@
   'use strict';
   const BG = () => root.SBE_BGSTUDY || (typeof require === 'function' ? require('./begood-study.js') : null);
 
-  // 18/11/2026: שאלון עמדות בפתיחת מפגש 1 ובסוף מפגש 3; משוב מהמודל אחרי כל תרגול; רפלקציה רק במפגש 3.
+  // 25/11/2026: שאלון העמדות של סוף מפגש 2 הוסר ("זה יותר מידי"). 18/11/2026: שאלון עמדות בפתיחת מפגש 1 ובסוף מפגש 3; משוב מהמודל אחרי כל תרגול; רפלקציה רק במפגש 3.
   // במפגש 2 מתרגלים פעמיים (תרגול ומשוב, ועוד תרגול ומשוב).
   const STEPS = Object.freeze([
     { id: 'pre', label: 'שאלון עמדות', sessions: [1] },
     { id: 'model', label: 'תכנון השיחה', sessions: [1, 2, 3] },
     { id: 'practice', label: 'תרגול ומשוב', sessions: [1, 2, 3] },
-    { id: 'post', label: 'שאלון עמדות', sessions: [2, 3] },
+    { id: 'post', label: 'שאלון עמדות', sessions: [3] },
     { id: 'reflection', label: 'רפלקציה', sessions: [3] }
   ]);
   const stepsFor = (session) => STEPS.filter((s) => s.sessions.includes(session));
@@ -60,11 +60,10 @@
     report: 'אני רוצה לקבל במייל דו״ח משוב אישי על שלושת התרגולים (רשות). המייל נשמר בנפרד מנתוני המחקר, ומשמש רק לשליחת הדו״ח.'
   });
 
-  // שאלון העמדות (נספח א בהצעת המחקר): בפתיחת מפגש 1, בסוף מפגש 2 (22/11/2026) ובסוף מפגש 3, מתוך השאלונים של המחקר (begood-study.js)
+  // שאלון העמדות (נספח א בהצעת המחקר): בפתיחת מפגש 1 ובסוף מפגש 3, מתוך השאלונים של המחקר (begood-study.js)
   function questionnaire(session, kind) {
     const S = BG(); if (!S) return null;
     if (kind === 'pre' && session === 1) return Object.assign({}, S.byId('bg-s1-open').definition, { title: 'שאלון עמדות · פתיחה' });
-    if (kind === 'post' && session === 2) return Object.assign({}, S.byId('bg-s2-close').definition, { title: 'שאלון עמדות · סוף מפגש 2' });
     if (kind === 'post' && session === 3) return Object.assign({}, S.byId('bg-s3-close').definition, { title: 'שאלון עמדות מסכם' });
     return null;
   }
