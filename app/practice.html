@@ -405,6 +405,7 @@ dialog::backdrop{background:rgba(10,14,18,.55);}
   <div class="inner" id="composerActive">
     <textarea id="composerInput" rows="1" placeholder="מה אומרים..."></textarea>
     <button type="button" class="primary" id="bSend">שליחה</button>
+    <button type="button" id="bEndChat2" hidden title="סיום השיחה וקבלת משוב על התרגול" style="white-space:nowrap">סיום ומשוב</button>
   </div>
   <div class="inner" id="composerEnded" hidden>
     <span class="composer-note" id="endedNote"></span>
@@ -840,6 +841,7 @@ const WARN_TURN = Math.max(1, MAX_TURNS - 3);
 // "בורחת" מהתרגול בתור השני, גם אם הטון קשה מההתחלה. ברירת מחדל 8,
 // אושרה על ידי המשתמשת (04/09/2026) — ניתנת לשינוי דרך ?minTurns= כמו maxTurns.
 const MIN_TURNS = parseInt(params.get("minTurns"), 10) || 8;
+const END_MIN_TURNS = 1;
 
 // סף חזרתיות שמצדיק סיום יזום מצד הדמות: מספר תגובות "מקררות" (טון
 // מסלים בלי חצייה) שנצברו. שלושה, כמו שאר "לחץ שלישי" במערכת הזו.
@@ -981,12 +983,15 @@ function updateProgress(){
   fill.classList.toggle("late", state.turn >= WARN_TURN);
 
   const endBtn = document.getElementById("bEndChat");
-  const ready = state.turn >= MIN_TURNS;
+  // 25/11/2026 ("חסר כפתור לסיום השיחה כשרוצים"): אפשר לסיים בכל רגע אחרי המשפט הראשון, ולא רק מתור MIN_TURNS.
+  // הכפתור גם ליד שורת הכתיבה (#bEndChat2), כדי שיהיה בעין בלי לגלול לסרגל העליון.
+  const ready = state.turn >= END_MIN_TURNS;
   endBtn.disabled = !ready || state.ended;
-  endBtn.title = ready ? "סיום השיחה וקבלת משוב על התרגול" : `המשוב נפתח מתור ${MIN_TURNS}`;
-  // 18/11/2026 ("וודא שבכלי יש כפתור לקבלת משוב על התרגול"): הכפתור אומר במילים מה הוא עושה, וגם מתי הוא נפתח.
-  endBtn.textContent = ready || state.ended ? "סיום ומשוב ←" : `סיום ומשוב (מתור ${MIN_TURNS})`;
+  endBtn.title = ready ? "סיום השיחה וקבלת משוב על התרגול" : "אפשר לסיים אחרי המשפט הראשון";
+  endBtn.textContent = "סיום ומשוב ←";
   endBtn.classList.toggle("primary", ready && !state.ended);
+  const end2 = document.getElementById("bEndChat2");
+  if (end2) end2.hidden = !ready || state.ended || !!(state.retry && state.retry.active);
 }
 
 // כשהתרגול נעצר בתוך הצ'אט (חצייה אלימה) — לא עוברים מסך, כדי שהמתרגלת
@@ -1112,14 +1117,17 @@ document.getElementById("bExit").addEventListener("click", () => {
 // ולכן, בניגוד ליציאה, היא כן מקבלת משוב מלא אחריו, בדיוק כמו כל סיום
 // אחר. זמין רק מ-MIN_TURNS ואילך (ראו updateProgress), כדי שלא יהיה
 // אפשר לצאת בתור הראשון בלי לתת לתרגול סיכוי.
-document.getElementById("bEndChat").addEventListener("click", () => {
-  if (state.ended || state.turn < MIN_TURNS) return;
+function endByTrainee() {
+  if (state.ended || state.turn < END_MIN_TURNS || (state.retry && state.retry.active)) return;
+  if (state.turn < MIN_TURNS && !confirm("לסיים את השיחה עכשיו ולעבור למשוב?")) return;
   state.ended = true; state.endingType = "trainee-ended";
   state.closingLine = "בחרת לסיים את השיחה כאן.";
   state.closingNote = "זו בחירה לגיטימית ולא כישלון. חלק מהתפניות לא הגיעו כי השיחה " +
     "נעצרה לפני שמוצה הזמן שהיה. זה מידע, בדיוק כמו כל סיום אחר.";
   showFeedback();
-});
+}
+document.getElementById("bEndChat").addEventListener("click", endByTrainee);
+document.getElementById("bEndChat2").addEventListener("click", endByTrainee);
 document.getElementById("bBack").addEventListener("click", resetAll);
 document.getElementById("bAgain").addEventListener("click", resetAll);
 // ── שמירת השיחה במאגר, בהסכמה (14/10/2026: "אין כפתור שמאפשר לשמור את השיחה במאגר המערכת"):
@@ -1924,7 +1932,7 @@ function startRetry(tp, logEntry){
   addSystemNote("ניסיון שני", tp
     ? `הזדמנות קצרה וממוקדת לנסות שוב את הרגע ב"${tp.name}", עד שלושה תורים, לא כל השיחה מחדש.`
     : `חוזרים לרגע שלפני המשפט "${logEntry.traineeText}". אפשר לנסות תגובה אחרת, עד שלושה תורים. אפשר לסיים קודם בכפתור "סיום הניסיון".`);
-  retryStopBtn().hidden = false;
+  retryStopBtn().hidden = false; document.getElementById("bEndChat2").hidden = true;
   document.getElementById("composerActive").hidden = false;
   document.getElementById("composerEnded").hidden = true;
   document.getElementById("composerRetryEnded").hidden = true;
