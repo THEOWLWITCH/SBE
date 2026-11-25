@@ -12,7 +12,8 @@ export const TS_PLAN_PAGE = 'talk-plan.html';
 const TS_PAGES = [TS_PRACTICE_PAGE, TS_PLAN_PAGE];
 const LIM = { classes: 60, participants: 400, part: 220_000, text: 4000 };
 // autosave: התרגול נשמר תוך כדי (24/11/2026: "תוסיף שמירה אוטומטית"); extra: תרגיל נוסף שהסטודנט/ית פתח/ה מעבר לשלבי המפגש ("סטודנטית שולטת בתרגילים שלה")
-const PARTS = ['pre', 'case', 'model', 'practice', 'post', 'reflection', 'autosave', 'extra'];
+// brief: התדריך לפני התרגול, כששומרים אותו מהמסך (25/11/2026: "אין אפשרות לשמור במערכת או במחשב שלי")
+const PARTS = ['pre', 'case', 'model', 'practice', 'post', 'reflection', 'autosave', 'extra', 'brief'];
 const ALPH = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
 const genCode = (n) => { let s = ''; for (const b of randomBytes(n)) s += ALPH[b % ALPH.length]; return s; };
 const hash = (v) => createHash('sha256').update(String(v)).digest('hex');

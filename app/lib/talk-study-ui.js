@@ -109,7 +109,7 @@
       else { cls = (await api('p.info', { code })).class; }
     } catch (e) {
       clearTimeout(t);
-      if (cred && e.status === 404) { store.del(KEY); cred = null; return start(); }
+      if (cred && e.status === 404) { store.del(KEY); const g = store.get('sbe.ts.cred'); if (g && g.p === cred.pid) store.del('sbe.ts.cred'); cred = null; return start(); }
       root.replaceChildren(card('לא הצלחנו לפתוח את המסלול', [e.message])); return;
     }
     clearTimeout(t);
@@ -180,7 +180,7 @@
     const b = el('div', 'btns');
     const flow = el('button', 'soft', 'המסלול כפי שמשתתף/ת רואה אותו'); flow.onclick = () => { preview = null; render(); };
     const reset = el('button', 'soft', 'התחלה מחדש מההתחלה');
-    reset.onclick = async () => { busy(reset, true, 'מתחילים מחדש…'); try { await api('p.withdraw', { code, pid: cred.pid, key: cred.key }); } catch (e) {} store.del(KEY); cred = null; me = null; preview = null; render(); window.scrollTo(0, 0); };
+    reset.onclick = async () => { busy(reset, true, 'מתחילים מחדש…'); try { await api('p.withdraw', { code, pid: cred.pid, key: cred.key }); } catch (e) {} store.del(KEY); store.del('sbe.ts.cred'); cred = null; me = null; preview = null; render(); window.scrollTo(0, 0); };
     b.append(flow, reset); c.append(b);
     return c;
   }

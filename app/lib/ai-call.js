@@ -54,7 +54,10 @@
     const m = String((e && e.message) || "");
     if (e && e.code === "incomplete") return partial || noModel;
     let t = noModel;
-    if (/היכנסו שוב|הכניסה הסתיימה|status 401|שגיאת שרת 401/.test(m)) t = "הכניסה הסתיימה. כדי להמשיך, אפשר להיכנס שוב. מה שמולא נשמר במכשיר.";
+    const ts = /^talk-(practice|plan)(\.html)?$/.test(location.pathname.split("/").pop() || "");
+    if (/היכנסו שוב|הכניסה הסתיימה|status 401|שגיאת שרת 401/.test(m)) t = ts
+      ? "החיבור למסלול לא נמצא במכשיר הזה (למשל אחרי התחלה מחדש, או כשהקבוצה סגורה). מה שמולא נשמר במכשיר. אפשר לחזור למסלול בקישור של הקבוצה ולהיכנס משם שוב לטופס."
+      : "הכניסה הסתיימה. כדי להמשיך, אפשר להיכנס שוב. מה שמולא נשמר במכשיר.";
     else if (/max_tokens|התוצר נקטע/.test(m)) t = "התוצר יצא ארוך מהצפוי ונקטע. מה שמולא נשמר, ואפשר לנסות שוב.";
     else if (/timeout|נמשכה יותר מדי|נקטע/.test(m)) t = "המודל לא הספיק לענות בזמן. מה שמולא נשמר, ואפשר לנסות שוב.";
     let sys = false; try { sys = sessionStorage.getItem("sbe.session.homeUrl") === "admin.html?role=sys"; } catch (x) {}

@@ -47,6 +47,43 @@
       return c && /^[A-Z2-9]{8}$/.test(c.c) && /^[A-Z2-9]{6}$/.test(c.p) && /^[a-f0-9]{48}$/.test(c.key) ? c : null;
     } catch(e){ return null; }
   }
+  // 25/11/2026 ("ההצעות לא הופקו · הכניסה הסתיימה... למה זה קורה. תתקן"): המפתח במכשיר (sbe.ts.cred) יכול להצביע
+  // על השתתפות שכבר לא קיימת: אחרי "התחלה מחדש" במצב הבדיקה, אחרי מעבר לקבוצה אחרת, או כשהדף נפתח שוב מהיסטוריית
+  // הדפדפן. אז השרת דוחה כל פנייה למודל, והטופס הציג "הכניסה הסתיימה", שאין בו דרך להמשיך. בודקים בטעינה,
+  // ואם ההשתתפות לא נמצאה או שהקבוצה סגורה, מראים מיד הודעה ברורה עם חזרה למסלול. מה שמולא נשאר במכשיר.
+  function tsBackUrl(cred){
+    var code = cred && cred.c;
+    try { var x = JSON.parse(localStorage.getItem("sbe.ts.planctx") || "null") || JSON.parse(localStorage.getItem("sbe.ts.handoff") || "null"); if (!code && x) code = x.code; } catch(e){}
+    return code ? "talk-study.html?c=" + encodeURIComponent(code) : "";
+  }
+  function tsNotice(title, text, back){
+    var show = function(){
+      if (document.getElementById("sbeTsNotice")) return;
+      var w = document.createElement("div"); w.id = "sbeTsNotice"; w.setAttribute("role", "alertdialog");
+      w.style.cssText = "position:fixed;inset:0;z-index:2147483000;background:rgba(20,30,45,.45);display:flex;align-items:center;justify-content:center;padding:16px;font-family:Assistant,Arial,sans-serif;direction:rtl";
+      var c = document.createElement("div");
+      c.style.cssText = "background:#fff;border-radius:12px;max-width:440px;width:100%;padding:22px 20px;box-shadow:0 10px 30px rgba(0,0,0,.18);text-align:right;line-height:1.6";
+      var h = document.createElement("h2"); h.textContent = title; h.style.cssText = "margin:0 0 8px;font-size:19px;color:#1d3f63";
+      var p = document.createElement("p"); p.textContent = text; p.style.cssText = "margin:0 0 16px;font-size:15px;color:#333";
+      c.append(h, p);
+      if (back) { var a = document.createElement("a"); a.href = back; a.textContent = "→ חזרה למסלול"; a.style.cssText = "display:inline-block;background:#1d3f63;color:#fff;text-decoration:none;border-radius:999px;padding:9px 20px;font-weight:600"; c.append(a); }
+      w.append(c); document.body.append(w);
+    };
+    if (document.body) show(); else document.addEventListener("DOMContentLoaded", show);
+  }
+  function tsVerify(cred){
+    var back = tsBackUrl(cred);
+    if (!cred) { tsNotice("המסלול לא נמצא במכשיר הזה", "הדף הזה נפתח מתוך המסלול של הקבוצה. אפשר לחזור למסלול בקישור של הקבוצה, ולהמשיך משם.", back); return; }
+    var server = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname) ? "" : "https://sbe-server.onrender.com";
+    fetch(server + "/api/access", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action: "tsCall", op: "p.get", input: { code: cred.c, pid: cred.p, key: cred.key } }) })
+      .then(function(r){ return r.json().catch(function(){ return {}; }).then(function(d){ return { s: r.status, d: d }; }); })
+      .then(function(x){
+        if (x.s === 404) { try { localStorage.removeItem("sbe.ts.cred"); } catch(e){} window.SBE_TS_STUDY = null;
+          tsNotice("ההשתתפות במסלול לא נמצאה", "המכשיר זוכר השתתפות שכבר לא קיימת, למשל אחרי התחלה מחדש. מה שמולא כאן נשמר במכשיר. אפשר לחזור למסלול, ומשם להיכנס שוב לטופס.", back); }
+        else if (x.s === 200 && x.d && x.d.class && x.d.class.status !== "open")
+          tsNotice("הקבוצה סגורה כרגע", "המרצה סגר/ה את הקבוצה, ולכן אי אפשר להפיק עכשיו. מה שמולא נשמר במכשיר. אפשר לפנות למרצה.", back);
+      }).catch(function(){});
+  }
   window.SBE_TS_STUDY = tsStudy();
   window.SBE_QUICK_OPEN = quickOpen() || !!window.SBE_TS_STUDY;
   // מכשיר מוכר למנהלת המערכת (28/10/2026): בלי כניסה בלשונית, עוברים לדף הכניסה שנכנס לבד וחוזר לדף הזה.
@@ -408,7 +445,8 @@
   if (page === "org-suite.html" && /[?&](join=\d{6}|observe=1)(&|$)/.test(location.search)) return;
   // התנסות קצרה פתוחה בלי כניסה, עד QUICK_OPEN_UNTIL (ראו למעלה)
   if (quickOpen()) return;
-  if (window.SBE_TS_STUDY) return;
+  if (window.SBE_TS_STUDY) { tsVerify(window.SBE_TS_STUDY); return; }
+  if (/^talk-(practice|plan)(\.html)?$/.test(page) && !ss("sbe.session.token")) { tsVerify(null); return; }
   // כניסה שהסתיימה (07/10/2026): האסימון החתום תקף 12 שעות, אבל לשונית פתוחה שומרת אותו גם אחר כך —
   // והשרת דוחה אותו ("אין הרשאה פעילה"). חוזרים למסך הכניסה עם הסבר, במקום הודעת הרשאה מבלבלת.
   if (ALL_USERS.indexOf(page) === -1) {
