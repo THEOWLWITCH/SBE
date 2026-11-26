@@ -76,7 +76,6 @@
     if (info.teams.length) return quickJoin(info);
     if (!mine || !mine.pre) return personalPre(info);
     app.innerHTML = '<div class="dlm-card"><h1>בדיקת אמינות של מקורות</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
-      + (a.dilemma ? '<p><b>הדילמה:</b> ' + esc(a.dilemma) + '</p>' : '')
       + (a.status !== 'open' ? msg('הפעילות סגורה כרגע. המרצה תפתח אותה.') : '')
       + '<div class="dlm-grid2"><div class="dlm-card soft"><h2>הצוות שלנו כבר נפתח</h2><p class="dlm-hint">כל אחד ואחת מהצוות נכנס/ת עם קוד הצוות: שלוש ספרות שהמרצה נותנת, או הקוד שמופיע אצל מי שפתח/ה את הצוות.</p>'
       + '<label for="tc">קוד הצוות</label><input type="text" id="tc" dir="ltr" autocomplete="off" inputmode="text" maxlength="6" placeholder="למשל: 113" style="max-width:10rem"> <button class="dlm-btn main" id="join">הצטרפות לצוות</button><div id="jm"></div></div>'
@@ -221,7 +220,6 @@
     const who = me();
     const head = '<div class="dlm-card crd-team"><div class="dlm-row" style="justify-content:space-between"><div><h1>' + esc(t.name) + '</h1><div class="dlm-hint">' + esc(D.activity.class.name) + ' · קוד הצוות: <b dir="ltr">' + esc(t.code) + '</b> · <button type="button" class="crd-link" id="switchTeam">לא הצוות שלי? כניסה לצוות אחר</button></div></div>'
       + '<div><label for="who">מי עובד/ת עכשיו במכשיר הזה?</label><select id="who" data-closed><option value="">בחירה</option>' + t.members.map((m) => '<option value="' + esc(m.id) + '"' + (who === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>').join('') + '</select></div></div>'
-      + (D.activity.dilemma ? '<p><b>הדילמה:</b> ' + esc(D.activity.dilemma) + '</p>' : '')
       + (D.activity.status !== 'open' ? msg('הפעילות סגורה כרגע: אפשר לצפות, אבל לא לשנות.') : '')
       + '<div class="dlm-steps" role="tablist">' + [['checks', 'בדיקת מקורות'], ['reflect', 'עמדה ורפלקציה'], ['team', 'הצוות'], ['scale', 'המחוון']].map((x) => '<button type="button" role="tab" data-tab="' + x[0] + '"' + (S.tab === x[0] ? ' aria-current="step"' : '') + '>' + x[1] + '</button>').join('') + '</div></div>';
     let body = '';
@@ -495,7 +493,7 @@
     const st = S.data.reflections[id] || {};
     if (!st.reflect) return;
     const checks = (S.data.checks || []).map((k) => (k.title || 'מקור') + ': ' + [k.first && k.first.score, k.team && k.team.score, k.final && k.final.score].map((v) => v || '-').join('/')).join('; ');
-    const ctx = { dilemma: S.data.activity.dilemma, initial: st.initial && st.initial.text, reflect: st.reflect, checks };
+    const ctx = { initial: st.initial && st.initial.text, reflect: st.reflect, checks };
     const stop = waiting('ה־AI מנתח את הרפלקציה. זה נמשך כ־20 שניות.');
     try {
       const out = M.cleanReflectAI(M.parseJSON(await U.model(M.reflectSystem(), M.reflectText(ctx), auth(), 1500)));
@@ -540,7 +538,7 @@
     if (f && f.type === 'text/plain') { try { return new TextDecoder().decode(Uint8Array.from(atob(f.data), (c) => c.charCodeAt(0))); } catch (e) {} }
     return '';
   }
-  const ctxOf = async (k) => ({ dilemma: S.data.activity.dilemma, source: k, fields: k.fields, extra: k.extra, seen: k.seen, text: await fileText(k), first: k.first, chat: k.chat, external: k.external, doneNote: k.done && k.done.note, team: k.team });
+  const ctxOf = async (k) => ({ source: k, fields: k.fields, extra: k.extra, seen: k.seen, text: await fileText(k), first: k.first, chat: k.chat, external: k.external, doneNote: k.done && k.done.note, team: k.team });
   function waiting(text) { const n = $('#stage') || $('#rmm'); if (n) n.insertAdjacentHTML('beforeend', '<div class="dlm-msg crd-wait" role="status">' + esc(text) + ' <span class="crd-sec">חלפו 0 שניות</span></div>'); const t0 = Date.now(); const iv = setInterval(() => { const s = document.querySelector('.crd-sec'); if (s) s.textContent = 'חלפו ' + Math.round((Date.now() - t0) / 1000) + ' שניות'; else clearInterval(iv); }, 1000); return () => clearInterval(iv); }
   async function runAI(k, what) {
     const ctx = await ctxOf(k);
