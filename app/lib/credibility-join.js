@@ -355,8 +355,10 @@
         : '<p class="crd-donebar"><button class="dlm-btn main" id="done">אין לנו עוד מידע</button></p>');
   }
   function finalHTML(k) {
-    return '<h3>בדיקת AI חוזרת</h3>' + (k.final ? U.assessHTML(k.final, 'ההערכה החוזרת של ה־AI') + '<h4>שלושת הציונים</h4>' + U.scoresRow(k)
-        + '<p>הבדיקה הושלמה. <button class="dlm-btn main" id="nextCheck">בדיקה של מקור נוסף</button></p>'
+    // מיד אחרי הבדיקה החוזרת: הרפלקציה ושאלון העמדות המסכם (26/11/2026)
+    return (k.final ? U.assessHTML(k.final, 'ההערכה החוזרת של ה־AI') + '<h4>שלושת הציונים</h4>' + U.scoresRow(k)
+        + '<p>הבדיקה הושלמה.</p>' + (reflectReady() ? '<p><button class="dlm-btn main" id="toReflect">ממשיכים לרפלקציה ולשאלון העמדות המסכם ←</button></p>' : '')
+        + '<p><button class="' + (reflectReady() ? 'crd-link' : 'dlm-btn main') + '" id="nextCheck">בדיקה של מקור נוסף</button></p>'
       : '<p>ה־AI יקרא את כל פריטי המידע שמצאתם, וייתן ציון, הסבר, מה עדיין חסר, ומשוב על תהליך הבדיקה שלכם.</p><p><button class="dlm-btn main" data-ai="final">שליחה לבדיקה חוזרת</button></p>');
   }
   const nameOf = (id) => ((S.data.team.members.find((m) => m.id === id) || {}).name || '');
@@ -576,6 +578,7 @@
     app.querySelectorAll('[data-ai]').forEach((b) => { b.onclick = () => act(async () => { b.disabled = true; await runAI(k, b.dataset.ai); S.stage = b.dataset.ai === 'fields' ? 'describe' : b.dataset.ai; S.stageFor = k.id; render(); }); });
     app.querySelectorAll('[data-extdel]').forEach((b) => { b.onclick = () => act(async () => { await saveCheck('extDel', { id: k.id, extId: b.dataset.extdel }); render(); }); });
     on('#backList', () => { S.open = null; render(); });
+    on('#toReflect', () => { S.tab = 'reflect'; S.open = null; S.stage = null; render(); window.scrollTo(0, 0); });
     on('#backList2', () => { S.open = null; render(); window.scrollTo(0, 0); });
     app.querySelectorAll('[data-newsrc]').forEach((b) => { b.onclick = () => { S.open = null; S.stage = null; render(); const x = $('.crd-bankbox') || $('#nf'); if (x) { const d = x.querySelector && x.querySelector('details'); if (d) d.open = true; x.scrollIntoView({ block: 'start' }); } }; });
     on('#addk', () => act(async () => {
