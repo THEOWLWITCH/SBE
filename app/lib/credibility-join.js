@@ -242,9 +242,9 @@
     bind(); restoreDrafts(); if (S.focus) { const f = document.getElementById(S.focus); if (f) { f.focus(); try { f.setSelectionRange(f.value.length, f.value.length); } catch (e) {} } S.focus = null; }
   }
   // שאלון עמדות: כל היגד בשורה, סולם 1–5
-  function attForm(pfx, vals) {
-    vals = vals || {};
-    return '<div class="crd-att"><div class="crd-att-head" aria-hidden="true"><span class="crd-att-hq"></span><div class="crd-att-o">' + M.ATT_SCALE.map((o) => '<span class="crd-att-hl">' + esc(o[1]) + '</span>').join('') + '</div></div>' + M.ATTITUDES.map((q, i) => '<fieldset class="crd-att-q"><legend><span class="crd-att-n">' + (i + 1) + '</span> ' + esc(q.t) + '</legend><div class="crd-att-o">'
+  function attForm(pfx, vals, items) {
+    vals = vals || {}; items = items || M.ATTITUDES;
+    return '<div class="crd-att"><div class="crd-att-head" aria-hidden="true"><span class="crd-att-hq"></span><div class="crd-att-o">' + M.ATT_SCALE.map((o) => '<span class="crd-att-hl">' + esc(o[1]) + '</span>').join('') + '</div></div>' + items.map((q, i) => '<fieldset class="crd-att-q"><legend><span class="crd-att-n">' + (i + 1) + '</span> ' + esc(q.t) + '</legend><div class="crd-att-o">'
       + M.ATT_SCALE.map((o) => '<label title="' + esc(o[1]) + '"><input type="radio" name="' + pfx + q.k + '" value="' + o[0] + '"' + (String(vals[q.k]) === String(o[0]) ? ' checked' : '') + '><span>' + o[0] + '</span><i class="crd-att-sr">' + esc(o[1]) + '</i></label>').join('')
       + '</div></fieldset>').join('')
       + '</div>';
@@ -472,7 +472,7 @@
         + (!reflectReady() ? '<div class="dlm-msg">המרצה סגרה כרגע את הרפלקציה ואת שאלון העמדות המסכם.</div>' : '<h3>' + esc(M.ATT.post) + ' <span class="crd-req">(שדה עיקרי)</span>' + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">מילוי אישי</p>'
         + attForm('post-')
         + '<h3>רפלקציה' + (st.reflect ? ' ✓ נשלחה' : '') + '</h3><p class="dlm-hint">מילוי אישי</p>'
-        + M.REFLECT.map((q) => q.opts ? '<fieldset class="crd-fs"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '" value="' + o[0] + '"' + (r[q.k] === o[0] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>').join(' ') + '</fieldset>'
+        + M.REFLECT.map((q) => q.items ? '<h4>' + esc(q.t) + '</h4>' + attForm('rf-' + q.k + '-', r[q.k], q.items) : q.opts ? '<fieldset class="crd-fs"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '" value="' + o[0] + '"' + (r[q.k] === o[0] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>').join(' ') + '</fieldset>'
           : '<div class="crd-q" data-when="' + esc((q.when || []).join(',')) + '"><label for="rf-' + q.k + '">' + esc(q.t) + ' <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="rf-' + q.k + '" rows="3" placeholder="' + esc(q.ph || '') + '">' + esc(r[q.k] || '') + '</textarea></div>').join('')
         + '<p><button class="dlm-btn main" id="saveRefl">שליחת השאלון והרפלקציה</button></p>')) + '<div id="rmm"></div></div>'
       + myReflection(m);
@@ -483,7 +483,7 @@
     if (!done.length) return '';
     return '<div class="dlm-card"><h2>הרפלקציה שלי</h2>' + done.map((m) => {
       const st = S.data.reflections[m.id], r = st.reflect || {};
-      const ans = M.REFLECT.filter((q) => r[q.k]).map((q) => '<p><b>' + esc(q.t) + '</b> ' + esc(q.opts ? ((q.opts.find((o) => o[0] === r[q.k]) || [, r[q.k]])[1]) : r[q.k]) + '</p>').join('');
+      const ans = M.REFLECT.filter((q) => r[q.k]).map((q) => '<p><b>' + esc(q.t) + '</b>' + (q.items ? '<br>' : ' ') + esc(M.reflectValue(q, r[q.k])).replace(/\n/g, '<br>') + '</p>').join('');
       return '<details class="dlm-card soft" open><summary><b>' + esc(m.name) + '</b>' + (st.ai ? ' · נותחה' : '') + '</summary>' + ans + reflectAIHTML(st.ai, m.id) + '</details>';
     }).join('') + '</div>';
   }
@@ -653,7 +653,11 @@
       S.pm = ''; if (S.preview === 'pre') { S.preview = ''; S.tab = 'checks'; } window.scrollTo(0, 0); await load();
     }, $('#pmm')));
     on('#saveRefl', () => act(async () => {
-      const r = {}; for (const q of M.REFLECT) r[q.k] = q.opts ? ((app.querySelector('input[name=rf-' + q.k + ']:checked') || {}).value || '') : $('#rf-' + q.k).value;
+      const r = {};
+      for (const q of M.REFLECT) {
+        if (q.items) { const v = {}; for (const i of q.items) { const c = app.querySelector('input[name="rf-' + q.k + '-' + i.k + '"]:checked'); if (!c) throw new Error('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים: ' + q.t); v[i.k] = Number(c.value); } r[q.k] = v; }
+        else r[q.k] = q.opts ? ((app.querySelector('input[name=rf-' + q.k + ']:checked') || {}).value || '') : $('#rf-' + q.k).value;
+      }
       const post = readAtt('post-'), had = (S.data.reflections[$('#rm').value] || {}).post;
       if (!post && !had) throw new Error('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים בשאלון העמדות המסכם.');
       await call('p.reflect', Object.assign({ member: $('#rm').value, reflect: r }, post ? { post } : {})); keepLocal({ reflect: r }); clearDrafts();

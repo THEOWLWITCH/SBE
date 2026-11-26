@@ -74,6 +74,7 @@ test('team entry: up to 10 teams per class, consent per member, join only with t
 });
 
 const P8 = Object.fromEntries(['a1','a2','a3','a4','a5','a6','a7','a8'].map((k) => [k, 3]));
+const FEEL = { f1: 4, f2: 3, f3: 2, f4: 3, f5: 2, f6: 5 }, THINK = { t1: 4, t2: 3, t3: 4, t4: 2, t5: 3, t6: 4 };
 test('separation: a team sees only itself; reflections are shared within the team, AI level only to the lecturer', async () => {
   const E = await setup();
   const t1 = await E.team(E.c1, 'צוות 1'), t2 = await E.team(E.c1, 'צוות 2');
@@ -85,22 +86,23 @@ test('separation: a team sees only itself; reflections are shared within the tea
   const m = t1.r.team.members[0].id;
   // פתוחה מראש (26/11/2026: "פתח מראש את השאלונים"); המרצה יכולה לסגור
   await E.fac('f.update', { id: E.A.id, reflectOpen: false });
-  { const [sx] = await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } }); assert.equal(sx, 409, 'closed by the lecturer'); }
+  { const [sx] = await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: FEEL, think: THINK, changed: 'yes', why: 'מקור רשמי', free: '' } }); assert.equal(sx, 409, 'closed by the lecturer'); }
   await E.fac('f.update', { id: E.A.id, reflectOpen: true });
-  { const [sp] = await t1.P('p.reflect', { member: m, reflect: { feel: 'א', think: 'ב', changed: 'no' } }); assert.equal(sp, 400, 'post questionnaire is required'); }
-  await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } });
+  { const [sp] = await t1.P('p.reflect', { member: m, reflect: { feel: FEEL, think: THINK, changed: 'no' } }); assert.equal(sp, 400, 'post questionnaire is required'); }
+  { const [sh] = await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: { f1: 3 }, think: THINK, changed: 'no' } }); assert.equal(sh, 400, 'every feeling statement is required'); }
+  await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: FEEL, think: THINK, changed: 'yes', why: 'מקור רשמי', free: '' } });
   const [sn] = await t1.P('p.reflect', { member: m, ai: { criteria: [], level: null } });
   assert.equal(sn, 400, 'empty analysis rejected');
   await t1.P('p.reflect', { member: m, ai: { criteria: [{ k: 'cross', found: true, note: 'בדקה מקור רשמי' }], level: 75, levelWhy: 'בלי דוגמה', strength: 'כנות', question: 'מה עוד?' } });
   const [, g] = await t1.P('p.get');
-  assert.equal(g.reflections[m].reflect.feel, 'סקרנות', 'team sees the reflection');
+  assert.deepEqual(g.reflections[m].reflect.feel, FEEL, 'reflection saved');
   assert.equal(g.reflections[m].ai.criteria.find((c) => c.k === 'cross').found, true);
   assert.equal(g.reflections[m].ai.level, undefined, 'suggested level hidden from the team');
   const [, g2] = await t2.P('p.get');
   assert.ok(!JSON.stringify(g2).includes('סקרנות'), 'another team does not see it');
   const ft = await E.fac('f.team', { id: E.A.id, teamId: t1.r.t });
   assert.equal(ft.reflections[m].ai.level, 75, 'lecturer sees the suggested level');
-  await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'אחר', think: 'x', changed: 'no' } });
+  await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: FEEL, think: THINK, changed: 'no' } });
   const [, g3] = await t1.P('p.get');
   assert.equal(g3.reflections[m].ai, null, 'new reflection clears the old analysis');
 });
@@ -162,7 +164,7 @@ test('research export: only consented people, team work only when all consented,
   const all = await E.team(E.c1, 'כולם', ['research', 'research']);
   const part = await E.team(E.c1, 'חלק', ['research', 'learning']);
   for (const t of [all, part]) { const [, k] = await t.P('p.check', { kind: 'new', url: 'https://example.org/x', title: 'סוד' }); }
-  await part.P('p.reflect', { member: part.r.team.members[1].id, post: P8, reflect: { feel: 'פרטי', changed: 'no' } });
+  await part.P('p.reflect', { member: part.r.team.members[1].id, post: P8, reflect: { feel: FEEL, think: THINK, changed: 'no' } });
   const a = await E.store.get('cra:' + E.A.id);
   const x = await researchExport(E.store, a);
   const s = JSON.stringify(x);

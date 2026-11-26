@@ -513,9 +513,12 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
           if (d.pre !== undefined && !String(d.initial || '').trim() && !(cur.initial && cur.initial.text)) throw new CrdError('כדי לשלוח, אפשר לכתוב את עמדתך לגבי ספקולציות, פייק ניוז, קונספירציות ודיסאינפורמציה');
           if (d.initial !== undefined) cur.initial = { text: txt(d.initial, M.INITIAL.t, LIM.long, true), at: now() };
           if (d.reflect) {
-            const r = {}; for (const q of M.REFLECT) r[q.k] = q.opts ? (q.opts.some((o) => o[0] === d.reflect[q.k]) ? d.reflect[q.k] : '') : txt(d.reflect[q.k], q.t, LIM.long);
+            const r = {};
+            for (const q of M.REFLECT) {
+              if (q.items) { const v = M.cleanScale(q, d.reflect[q.k]); if (!v) throw new CrdError('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים: ' + q.t); r[q.k] = v; }
+              else r[q.k] = q.opts ? (q.opts.some((o) => o[0] === d.reflect[q.k]) ? d.reflect[q.k] : '') : txt(d.reflect[q.k], q.t, LIM.long);
+            }
             if (!r.changed) throw new CrdError('אפשר לבחור: האם חל שינוי בעמדתי - כן או לא');
-            if (!r.feel && !r.think) throw new CrdError('אפשר לכתוב לפחות מה את/ה מרגיש/ה או חושב/ת');
             if (!cur.post) throw new CrdError('כדי לשלוח, אפשר לבחור תשובה בכל אחד מההיגדים בשאלון העמדות המסכם');
             cur.reflect = { ...r, at: now() };
             cur.ai = null;
