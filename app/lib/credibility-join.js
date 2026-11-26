@@ -284,7 +284,7 @@
   function bankList() {
     const B = window.SBE_CRED_BANK; if (!B) return '';
     const used = new Set(S.data.checks.map((k) => k.bank).filter(Boolean));
-    return '<div class="crd-bankbox"><h3>בחירת ידיעה מהמאגר</h3><p class="dlm-hint">הידיעה עולה כמקור לבדיקה, ומשם ממשיכים לשלב 1. כשאין קישור, מחפשים את המקור לפי הכותרת.</p>'
+    return '<div class="crd-bankbox"><h3>בחירת דילמה מהמאגר</h3><p class="dlm-hint">הידיעה עולה כמקור לבדיקה, ומשם ממשיכים לשלב 1. כשאין קישור, מחפשים את המקור לפי הכותרת.</p>'
       + B.ordered(S.data.activity.dilemma).map((g) => '<details class="crd-bank"><summary>' + esc(g.t) + ' (' + g.items.length + ')</summary><div class="crd-list">'
         + g.items.map((x) => '<button type="button" class="crd-item" data-bank="' + esc(x.id) + '"' + (used.has(x.id) ? ' disabled' : '') + '><b>' + esc(x.title) + '</b><span class="dlm-hint">' + esc(x.outlet + ' · ' + x.date) + (used.has(x.id) ? ' · כבר בבדיקה' : '') + '</span></button>').join('')
         + '</div></details>').join('') + '<div id="bkm"></div></div>';
