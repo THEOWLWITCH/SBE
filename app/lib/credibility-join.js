@@ -466,7 +466,7 @@
     let local = {}; try { local = JSON.parse(localStorage.getItem('sbe.crd.refl.' + S.cred.t + '.' + sel) || '{}'); } catch (e) {}
     if (!local.initial && st.initial && st.initial.text) local.initial = st.initial.text;
     const r = local.reflect || (st.reflect && typeof st.reflect === 'object' ? st.reflect : {});
-    return '<div class="dlm-card"><h2>עמדה ורפלקציה</h2><p class="dlm-hint">כל אחד ואחת כותב/ת את הרפלקציה בעצמו/ה. הרפלקציה משותפת עם הצוות, וה־AI מנתח אותה לפי קריטריונים שנקבעו מראש.</p>'
+    return '<div class="dlm-card"><h2>עמדה ורפלקציה</h2>'
       + (m ? '<input type="hidden" id="rm" value="' + esc(m.id) + '"><p class="crd-pre-who">' + esc(m.name) + ' · <button type="button" class="crd-link" data-rmx="1">לא ' + esc(m.name) + '? בחירת שם אחר</button></p>' : '<p class="crd-pre-who">מי כותב/ת עכשיו? ' + t.members.map((x) => '<button type="button" class="crd-link" data-rmp="' + esc(x.id) + '">' + esc(x.name) + ((S.data.reflections[x.id] || {}).reflect ? ' ✓' : '') + '</button>').join(' · ') + '</p>')
       + (!m ? '' : (st.initial && st.initial.text ? '<h3>' + esc(M.INITIAL.h) + '</h3><p class="crd-quote">' + esc(st.initial.text) + '</p>' : '')
         + (!reflectReady() ? '<div class="dlm-msg">המרצה סגרה כרגע את הרפלקציה ואת שאלון העמדות המסכם.</div>' : '<h3>' + esc(M.ATT.post) + ' <span class="crd-req">(שדה עיקרי)</span>' + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">אותם היגדים כמו בהתחלה, כדי לראות אם משהו השתנה. התשובות האישיות לא מוצגות לצוות.</p>'
@@ -475,13 +475,13 @@
         + M.REFLECT.map((q) => q.opts ? '<fieldset class="crd-fs"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '" value="' + o[0] + '"' + (r[q.k] === o[0] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>').join(' ') + '</fieldset>'
           : '<div class="crd-q" data-when="' + esc((q.when || []).join(',')) + '"><label for="rf-' + q.k + '">' + esc(q.t) + ' <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="rf-' + q.k + '" rows="3" placeholder="' + esc(q.ph || '') + '">' + esc(r[q.k] || '') + '</textarea></div>').join('')
         + '<p><button class="dlm-btn main" id="saveRefl">שליחת השאלון והרפלקציה</button></p>')) + '<div id="rmm"></div></div>'
-      + teamReflections();
+      + myReflection(m);
   }
-  // הרפלקציות של הצוות, עם ניתוח ה־AI לפי הקריטריונים
-  function teamReflections() {
-    const t = S.data.team, done = t.members.filter((m) => (S.data.reflections[m.id] || {}).reflect);
+  // הרפלקציה היא שאלון אישי (26/11/2026: "זהו שאלון אישי"): רק הרפלקציה של מי שבחר/ה את השם, עם ניתוח ה־AI
+  function myReflection(me1) {
+    const done = me1 && (S.data.reflections[me1.id] || {}).reflect ? [me1] : [];
     if (!done.length) return '';
-    return '<div class="dlm-card"><h2>הרפלקציות של הצוות</h2>' + done.map((m) => {
+    return '<div class="dlm-card"><h2>הרפלקציה שלי</h2>' + done.map((m) => {
       const st = S.data.reflections[m.id], r = st.reflect || {};
       const ans = M.REFLECT.filter((q) => r[q.k]).map((q) => '<p><b>' + esc(q.t) + '</b> ' + esc(q.opts ? ((q.opts.find((o) => o[0] === r[q.k]) || [, r[q.k]])[1]) : r[q.k]) + '</p>').join('');
       return '<details class="dlm-card soft" open><summary><b>' + esc(m.name) + '</b>' + (st.ai ? ' · נותחה' : '') + '</summary>' + ans + reflectAIHTML(st.ai, m.id) + '</details>';
