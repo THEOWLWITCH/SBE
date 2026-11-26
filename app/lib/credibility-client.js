@@ -41,7 +41,7 @@
     }
     throw new Error('המודל לא הספיק לענות בזמן. אפשר לנסות שוב.');
   }
-  function blobOf(r) { const bin = atob(r.data), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return new Blob([u8], { type: r.type }); }
+  function blobOf(r) { const bin = atob(r.data), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return new Blob([u8], { type: /^text\/plain$/.test(r.type || '') ? 'text/plain;charset=utf-8' : r.type }); }
   function showFile(r, dl) {
     const url = URL.createObjectURL(blobOf(r));
     if (dl) { const a = document.createElement('a'); a.href = url; a.download = r.name || 'קובץ'; document.body.appendChild(a); a.click(); a.remove(); } else window.open(url, '_blank', 'noopener');

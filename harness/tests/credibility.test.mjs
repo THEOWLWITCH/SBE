@@ -260,8 +260,8 @@ test('ההנחיה ל־AI: אותו נוסח בפנקס ובמודל, ובגיר
 test('מאגר הידיעות: שתי קבוצות, פריטים שלמים, טקסט לבדיקה, סדר לפי הדילמה', () => {
   const req = createRequire(import.meta.url);
   const B = req('../../app/lib/credibility-bank.js');
-  assert.equal(B.GROUPS.length, 2);
-  assert.equal(B.all().length, 11);
+  assert.equal(B.GROUPS.length, 3);
+  assert.equal(B.all().length, 15);
   const ids = new Set();
   for (const x of B.all()) {
     assert.match(x.id, /^[a-z]\d{1,2}$/); assert.ok(!ids.has(x.id)); ids.add(x.id);

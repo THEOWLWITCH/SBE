@@ -274,19 +274,25 @@
       + (ks.length ? '<div class="crd-list">' + ks.map((k) => '<button type="button" class="crd-item" data-open="' + esc(k.id) + '"><b>' + esc(k.title || 'מקור') + '</b>' + U.scoresRow(k) + '<span class="dlm-hint">' + stageLabel(k) + '</span></button>').join('') + '</div>'
         + '<p class="dlm-hint">אפשר לבדוק כמה מקורות. כל בדיקה נוספת היא הזדמנות לראות מה השתפר.</p>'
         : '<p>עוד לא התחלנו. מעלים מקור (קובץ או קישור), ואז ממלאים את כל מה שידוע עליו ונותנים ציון.</p>')
-      + '<h3>מקור חדש לבדיקה</h3><div class="dlm-grid2"><div><label for="nf">העלאת קובץ</label><input type="file" id="nf" accept="image/*,application/pdf,text/plain,audio/*,video/*">'
+      + bankList()
+      + '<h3>' + (window.SBE_CRED_BANK ? 'או מקור משלכם' : 'מקור חדש לבדיקה') + '</h3><div class="dlm-grid2"><div><label for="nf">העלאת קובץ</label><input type="file" id="nf" accept="image/*,application/pdf,text/plain,audio/*,video/*">'
       + '<p class="dlm-hint">תמונה, צילום מסך, PDF, טקסט, הקלטה או וידאו קצר.</p></div><div><label for="nu">או קישור</label><input type="url" id="nu" dir="ltr" placeholder="https://"></div></div>'
       + '<label for="nt">שם קצר למקור (רשות)</label><input type="text" id="nt" placeholder="למשל: הפוסט על הנתונים המזויפים">'
-      + '<p><button class="dlm-btn main" id="addk">התחלת בדיקה</button></p><div id="km"></div>' + bankList() + '</div>';
+      + '<p><button class="dlm-btn main" id="addk">התחלת בדיקה</button></p><div id="km"></div></div>';
   }
   // מאגר הידיעות: בחירה מעלה את הידיעה לצוות ופותחת את שלב 1
   function bankList() {
     const B = window.SBE_CRED_BANK; if (!B) return '';
     const used = new Set(S.data.checks.map((k) => k.bank).filter(Boolean));
-    return '<h3>או בחירת ידיעה מהמאגר</h3><p class="dlm-hint">הידיעה עולה כמקור לבדיקה, ומשם ממשיכים לשלב 1. כשאין קישור, מחפשים את המקור לפי הכותרת.</p>'
+    return '<div class="crd-bankbox"><h3>בחירת דילמה מהמאגר</h3><p class="dlm-hint">הידיעה עולה כמקור לבדיקה, ומשם ממשיכים לשלב 1. כשאין קישור, מחפשים את המקור לפי הכותרת.</p>'
       + B.ordered(S.data.activity.dilemma).map((g) => '<details class="crd-bank"><summary>' + esc(g.t) + ' (' + g.items.length + ')</summary><div class="crd-list">'
         + g.items.map((x) => '<button type="button" class="crd-item" data-bank="' + esc(x.id) + '"' + (used.has(x.id) ? ' disabled' : '') + '><b>' + esc(x.title) + '</b><span class="dlm-hint">' + esc(x.outlet + ' · ' + x.date) + (used.has(x.id) ? ' · כבר בבדיקה' : '') + '</span></button>').join('')
-        + '</div></details>').join('') + '<div id="bkm"></div>';
+        + '</div></details>').join('') + '<div id="bkm"></div></div>';
+  }
+  // ידיעה מהמאגר: הטקסט המלא על המסך, כדי שאפשר לקרוא אותה בזמן הבדיקה (26/11/2026: "אי אפשר לקרוא את הידיעות שבוחרים")
+  function bankStory(k) {
+    const B = window.SBE_CRED_BANK, x = k.bank && B && B.find(k.bank); if (!x) return '';
+    return '<details class="crd-bankstory" open><summary>הידיעה לבדיקה</summary><pre class="crd-bank-text">' + esc(B.text(x)) + '</pre></details>';
   }
   function stageLabel(k) {
     if (k.final) return 'הבדיקה הושלמה';
@@ -305,7 +311,7 @@
     const nav = '<div class="dlm-steps crd-steps">' + STAGES.map((s) => '<button type="button" data-stage="' + s[0] + '"' + (st === s[0] ? ' aria-current="step"' : '') + (reach[s[0]] ? '' : ' disabled') + '>' + s[1] + '</button>').join('') + '</div>';
     const src = '<div class="crd-src"><b>' + esc(k.title) + '</b>' + (k.url ? ' · <a href="' + esc(k.url) + '" target="_blank" rel="noopener noreferrer" dir="ltr">' + esc(k.url.slice(0, 60)) + '</a>' : '')
       + (k.fileId ? ' · <button type="button" class="crd-link" data-file="' + esc(k.fileId) + '">פתיחת הקובץ</button>' : '')
-      + (k.verify ? ' <span class="dlm-tag">' + esc({ exists: 'הקישור נפתח', not_found: 'הקישור לא נמצא', unreachable: 'הקישור לא נפתח' }[k.verify.status] || '') + '</span>' : '') + U.scoresRow(k) + '</div>';
+      + (k.verify ? ' <span class="dlm-tag">' + esc({ exists: 'הקישור נפתח', not_found: 'הקישור לא נמצא', unreachable: 'הקישור לא נפתח' }[k.verify.status] || '') + '</span>' : '') + U.scoresRow(k) + '</div>' + bankStory(k);
     let inner = '';
     if (st === 'describe') inner = describeHTML(k);
     else if (st === 'first') inner = '<h3>בדיקת AI</h3>' + (k.first ? U.assessHTML(k.first, 'ההערכה של ה־AI') + '<p><button class="dlm-btn main" data-stage="inquiry">ממשיכים לחקור</button></p>'

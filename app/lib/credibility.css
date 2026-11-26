@@ -110,9 +110,16 @@ body.crd-page .crd-link{font-size:16px;font-weight:500;text-decoration-color:rgb
 .crd-tree ul{padding-right:1.4rem;border-right:1px solid #d9e1ea;margin-right:.3rem}
 .crd-tree ul ul{margin-top:.15rem}
 .crd-tree li li{line-height:1.9}
-.crd-bank{margin:.4rem 0;border:1px solid #d9dee4;border-radius:12px;padding:.5rem .8rem;background:#fff}
-.crd-bank summary{cursor:pointer;font-weight:600;color:#1d3f63}
+.crd-bankbox{margin:1rem 0 1.4rem;border:1px solid #d9dee4;border-top:3px solid #2EC4B6;border-radius:14px;padding:1rem 1.1rem 1.1rem;background:#f7fbfb}
+.crd-bankbox h3{margin-top:0;font-size:1.35rem}
+.crd-bank{margin:.6rem 0;border:1px solid #d9dee4;border-radius:12px;padding:.8rem 1rem;background:#fff}
+.crd-bank summary{cursor:pointer;font-weight:600;color:#1d3f63;font-size:1.15rem;padding:.2rem 0}
 .crd-bank .crd-list{margin-top:.5rem}
 .crd-item[disabled]{opacity:.55;cursor:default}
 .crd-mk{font-size:.92rem;color:#3c4a5c}
 .crd-d{width:2.2rem;text-align:center;padding:.15rem;display:inline-block}
+
+.crd-bank-text{white-space:pre-wrap;font-family:inherit;font-size:.95rem;line-height:1.5;background:#fff;border:1px solid #e3e7ec;border-radius:8px;padding:.6rem .8rem;direction:rtl;text-align:right}
+.crd-bankstory{margin:.6rem 0 1rem;border:1px solid #d9dee4;border-right:4px solid #2EC4B6;border-radius:12px;padding:.6rem .9rem;background:#f7fbfb}
+.crd-bankstory summary{cursor:pointer;font-weight:600;color:#1d3f63}
+.crd-bankstory .crd-bank-text{margin:.5rem 0 0;font-size:1.02rem;line-height:1.6}
