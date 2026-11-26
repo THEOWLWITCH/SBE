@@ -84,7 +84,7 @@ function checkFile(d) {
   if (data.length * 0.75 > k.max) throw new CrdError('הקובץ גדול מדי (עד ' + k.t + ')', 413);
   return { data, type, size: Math.round(data.length * 0.75) };
 }
-const publicActivity = (a, c) => ({ id: a.id, title: a.title, dilemma: a.dilemma, status: a.status, research: !!a.research.enabled, reflectOpen: !!a.reflectOpen,
+const publicActivity = (a, c) => ({ id: a.id, title: a.title, dilemma: a.dilemma, status: a.status, research: !!a.research.enabled, reflectOpen: a.reflectOpen !== false,
   class: c ? { id: c.id, name: c.name } : null, consent: { ...M.CONSENT, ethics: a.research.ethics || '', contact: a.research.contact || '' } });
 const teamView = (t) => ({ id: t.id, name: t.name, code: t.tcode, classId: t.classId, members: t.members.map((m) => ({ id: m.id, name: m.name, consent: m.consent })), workOpen: !!t.workOpen, createdAt: t.createdAt });
 
@@ -500,8 +500,8 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
       if (op === 'p.reflect') {
         const m = t.members.find((x) => x.id === d.member);
         if (!m) throw new CrdError('אפשר לבחור את השם שלך מהרשימה', 404);
-        // הרפלקציה בשיעור הבא (17/11/2026: "בשעור הבא הן יכתבו רפלקציה"): נפתחת כשהמרצה פותחת אותה
-        if ((d.reflect || d.post !== undefined) && !a.reflectOpen) throw new CrdError('הרפלקציה נפתחת בשיעור הבא, כשהמרצה פותחת אותה', 409);
+        // פתוחה מראש (26/11/2026: "פתח מראש את השאלונים"); סגורה רק כשהמרצה סגרה אותה
+        if ((d.reflect || d.post !== undefined) && a.reflectOpen === false) throw new CrdError('המרצה סגרה כרגע את הרפלקציה', 409);
         await mutate(store, RR, (rr) => {
           const cur = rr.members[m.id] || {};
           for (const w of ['pre', 'post']) {

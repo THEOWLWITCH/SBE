@@ -83,7 +83,9 @@ test('separation: a team sees only itself; reflections are shared within the tea
   const [sb] = await E.run('p.get', {}, { a: t1.cred.a, t: t1.cred.t, key: t2.cred.key });
   assert.equal(sb, 401);
   const m = t1.r.team.members[0].id;
-  { const [sx] = await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } }); assert.equal(sx, 409, 'reflection opens only when the lecturer opens it'); }
+  // פתוחה מראש (26/11/2026: "פתח מראש את השאלונים"); המרצה יכולה לסגור
+  await E.fac('f.update', { id: E.A.id, reflectOpen: false });
+  { const [sx] = await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } }); assert.equal(sx, 409, 'closed by the lecturer'); }
   await E.fac('f.update', { id: E.A.id, reflectOpen: true });
   { const [sp] = await t1.P('p.reflect', { member: m, reflect: { feel: 'א', think: 'ב', changed: 'no' } }); assert.equal(sp, 400, 'post questionnaire is required'); }
   await t1.P('p.reflect', { member: m, post: P8, reflect: { feel: 'סקרנות', think: 'צריך לבדוק', changed: 'yes', why: 'מקור רשמי', free: '' } });

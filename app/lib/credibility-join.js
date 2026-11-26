@@ -320,8 +320,8 @@
       + (k.verify ? ' <span class="dlm-tag">' + esc({ exists: 'הקישור נפתח', not_found: 'הקישור לא נמצא', unreachable: 'הקישור לא נפתח' }[k.verify.status] || '') + '</span>' : '') + U.scoresRow(k) + '</div>' + bankStory(k);
     let inner = '';
     if (st === 'describe') inner = describeHTML(k);
-    else if (st === 'first') inner = '<h3>בדיקת AI</h3>' + (k.first ? U.assessHTML(k.first, 'ההערכה של ה־AI') + '<p><button class="dlm-btn main" data-stage="inquiry">ממשיכים לחקור</button></p>'
-      : '<p>ה־AI יקרא את המקור, את הפרטים שמילאתם ואת הציון שנתתם, ויחזיר ציון 1–5, הסבר, ומה חסר כדי לדעת יותר.</p><p><button class="dlm-btn main" data-ai="first">בדיקת AI</button></p>');
+    else if (st === 'first') inner = (k.first ? U.assessHTML(k.first, 'ההערכה של ה־AI') + '<p><button class="dlm-btn main" data-stage="inquiry">ממשיכים לחקור</button></p>'
+      : '<p>ה־AI יקרא את המקור, את הפרטים שמילאתם ואת הציון שנתתם, ויחזיר ציון 1–5, הסבר, ומה חסר כדי לדעת יותר.</p><p><button class="dlm-btn main" data-ai="first">שליחה לבדיקה</button></p>');
     else if (st === 'inquiry') inner = inquiryHTML(k);
     else inner = finalHTML(k);
     const back = (id) => '<p class="crd-newsrc"><button type="button" class="crd-link" id="' + id + '">→ לכל המקורות</button><button type="button" class="crd-link" data-newsrc>➕ בחירת דילמה חדשה מהמאגר או מקור משלכם</button></p>';
@@ -355,9 +355,11 @@
         : '<p class="crd-donebar"><button class="dlm-btn main" id="done">אין לנו עוד מידע</button></p>');
   }
   function finalHTML(k) {
-    return '<h3>בדיקת AI חוזרת</h3>' + (k.final ? U.assessHTML(k.final, 'ההערכה החוזרת של ה־AI') + '<h4>שלושת הציונים</h4>' + U.scoresRow(k)
-        + '<p>הבדיקה הושלמה. <button class="dlm-btn main" id="nextCheck">בדיקה של מקור נוסף</button></p>'
-      : '<p>ה־AI יקרא את כל פריטי המידע שמצאתם, וייתן ציון, הסבר, מה עדיין חסר, ומשוב על תהליך הבדיקה שלכם.</p><p><button class="dlm-btn main" data-ai="final">בדיקת AI חוזרת</button></p>');
+    // מיד אחרי הבדיקה החוזרת: הרפלקציה ושאלון העמדות המסכם (26/11/2026)
+    return (k.final ? U.assessHTML(k.final, 'ההערכה החוזרת של ה־AI') + '<h4>שלושת הציונים</h4>' + U.scoresRow(k)
+        + '<p>הבדיקה הושלמה.</p>' + (reflectReady() ? '<p><button class="dlm-btn main" id="toReflect">ממשיכים לרפלקציה ולשאלון העמדות המסכם ←</button></p>' : '')
+        + '<p><button class="' + (reflectReady() ? 'crd-link' : 'dlm-btn main') + '" id="nextCheck">בדיקה של מקור נוסף</button></p>'
+      : '<p>ה־AI יקרא את כל פריטי המידע שמצאתם, וייתן ציון, הסבר, מה עדיין חסר, ומשוב על תהליך הבדיקה שלכם.</p><p><button class="dlm-btn main" data-ai="final">שליחה לבדיקה חוזרת</button></p>');
   }
   const nameOf = (id) => ((S.data.team.members.find((m) => m.id === id) || {}).name || '');
 
@@ -467,7 +469,7 @@
     return '<div class="dlm-card"><h2>עמדה ורפלקציה</h2><p class="dlm-hint">כל אחד ואחת כותב/ת את הרפלקציה בעצמו/ה. הרפלקציה משותפת עם הצוות, וה־AI מנתח אותה לפי קריטריונים שנקבעו מראש.</p>'
       + (m ? '<input type="hidden" id="rm" value="' + esc(m.id) + '"><p class="crd-pre-who">' + esc(m.name) + ' · <button type="button" class="crd-link" data-rmx="1">לא ' + esc(m.name) + '? בחירת שם אחר</button></p>' : '<p class="crd-pre-who">מי כותב/ת עכשיו? ' + t.members.map((x) => '<button type="button" class="crd-link" data-rmp="' + esc(x.id) + '">' + esc(x.name) + ((S.data.reflections[x.id] || {}).reflect ? ' ✓' : '') + '</button>').join(' · ') + '</p>')
       + (!m ? '' : (st.initial && st.initial.text ? '<h3>' + esc(M.INITIAL.h) + '</h3><p class="crd-quote">' + esc(st.initial.text) + '</p>' : '')
-        + (!reflectReady() ? '<div class="dlm-msg">הרפלקציה ושאלון העמדות המסכם נכתבים בשיעור הבא, כשהמרצה פותחת אותם.</div>' : '<h3>' + esc(M.ATT.post) + ' <span class="crd-req">(שדה עיקרי)</span>' + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">אותם היגדים כמו בהתחלה, כדי לראות אם משהו השתנה. התשובות האישיות לא מוצגות לצוות.</p>'
+        + (!reflectReady() ? '<div class="dlm-msg">המרצה סגרה כרגע את הרפלקציה ואת שאלון העמדות המסכם.</div>' : '<h3>' + esc(M.ATT.post) + ' <span class="crd-req">(שדה עיקרי)</span>' + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">אותם היגדים כמו בהתחלה, כדי לראות אם משהו השתנה. התשובות האישיות לא מוצגות לצוות.</p>'
         + attForm('post-')
         + '<h3>רפלקציה' + (st.reflect ? ' ✓ נשלחה' : '') + '</h3><p class="dlm-hint">' + esc(M.REFLECT_NOTE) + '</p>'
         + M.REFLECT.map((q) => q.opts ? '<fieldset class="crd-fs"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '" value="' + o[0] + '"' + (r[q.k] === o[0] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>').join(' ') + '</fieldset>'
@@ -576,6 +578,7 @@
     app.querySelectorAll('[data-ai]').forEach((b) => { b.onclick = () => act(async () => { b.disabled = true; await runAI(k, b.dataset.ai); S.stage = b.dataset.ai === 'fields' ? 'describe' : b.dataset.ai; S.stageFor = k.id; render(); }); });
     app.querySelectorAll('[data-extdel]').forEach((b) => { b.onclick = () => act(async () => { await saveCheck('extDel', { id: k.id, extId: b.dataset.extdel }); render(); }); });
     on('#backList', () => { S.open = null; render(); });
+    on('#toReflect', () => { S.tab = 'reflect'; S.open = null; S.stage = null; render(); window.scrollTo(0, 0); });
     on('#backList2', () => { S.open = null; render(); window.scrollTo(0, 0); });
     app.querySelectorAll('[data-newsrc]').forEach((b) => { b.onclick = () => { S.open = null; S.stage = null; render(); const x = $('.crd-bankbox') || $('#nf'); if (x) { const d = x.querySelector && x.querySelector('details'); if (d) d.open = true; x.scrollIntoView({ block: 'start' }); } }; });
     on('#addk', () => act(async () => {
