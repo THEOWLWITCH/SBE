@@ -222,7 +222,7 @@
     const D = S.data, t = D.team;
     $('#topTitle').textContent = D.activity.title;
     const who = me();
-    const head = '<div class="dlm-card crd-team"><div class="dlm-row" style="justify-content:space-between"><div><h1>' + esc(t.name) + '</h1><div class="dlm-hint">' + esc(D.activity.class.name) + ' · קוד הצוות: <b dir="ltr">' + esc(t.code) + '</b></div></div>'
+    const head = '<div class="dlm-card crd-team"><div class="dlm-row" style="justify-content:space-between"><div><h1>' + esc(t.name) + '</h1><div class="dlm-hint">' + esc(D.activity.class.name) + ' · קוד הצוות: <b dir="ltr">' + esc(t.code) + '</b> · <button type="button" class="crd-link" id="switchTeam">לא הצוות שלי? כניסה לצוות אחר</button></div></div>'
       + '<div><label for="who">מי עובד/ת עכשיו במכשיר הזה?</label><select id="who" data-closed><option value="">בחירה</option>' + t.members.map((m) => '<option value="' + esc(m.id) + '"' + (who === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>').join('') + '</select></div></div>'
       + (D.activity.dilemma ? '<p><b>הדילמה:</b> ' + esc(D.activity.dilemma) + '</p>' : '')
       + (D.activity.status !== 'open' ? msg('הפעילות סגורה כרגע: אפשר לצפות, אבל לא לשנות.') : '')
@@ -669,6 +669,8 @@
     // הצוות
     on('#addm', () => { const n = $('#mrows').children.length; if (n < 8) $('#mrows').insertAdjacentHTML('beforeend', memberRow({}, n)); });
     on('#saveTeamM', () => act(async () => { const members = readMembers($('#mrows')); const r = await call('p.members', { members, name: $('#tn2').value }); S.data.team = r.team; render(); $('#tm').innerHTML = msg('נשמר.'); }, $('#tm')));
+    // המכשיר זוכר את הצוות, ולכן סריקה חוזרת של ה־QR נכנסת אליו שוב (26/11/2026: "הברקוד של גורדון... מביא שוב ושוב לאותה ידיעה")
+    on('#switchTeam', async () => { if (await U.ask('לצאת מהצוות הזה במכשיר הזה ולהיכנס לצוות אחר? העבודה של הצוות נשמרת, ואפשר לחזור עם קוד הצוות.')) { saveCred(classCode, null); S.cred = null; S.open = null; clearInterval(S.timer); start(); } });
     on('#leave', async () => { if (await U.ask('לצאת מהצוות במכשיר הזה? אפשר לחזור עם קוד הצוות.')) { saveCred(classCode, null); S.cred = null; clearInterval(S.timer); start(); } });
     scrollChat();
   }
