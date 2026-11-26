@@ -289,6 +289,11 @@
         + g.items.map((x) => '<button type="button" class="crd-item" data-bank="' + esc(x.id) + '"' + (used.has(x.id) ? ' disabled' : '') + '><b>' + esc(x.title) + '</b><span class="dlm-hint">' + esc(x.outlet + ' · ' + x.date) + (used.has(x.id) ? ' · כבר בבדיקה' : '') + '</span></button>').join('')
         + '</div></details>').join('') + '<div id="bkm"></div></div>';
   }
+  // ידיעה מהמאגר: הטקסט המלא על המסך, כדי שאפשר לקרוא אותה בזמן הבדיקה (26/11/2026: "אי אפשר לקרוא את הידיעות שבוחרים")
+  function bankStory(k) {
+    const B = window.SBE_CRED_BANK, x = k.bank && B && B.find(k.bank); if (!x) return '';
+    return '<details class="crd-bankstory" open><summary>הידיעה לבדיקה</summary><pre class="crd-bank-text">' + esc(B.text(x)) + '</pre></details>';
+  }
   function stageLabel(k) {
     if (k.final) return 'הבדיקה הושלמה';
     if (k.done) return 'שלב 4: מחכה לבדיקת AI חוזרת';
@@ -306,7 +311,7 @@
     const nav = '<div class="dlm-steps crd-steps">' + STAGES.map((s) => '<button type="button" data-stage="' + s[0] + '"' + (st === s[0] ? ' aria-current="step"' : '') + (reach[s[0]] ? '' : ' disabled') + '>' + s[1] + '</button>').join('') + '</div>';
     const src = '<div class="crd-src"><b>' + esc(k.title) + '</b>' + (k.url ? ' · <a href="' + esc(k.url) + '" target="_blank" rel="noopener noreferrer" dir="ltr">' + esc(k.url.slice(0, 60)) + '</a>' : '')
       + (k.fileId ? ' · <button type="button" class="crd-link" data-file="' + esc(k.fileId) + '">פתיחת הקובץ</button>' : '')
-      + (k.verify ? ' <span class="dlm-tag">' + esc({ exists: 'הקישור נפתח', not_found: 'הקישור לא נמצא', unreachable: 'הקישור לא נפתח' }[k.verify.status] || '') + '</span>' : '') + U.scoresRow(k) + '</div>';
+      + (k.verify ? ' <span class="dlm-tag">' + esc({ exists: 'הקישור נפתח', not_found: 'הקישור לא נמצא', unreachable: 'הקישור לא נפתח' }[k.verify.status] || '') + '</span>' : '') + U.scoresRow(k) + '</div>' + bankStory(k);
     let inner = '';
     if (st === 'describe') inner = describeHTML(k);
     else if (st === 'first') inner = '<h3>בדיקת AI</h3>' + (k.first ? U.assessHTML(k.first, 'ההערכה של ה־AI') + '<p><button class="dlm-btn main" data-stage="inquiry">ממשיכים לחקור</button></p>'
