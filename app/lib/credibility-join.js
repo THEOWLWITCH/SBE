@@ -469,9 +469,9 @@
     return '<div class="dlm-card"><h2>עמדה ורפלקציה</h2>'
       + (m ? '<input type="hidden" id="rm" value="' + esc(m.id) + '"><p class="crd-pre-who">' + esc(m.name) + ' · <button type="button" class="crd-link" data-rmx="1">לא ' + esc(m.name) + '? בחירת שם אחר</button></p>' : '<p class="crd-pre-who">מי כותב/ת עכשיו? ' + t.members.map((x) => '<button type="button" class="crd-link" data-rmp="' + esc(x.id) + '">' + esc(x.name) + ((S.data.reflections[x.id] || {}).reflect ? ' ✓' : '') + '</button>').join(' · ') + '</p>')
       + (!m ? '' : (st.initial && st.initial.text ? '<h3>' + esc(M.INITIAL.h) + '</h3><p class="crd-quote">' + esc(st.initial.text) + '</p>' : '')
-        + (!reflectReady() ? '<div class="dlm-msg">המרצה סגרה כרגע את הרפלקציה ואת שאלון העמדות המסכם.</div>' : '<h3>' + esc(M.ATT.post) + ' <span class="crd-req">(שדה עיקרי)</span>' + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">אותם היגדים כמו בהתחלה, כדי לראות אם משהו השתנה. התשובות האישיות לא מוצגות לצוות.</p>'
+        + (!reflectReady() ? '<div class="dlm-msg">המרצה סגרה כרגע את הרפלקציה ואת שאלון העמדות המסכם.</div>' : '<h3>' + esc(M.ATT.post) + ' <span class="crd-req">(שדה עיקרי)</span>' + (st.post ? ' ✓ נשלח' : '') + '</h3><p class="dlm-hint">מילוי אישי</p>'
         + attForm('post-')
-        + '<h3>רפלקציה' + (st.reflect ? ' ✓ נשלחה' : '') + '</h3><p class="dlm-hint">' + esc(M.REFLECT_NOTE) + '</p>'
+        + '<h3>רפלקציה' + (st.reflect ? ' ✓ נשלחה' : '') + '</h3><p class="dlm-hint">מילוי אישי</p>'
         + M.REFLECT.map((q) => q.opts ? '<fieldset class="crd-fs"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '" value="' + o[0] + '"' + (r[q.k] === o[0] ? ' checked' : '') + '> ' + esc(o[1]) + '</label>').join(' ') + '</fieldset>'
           : '<div class="crd-q" data-when="' + esc((q.when || []).join(',')) + '"><label for="rf-' + q.k + '">' + esc(q.t) + ' <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea id="rf-' + q.k + '" rows="3" placeholder="' + esc(q.ph || '') + '">' + esc(r[q.k] || '') + '</textarea></div>').join('')
         + '<p><button class="dlm-btn main" id="saveRefl">שליחת השאלון והרפלקציה</button></p>')) + '<div id="rmm"></div></div>'
@@ -492,7 +492,7 @@
     return '<div class="crd-assess"><h4>ניתוח ה־AI לפי הקריטריונים</h4><table class="rtable crd-rt"><thead><tr><th>הקריטריון</th><th>עולה ברפלקציה?</th><th>מה נכתב</th></tr></thead><tbody>'
       + M.REFLECT_CRITERIA.map((c) => { const x = (ai.criteria || []).find((y) => y.k === c.k) || {}; return '<tr><td>' + esc(c.t) + '</td><td class="ck">' + (x.found ? '✓' : '○') + '</td><td>' + esc(x.note || '') + '</td></tr>'; }).join('')
       + '</tbody></table>' + (ai.strength ? '<p><b>מה חזק:</b> ' + esc(ai.strength) + '</p>' : '') + (ai.question ? '<p><b>שאלה להעמקה:</b> ' + esc(ai.question) + '</p>' : '')
-      + '<p class="dlm-hint">הניתוח של ה־AI הוא הצעה לקריאה, והוא יכול לטעות.</p><p><button class="crd-link" data-rai="' + esc(id) + '">ניתוח מחדש</button></p></div>';
+      + '<p><button class="crd-link" data-rai="' + esc(id) + '">ניתוח מחדש</button></p></div>';
   }
   async function analyzeReflection(id) {
     const st = S.data.reflections[id] || {};
