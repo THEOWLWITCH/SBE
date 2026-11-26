@@ -254,7 +254,7 @@ test('ההנחיה ל־AI: אותו נוסח בפנקס ובמודל, ובגיר
   for (const l of M.SCALE) assert.ok(M.AI_PROMPT.includes(l.score + ' = ' + l.name + ': ' + l.d));
   assert.match(read('credibility-pocket.html'), /M\.AI_PROMPT/);
   const n = read('credibility-notebook.html');
-  for (const w of ['ד״ר איבנה ריטנר', 'ד״ר עינת שושן־רפאלי', 'ד״ר יעל שדה', 'mailto:yael.sade@gmail.com', 'mailto:ei0509000408@gmail.com', 'mailto:ratnere@gmail.com']) assert.ok(n.includes(w), w);
+  for (const w of ['ד״ר איבנה רטנר', 'ד״ר עינת שושן־רפאלי', 'ד״ר יעל שדה', 'המכללה האקדמית גורדון', 'המכללה האקדמית אורנים ומוסד שמואל נאמן', 'mailto:yael.sade@gmail.com', 'mailto:ei0509000408@gmail.com', 'mailto:ratnere@gmail.com']) assert.ok(n.includes(w), w);
 });
 
 test('מאגר הידיעות: שתי קבוצות, פריטים שלמים, טקסט לבדיקה, סדר לפי הדילמה', () => {
