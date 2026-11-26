@@ -136,7 +136,6 @@
   }
   function reflectText(ctx) {
     const r = ctx.reflect || {}, L = [];
-    if (ctx.dilemma) L.push('הדילמה: ' + ctx.dilemma);
     if (ctx.initial) L.push('העמדה הראשונית (על ספקולציות, פייק ניוז, קונספירציות ודיסאינפורמציה בתקשורת, ברשתות החברתיות ובעיתונות): ' + ctx.initial);
     for (const q of REFLECT) { const v = r[q.k]; if (!v) continue; L.push(q.t + (q.items ? '\n' : ' ') + reflectValue(q, v)); }
     if (ctx.checks) L.push('הבדיקות של הצוות (ציון ראשון של ה־AI / ציון הצוות / ציון חוזר): ' + ctx.checks);
@@ -217,7 +216,7 @@
 
   // ── המודל ──
   const BASE = [
-    'את/ה עוזר/ת לצוות של סטודנטים וסטודנטיות להוראה לבדוק אמינות של מקור מידע, בהקשר של טענה מסוימת ושל דילמה ציבורית.',
+    'את/ה עוזר/ת לצוות של סטודנטים וסטודנטיות להוראה לבדוק אמינות של מקור מידע, בהקשר של הטענה שבמקור. בודקים רק את המקור שהצוות בחר, ולא משווים אותו לנושא אחר.',
     'הסולם (ציון למקור בהקשר הטענה, לא לגוף המפרסם באופן כללי):',
     SCALE.map((l) => l.score + ' = ' + l.name + ': ' + l.d).join('\n'),
     'כללים:',
@@ -250,7 +249,8 @@
 
   function sourceText(ctx) {
     const s = ctx.source || {}, f = ctx.fields || {};
-    const L = ['הדילמה: ' + (ctx.dilemma || '(לא צוינה)')];
+    // בלי הדילמה של הפעילות (26/11/2026: "שוב יש ציון של דילמת ראש העיר בבדיקה של ידיעה אחרת"): בודקים רק את המקור שנבחר
+    const L = [];
     L.push('המקור: ' + (s.title || '') + (s.url ? '\nקישור: ' + s.url : '') + (s.verify && s.verify.status ? '\nבדיקת הקישור בשרת: ' + ({ exists: 'הדף קיים', not_found: 'הדף לא נמצא', unreachable: 'לא נפתח' }[s.verify.status] || s.verify.status) + (s.verify.title ? ' · כותרת הדף: ' + s.verify.title : '') : '')
       + (s.fileName ? '\nקובץ: ' + s.fileName + ' (' + (s.fileType || '') + ')' : ''));
     if (s.fileType && /^(audio|video)\//.test(s.fileType)) L.push('שימו לב: זה קובץ ' + (/^audio/.test(s.fileType) ? 'קול' : 'וידאו') + ', ואין לכם אפשרות לשמוע או לראות אותו. הסתמכו על תיאור הצוות.');
