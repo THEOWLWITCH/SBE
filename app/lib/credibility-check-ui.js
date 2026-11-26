@@ -49,7 +49,7 @@
     const tabs = [['classes', 'כיתות וכניסה'], ['teams', 'צוותים ועבודה'], ['findings', 'ממצאים'], ['bank', 'מאגר הידיעות'], ['settings', 'הגדרות']];
     app.innerHTML = '<div class="dlm-card"><p><button class="crd-link" id="all">לכל הפעילויות</button></p><h2>' + esc(a.title) + '</h2>'
       + '<p>' + (a.status === 'open' ? '<b>פתוחה:</b> הצוותים יכולים להיכנס ולעבוד.' : '<b>סגורה:</b> הצוותים רואים את העבודה ואינם יכולים לשנות.') + ' <button class="crd-link" id="st">' + (a.status === 'open' ? 'סגירה' : 'פתיחה') + '</button></p>'
-      + '<p>' + (a.reflectOpen ? '<b>הרפלקציה פתוחה</b> לכל הצוותים.' : '<b>הרפלקציה סגורה.</b> פותחים אותה בשיעור הבא.') + ' <button class="crd-link" id="rfo">' + (a.reflectOpen ? 'סגירת הרפלקציה' : 'פתיחת הרפלקציה') + '</button></p>'
+      + '<p>' + (a.reflectOpen ? '<b>הרפלקציה פתוחה</b> לכל הצוותים.' : '<b>הרפלקציה סגורה.</b>') + ' <button class="crd-link" id="rfo">' + (a.reflectOpen ? 'סגירת הרפלקציה' : 'פתיחת הרפלקציה') + '</button></p>'
       + '<div class="dlm-steps" role="tablist">' + tabs.map((t) => '<button type="button" data-tab="' + t[0] + '"' + (S.tab === t[0] ? ' aria-current="step"' : '') + '>' + t[1] + '</button>').join('') + '</div></div><div id="tab"></div>';
     $('#all').onclick = list;
     $('#rfo').onclick = async () => { try { await call('f.update', { id: a.id, reflectOpen: !a.reflectOpen }); open(a.id); } catch (e) { U.say(e.message); } };
@@ -225,7 +225,7 @@
       + '<label for="se">מספר אישור ועדת האתיקה (רשות)</label><input type="text" id="se" value="' + esc(a.research.ethics || '') + '">'
       + '<label for="sc">פרטי קשר לשאלות על המחקר (רשות)</label><input type="text" id="sc" value="' + esc(a.research.contact || '') + '">'
       + '<label style="font-weight:400"><input type="checkbox" id="sr"' + (a.research.enabled ? ' checked' : '') + '> הפעילות מלווה במחקר</label>'
-      + '<label style="font-weight:400"><input type="checkbox" id="sro"' + (a.reflectOpen ? ' checked' : '') + '> הרפלקציה פתוחה לכל הצוותים</label><p class="dlm-hint">הרפלקציה נכתבת בשיעור הבא. עד שפותחים אותה, הצוותים לא רואים אותה.</p>'
+      + '<label style="font-weight:400"><input type="checkbox" id="sro"' + (a.reflectOpen ? ' checked' : '') + '> הרפלקציה פתוחה לכל הצוותים</label><p class="dlm-hint">פתוחה מראש. אפשר לסגור אותה, ואז הצוותים לא רואים אותה.</p>'
       + '<p><button class="dlm-btn main" id="ss">שמירה</button></p><div id="sm"></div></div>'
       + (a.isOwner ? '<div class="dlm-card"><h3>שותפות</h3><p class="dlm-hint">החוקרות השותפות (איבנה, עינת ויעל) נכנסות לפעילות עם קוד שותפות, ורואות את כל הכיתות והצוותים.</p>'
         + (a.coCode ? '<p>קוד השותפות: <b class="dlm-code" dir="ltr">' + esc(a.coCode) + '</b></p>' : '') + '<button class="dlm-btn" id="co">' + (a.coCode ? 'קוד שותפות חדש' : 'הפקת קוד שותפות') + '</button> <span class="dlm-hint">שותפות: ' + a.cofacs + '</span></div>'
