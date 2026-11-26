@@ -363,6 +363,25 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
     }
 
     // ════════ צוותים ════════
+    // כניסה בקוד צוות בלבד (26/11/2026: "זה מלחיץ ועוד פרט לזכור"): קוד צוות מוכן (מכללה, כיתה, צוות; למשל 214) מוביל לכיתה שלו.
+    // רק בפעילות פתוחה, לא בפעילות בדיקה, ורק כשהקוד שייך לכיתה אחת בלבד
+    if (op === 'p.findTeam') {
+      const tc = String(d.tcode || '').trim();
+      if (!/^([1-9]{3}|[1-9]{2}1[0-5])$/.test(tc)) throw new CrdError('קוד הצוות לא נמצא. אפשר לבדוק את המספר שוב', 404);
+      const keys = (await store.list('crtc:', { keysOnly: true })).map((r) => r.key || r).filter((k) => String(k).endsWith(':' + tc));
+      const hits = [];
+      for (const k of keys) {
+        const aid = String(k).slice(5, -(tc.length + 1));
+        const a = await store.get('cra:' + aid);
+        if (!a || expired(a) || a.status !== 'open' || /7777|בדיקה/.test(a.title || '')) continue;
+        const ref = await store.get(k); const t = ref && await store.get('crt:' + aid + ':' + ref.t);
+        const c = t && a.classes.find((x) => x.id === t.classId);
+        if (c && !/בדיקה/.test(c.name)) hits.push(c.code);
+      }
+      if (!hits.length) throw new CrdError('קוד הצוות לא נמצא. אפשר לבדוק את המספר שוב', 404);
+      if (hits.length > 1) throw new CrdError('הקוד הזה קיים ביותר מכיתה אחת. אפשר לסרוק את ה־QR של הכיתה', 409);
+      return [200, { code: hits[0] }];
+    }
     if (op === 'p.class') {
       const r = await store.get('crj:' + String(d.code || '').toUpperCase().trim());
       if (!r) throw new CrdError('קוד הכיתה לא נמצא. אפשר לסרוק שוב את ה־QR', 404);

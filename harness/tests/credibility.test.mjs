@@ -337,3 +337,13 @@ test('ייצוא לפי מכללה וכיתה', () => {
   const r = M.checksRows({ teams: [{ className: 'גורדון · כיתה 2', code: '2210', summary: [{ title: 'x', ext: 0, turns: 0 }] }] });
   assert.deepEqual(r[1].slice(0, 3), ['גורדון', 'כיתה 2', '2210']);
 });
+
+test('כניסה בקוד צוות בלבד: הקוד מוביל לכיתה שלו', async () => {
+  const E = await setup();
+  await E.fac('f.teamsMake', { id: E.A.id, classId: E.c1.id, college: '2', cls: '1', n: 4 });
+  const [s, r] = await E.run('p.findTeam', { tcode: '214' });
+  assert.equal(s, 200); assert.equal(r.code, E.c1.code);
+  const [s2] = await E.run('p.findTeam', { tcode: '299' }); assert.equal(s2, 404);
+  await E.fac('f.status', { id: E.A.id, status: 'closed' });
+  const [s3] = await E.run('p.findTeam', { tcode: '214' }); assert.equal(s3, 404, 'closed activity');
+});
