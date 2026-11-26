@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl" data-no-topbar data-no-theme>
+<head>
+<meta charset="UTF-8">
+<link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png"><link rel="apple-touch-icon" href="/apple-touch-icon.png"><meta name="theme-color" content="#1d3f63">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>בדיקת אמינות של מקורות: השאלונים</title>
+<!-- תצוגה של השאלונים (26/11/2026, הערה על המצגת: "קישור לשאלון - שהסטודנטיות יראו איך הוא נראה"). פתוח לכולם, בלי כניסה; שום דבר לא נשלח ולא נשמר. הנוסח מ-credibility-model.js. -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Assistant:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="lib/credibility.css">
+<script src="lib/credibility-model.js"></script>
+<style>
+  *{box-sizing:border-box}
+  body{margin:0;font-family:Assistant,Arial,sans-serif;background:#f4f7f9;color:#1f2a33;line-height:1.55}
+  main{max-width:760px;margin:0 auto;padding:1rem}
+  section{background:#fff;border:1px solid #e3e7eb;border-top:2px solid #2a9d8f;border-radius:14px;padding:1rem 1.1rem;margin:0 0 1rem}
+  h1{font-family:Fredoka,Assistant,sans-serif;font-weight:600;color:#1d3f63;font-size:1.6rem;margin:.2rem 0 .4rem}
+  h2{font-family:Fredoka,Assistant,sans-serif;font-weight:500;color:#1d3f63;font-size:1.3rem;margin:.1rem 0 .4rem}
+  h3{font-family:Fredoka,Assistant,sans-serif;font-weight:500;color:#1d3f63;font-size:1.1rem;margin:1.2rem 0 .3rem}
+  .hint{color:#5b6576;margin:.2rem 0 .6rem}
+  .view{background:#f4f8fb;border-right:3px solid #1d3f63;padding:.5rem .8rem;border-radius:6px}
+  label.q{display:block;font-weight:600;margin:1rem 0 .3rem}
+  textarea{width:100%;font:inherit;border:1px solid #d5dbe4;border-radius:10px;padding:.5rem .7rem}
+  fieldset.opts{border:0;padding:0;margin:1rem 0}
+  fieldset.opts legend{font-weight:600;padding:0;margin-bottom:.3rem}
+  fieldset.opts label{margin-left:1.2rem}
+</style>
+</head>
+<body class="crd-page">
+<main id="app"></main>
+<script>
+(function () {
+  const M = window.SBE_CRED, esc = M.esc;
+  function att(pfx, items) {
+    items = items || M.ATTITUDES;
+    return '<div class="crd-att"><div class="crd-att-head" aria-hidden="true"><span class="crd-att-hq"></span><div class="crd-att-o">' + M.ATT_SCALE.map((o) => '<span class="crd-att-hl">' + esc(o[1]) + '</span>').join('') + '</div></div>'
+      + items.map((q, i) => '<fieldset class="crd-att-q"><legend><span class="crd-att-n">' + (i + 1) + '</span> ' + esc(q.t) + '</legend><div class="crd-att-o">'
+        + M.ATT_SCALE.map((o) => '<label title="' + esc(o[1]) + '"><input type="radio" name="' + pfx + q.k + '" value="' + o[0] + '"><span>' + o[0] + '</span><i class="crd-att-sr">' + esc(o[1]) + '</i></label>').join('') + '</div></fieldset>').join('') + '</div>';
+  }
+  const refl = M.REFLECT.map((q) => q.items ? '<h3>' + esc(q.t) + '</h3>' + att('rf-' + q.k + '-', q.items)
+    : q.opts ? '<fieldset class="opts"><legend>' + esc(q.t) + '</legend>' + q.opts.map((o) => '<label><input type="radio" name="rf-' + q.k + '"> ' + esc(o[1]) + '</label>').join('') + '</fieldset>'
+    : '<label class="q">' + esc(q.t) + ' <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea rows="3"></textarea>').join('');
+  document.getElementById('app').innerHTML = '<h1>בדיקת אמינות של מקורות: השאלונים</h1><p class="view">תצוגה בלבד: מה שמסמנים כאן לא נשלח ולא נשמר.</p>'
+    + '<section><h2>' + esc(M.ATT.pre) + '</h2><p class="hint">' + esc(M.ATT.note) + '</p>' + att('pre-')
+    + '<label class="q">' + esc(M.INITIAL.t) + ' <span class="crd-min">' + esc(M.REFLECT_MIN) + '</span></label><textarea rows="4"></textarea></section>'
+    + '<section><h2>' + esc(M.ATT.post) + '</h2>' + att('post-') + '</section>'
+    + '<section><h2>רפלקציה</h2>' + refl + '</section>';
+})();
+</script>
+</body>
+</html>
