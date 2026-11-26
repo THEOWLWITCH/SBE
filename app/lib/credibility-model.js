@@ -89,15 +89,29 @@
     { k: 'other', t: 'אחר' }
   ];
   const REFLECT = [
-    { k: 'feel', t: 'מה אני מרגישה לגבי תהליך הבדיקה?' },
-    { k: 'think', t: 'מה אני חושבת על תהליך הבדיקה?' },
+    // רגשות וחשיבה: היגדים עם ציונים כמו בשאלון העמדות (26/11/2026: "עכשיו יהיו היגדים עם ציונים כמו שאלון העמדות. תן 6 היגדים לרגשות / 6 היגדים לחשיבה / השאר קלט לאמירה חופשית")
+    { k: 'feel', t: 'מה אני מרגישה לגבי תהליך הבדיקה?', items: [
+      { k: 'f1', t: 'תהליך הבדיקה עורר בי סקרנות.' },
+      { k: 'f2', t: 'במהלך הבדיקה חשתי ביטחון בשיקול הדעת שלי.' },
+      { k: 'f3', t: 'תהליך הבדיקה עורר בי תסכול.' },
+      { k: 'f4', t: 'חשתי בלבול מול מידע סותר.' },
+      { k: 'f5', t: 'חשתי חשדנות כלפי מקורות שבעבר סמכתי עליהם.' },
+      { k: 'f6', t: 'חשתי הנאה מהעבודה המשותפת בצוות.' },
+      { k: 'f7', t: 'אני שמחה שלמדתי איך לבדוק' }] },
+    { k: 'think', t: 'מה אני חושבת על תהליך הבדיקה?', items: [
+      { k: 't1', t: 'תהליך הבדיקה עזר לי להבחין בין מקור אמין למקור שאינו אמין.' },
+      { k: 't2', t: 'הבדיקה בעזרת ה־AI תרמה לשיקול הדעת שלי.' },
+      { k: 't3', t: 'ההצלבה עם מקורות נוספים שינתה את ההערכה שלי למקור.' },
+      { k: 't4', t: 'תהליך הבדיקה ארוך מדי לשימוש ביום־יום.' },
+      { k: 't5', t: 'אשתמש בתהליך כזה גם מחוץ לקורס.' },
+      { k: 't6', t: 'אוכל ללמד תלמידים לבדוק מקורות בדרך הזו.' }] },
     { k: 'changed', t: 'האם חל שינוי בעמדתי', opts: [['yes', 'כן'], ['no', 'לא']] },
     { k: 'why', t: 'אם כן - מה הביא לשינוי בעמדתי?', when: ['yes'] },
     { k: 'could', t: 'אם לא - מה יכול היה לשנות את עמדתך?', when: ['no'] },
     { k: 'free', t: 'רפלקציה חופשית על תהליך הלמידה' }
   ];
   const REFLECT_MIN = 'כתבי לפחות 3 משפטים';
-  const REFLECT_NOTE = 'כתבו על מה שקרה לכם ולצוות בפועל. אין תשובות רצויות: אפשר לכתוב גם שלא השתנה דבר, שלא השתכנעתם, או שהתהליך היה מתסכל.';
+  const REFLECT_NOTE = 'מילוי אישי';
   // ניתוח הרפלקציה בידי ה־AI (17/11/2026: "ברור שאת מנתחת לפי הקריטריונים שנקבעו"): קטגוריות הפתיחה של הניתוח התמטי
   // בהצעת המחקר (סעיף ט), ורמה מוצעת לפי קריטריון "רפלקציה אישית" במחוון. הרמה מוצגת רק למרצה, כהצעה.
   const REFLECT_CRITERIA = [
@@ -124,9 +138,21 @@
     const r = ctx.reflect || {}, L = [];
     if (ctx.dilemma) L.push('הדילמה: ' + ctx.dilemma);
     if (ctx.initial) L.push('העמדה הראשונית (על ספקולציות, פייק ניוז, קונספירציות ודיסאינפורמציה בתקשורת, ברשתות החברתיות ובעיתונות): ' + ctx.initial);
-    for (const q of REFLECT) { const v = r[q.k]; if (!v) continue; L.push(q.t + ' ' + (q.opts ? ((q.opts.find((o) => o[0] === v) || [, v])[1]) : v)); }
+    for (const q of REFLECT) { const v = r[q.k]; if (!v) continue; L.push(q.t + (q.items ? '\n' : ' ') + reflectValue(q, v)); }
     if (ctx.checks) L.push('הבדיקות של הצוות (ציון ראשון של ה־AI / ציון הצוות / ציון חוזר): ' + ctx.checks);
     return L.join('\n');
+  }
+  // תשובה לשאלת רפלקציה כטקסט: היגדים עם הציון, בחירה, או מה שנכתב
+  function reflectValue(q, v) {
+    if (q.items && typeof v !== 'object') return String(v || '');
+    if (q.items) return q.items.filter((i) => v && v[i.k]).map((i) => i.t + ' ' + v[i.k] + ' (' + ((ATT_SCALE.find((o) => o[0] === Number(v[i.k])) || [])[1] || '') + ')').join('\n');
+    if (q.opts) return (q.opts.find((o) => o[0] === v) || [, v])[1];
+    return v;
+  }
+  function cleanScale(q, v) {
+    if (!v || typeof v !== 'object') return null;
+    const r = {}; for (const i of q.items) { const n = Number(v[i.k]); if (![1, 2, 3, 4, 5].includes(n)) return null; r[i.k] = n; }
+    return r;
   }
   function cleanReflectAI(o) {
     if (!o || typeof o !== 'object') return null;
@@ -180,7 +206,7 @@
     text: [
       'העבודה בכלי היא חלק מהקורס. בנוסף, אנחנו חוקרות איך סטודנטים וסטודנטיות להוראה בודקים אמינות של מקורות בעזרת AI.',
       'אם תסכימו, נשתמש בתוצרים שלכם בכלי (תיאור המקור, הציונים, פריטי המידע שמצאתם, ההערכות של המודל והרפלקציה) לצורך המחקר, בלי שמות ובלי פרטים מזהים.',
-      'הרפלקציה משותפת עם הצוות, וה־AI מנתח אותה לפי קריטריונים שנקבעו מראש.',
+      'הרפלקציה ושאלוני העמדות אישיים, וה־AI מנתח את הרפלקציה לפי קריטריונים שנקבעו מראש.',
       'במחקר מופיעים קודים בלבד, בלי שמות ובלי פרטים מזהים.',
       'התוכן שמעלים נשלח למודל AI לצורך הבדיקה. כדאי לא להעלות פרטים מזהים של אנשים פרטיים.'
     ],
@@ -313,6 +339,6 @@
     'נתחיל: בקש/י ממני את המקור.'
   ].join('\n');
 
-  return { esc, SCALE, GREY, FROM_OLD, validScore, levelOf, dotHTML, REMEMBER, EXAMPLES, QUESTIONS, FIELDS, EXT_KINDS, REFLECT, REFLECT_NOTE, REFLECT_MIN, INITIAL, ATT_SCALE, ATTITUDES, ATT, cleanAttitudes,
+  return { esc, SCALE, GREY, FROM_OLD, validScore, levelOf, dotHTML, REMEMBER, EXAMPLES, QUESTIONS, FIELDS, EXT_KINDS, REFLECT, REFLECT_NOTE, REFLECT_MIN, INITIAL, ATT_SCALE, ATTITUDES, ATT, cleanAttitudes, reflectValue, cleanScale,
     GRADE, gradeTotal, CONSENT, REFLECT_CRITERIA, reflectSystem, reflectText, cleanReflectAI, BASE, fieldsSystem, assessSystem, chatSystem, sourceText, inquiryText, aiText, parseJSON, cleanFields, cleanAssess, cleanChat, aboutHTML, AI_PROMPT };
 });

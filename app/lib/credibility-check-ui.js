@@ -117,7 +117,7 @@
     const refl = t.members.map((m) => { const r = d.reflections[m.id] || {}; const rf = r.reflect;
       return '<details class="dlm-card soft"><summary><b>' + esc(m.name) + '</b> ' + (m.consent === 'research' ? '✓ חתם/ה על ההסכמה' : '○ רק ללמידה (חריג)') + ' · ' + (r.initial ? 'עמדה ✓' : 'בלי עמדה') + ' · ' + (rf ? 'רפלקציה ✓' : 'עוד בלי רפלקציה') + '</summary>'
         + (r.initial ? '<h4>' + esc(M.INITIAL.h) + '</h4><p class="dlm-hint">' + esc(M.INITIAL.t) + '</p><p>' + esc(r.initial.text) + '</p>' : '')
-        + (rf ? M.REFLECT.map((q) => rf[q.k] ? '<h4>' + esc(q.t) + '</h4><p>' + esc(q.opts ? (q.opts.find((o) => o[0] === rf[q.k]) || [])[1] : rf[q.k]) + '</p>' : '').join('') : '') + reflAI(r.ai) + '</details>'; }).join('');
+        + (rf ? M.REFLECT.map((q) => rf[q.k] ? '<h4>' + esc(q.t) + '</h4><p>' + esc(M.reflectValue(q, rf[q.k])).replace(/\n/g, '<br>') + '</p>' : '').join('') : '') + reflAI(r.ai) + '</details>'; }).join('');
     function reflAI(ai) {
       if (!ai) return '';
       const lv = (v) => (M.GRADE.levels.find((l) => l[0] === v) || [, ''])[1];
