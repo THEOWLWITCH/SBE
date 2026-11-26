@@ -282,7 +282,7 @@
   function checksList() {
     const ks = S.data.checks;
     // מקור חדש קודם, והבדיקות הקיימות אחריו (26/11/2026: "כשנכנסים שוב בנייד - נשארים על אותה ידיעה קודמת ואי אפשר לבחור דילמה חדשה")
-    return '<div class="dlm-card"><h2>המקורות שאנחנו בודקים</h2>' + (ks.length ? '' : gift())
+    return '<div class="dlm-card"><h2>המקורות שאנחנו בודקים</h2>' + (ks.length ? '' : giftLink())
       + (ks.length ? '<h3>הבדיקות שלנו</h3><div class="crd-list">' + ks.map((k) => '<button type="button" class="crd-item" data-open="' + esc(k.id) + '"><b>' + esc(k.title || 'מקור') + '</b>' + U.scoresRow(k) + '<span class="dlm-hint">' + stageLabel(k) + ' · להמשך הבדיקה</span></button>').join('') + '</div>'
         + '<p class="dlm-hint">אפשר לבדוק כמה מקורות: בוחרים כאן דילמה חדשה מהמאגר או מקור משלכם.</p>'
         : '<p>עוד לא התחלנו. בוחרים ידיעה מהמאגר או מקור משלכם, ואז ממלאים את כל מה שידוע עליו ונותנים ציון.</p>')
@@ -499,6 +499,10 @@
     }).join('') + gift() + '</div>';
   }
   // מתנה: הפנקס לנייד, לפני הבדיקה הראשונה ואחרי כל השאלונים (26/11/2026: "תוסיף את התמונה עם הברכה והקישור לפני תחילת הבדיקה ובסוף אחרי שהן מילאו את כל השאלונים")
+  // בהתחלה רק קישור קטן ובולט, כדי לא לבלבל את רצף הפעילות (26/11/2026: "בהתחלה זה גדול מידי ועלול לבלבל. כתוב: להורדת מחוון הבדיקה")
+  function giftLink() {
+    return '<a class="crd-giftlink" href="credibility-notebook.html" target="_blank" rel="noopener"><img src="assets/credibility-notebook/gift.webp" alt="" aria-hidden="true">להורדת מחוון הבדיקה</a>';
+  }
   function gift() {
     return '<a class="crd-gift" href="credibility-notebook.html" target="_blank" rel="noopener"><img src="assets/credibility-notebook/gift.webp" alt="מתנה קטנה לדרך: פנקס לבדיקת אמינות של מקורות. אנחנו מקוות שבכל ידיעה שתפגשו, תזכרו לעצור, לשאול ולבדוק."></a>';
   }
