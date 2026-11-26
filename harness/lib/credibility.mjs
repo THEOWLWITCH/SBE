@@ -491,6 +491,8 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
             k.team = { score: s, why: txt(d.why, 'הנימוק', LIM.text, true), basis: txt(d.basis, 'על מה זה נשען', LIM.text), at: now(), by };
             stamp(k, 'team', by);
           } else if (kind === 'remove') {
+            // התחלה מחדש: הבדיקה יורדת מהמסך של הצוות, אבל נשמרת לייצוא המחקרי (removed)
+            ks.removed = (ks.removed || []).concat([{ ...k, removedAt: now(), removedBy: by }]).slice(-40);
             ks.checks = ks.checks.filter((x) => x.id !== k.id);
           } else throw new CrdError('פעולה לא מוכרת');
         }, () => ({ checks: [] }));
@@ -544,18 +546,30 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
 
 // ── ייצוא מחקרי: רק מי שהסכים/ה. תוצר צוותי רק אם כל חברי הצוות הסכימו. בלי שמות: קודים. ──
 export async function researchExport(store, a) {
-  const teams = await teamsOf(store, a), out = { activity: { id: a.id, title: a.title, dilemma: a.dilemma, exportedAt: now() }, classes: a.classes.map((c, i) => ({ id: 'C' + (i + 1), name: c.name })), teams: [] };
+  // זיהוי (26/11/2026: "תוודא שכל הנתונים נשמרים... בחלוקה הנכונה והמזוהה"): כיתה לפי הסדר ובשמה, צוות לפי קוד הצוות שהמשתתפים הקלידו (למשל 214),
+  // ומשתתף/ת לפי קוד הצוות וראשי התיבות. בדיקות שהצוות התחיל מחדש נשמרות בנפרד (removedChecks)
+  const order = Object.fromEntries(a.classes.map((c, i) => [c.id, i]));
+  const teams = (await teamsOf(store, a)).sort((x, y) => (order[x.classId] ?? 99) - (order[y.classId] ?? 99) || String(x.tcode || '').localeCompare(String(y.tcode || ''), 'en', { numeric: true }) || String(x.createdAt || '').localeCompare(String(y.createdAt || '')));
+  const out = { activity: { id: a.id, title: a.title, dilemma: a.dilemma, exportedAt: now() }, classes: a.classes.map((c, i) => ({ id: 'C' + (i + 1), name: c.name })), teams: [] };
   const cmap = Object.fromEntries(a.classes.map((c, i) => [c.id, 'C' + (i + 1)]));
+  const cname = Object.fromEntries(a.classes.map((c) => [c.id, c.name]));
+  const clean = (k) => ({ ...k, fileId: undefined, by: undefined, removedBy: undefined, log: (k.log || []).map((l) => ({ at: l.at, kind: l.kind })), chat: (k.chat || []).map((m) => ({ role: m.role, text: m.text, at: m.at })), external: (k.external || []).map((e) => ({ ...e, by: undefined })) });
   let ti = 0;
   for (const t of teams) {
     ti++;
-    const all = t.members.every((m) => m.consent === 'research');
+    const tcode = t.tcode || ('T' + ti);
+    const all = t.members.length > 0 && t.members.every((m) => m.consent === 'research');
     const ks = (await store.get('crs:' + a.id + ':' + t.id)) || { checks: [] };
     const rr = (await store.get('crr:' + a.id + ':' + t.id)) || { members: {} };
-    const ppl = t.members.map((m, i) => ({ code: 'T' + ti + '-P' + (i + 1), consent: m.consent, ...(m.consent === 'research' ? { pre: (rr.members[m.id] || {}).pre || null, post: (rr.members[m.id] || {}).post || null, initial: (rr.members[m.id] || {}).initial || null, reflect: (rr.members[m.id] || {}).reflect || null, reflectAI: (rr.members[m.id] || {}).ai || null } : {}) }));
-    out.teams.push({ code: 'T' + ti, class: cmap[t.classId], size: t.members.length, allConsented: all, members: ppl,
-      checks: all ? ks.checks.map((k) => ({ ...k, fileId: undefined, by: undefined, log: k.log.map((l) => ({ at: l.at, kind: l.kind })), chat: k.chat.map((m) => ({ role: m.role, text: m.text, at: m.at })), external: k.external.map((e) => ({ ...e, by: undefined })) })) : null,
-      summary: all ? ks.checks.map(checkSummary).map((s) => ({ ...s, fileName: undefined })) : null });
+    const ppl = t.members.map((m, i) => {
+      const r = rr.members[m.id] || {};
+      return { code: tcode + '-P' + (i + 1), consent: m.consent, joinedAt: m.at || null,
+        ...(m.consent === 'research' ? { initials: m.name, pre: r.pre || null, initial: r.initial || null, post: r.post || null, reflect: r.reflect || null, reflectAI: r.ai || null } : {}) };
+    });
+    out.teams.push({ code: tcode, name: t.name, class: cmap[t.classId], className: cname[t.classId] || '', size: t.members.length, allConsented: all, members: ppl,
+      checks: all ? ks.checks.map(clean) : null,
+      summary: all ? ks.checks.map(checkSummary).map((s) => ({ ...s, fileName: undefined })) : null,
+      removedChecks: all ? (ks.removed || []).map(clean) : null });
   }
   return out;
 }

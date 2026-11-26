@@ -168,10 +168,17 @@ test('research export: only consented people, team work only when all consented,
   const a = await E.store.get('cra:' + E.A.id);
   const x = await researchExport(E.store, a);
   const s = JSON.stringify(x);
-  assert.ok(!s.includes('משתתפת'), 'no names');
+  // ראשי התיבות רק של מי שהסכים/ה למחקר (המשתתפים כותבים ראשי תיבות בלבד)
+  const tpx = x.teams.find((t) => !t.allConsented); assert.equal(tpx.members[1].initials, undefined, 'no initials for learning-only'); assert.ok(tpx.members[0].initials);
+  assert.equal(x.teams[0].members[0].initials, all.r.team.members[0].name);
+  assert.ok(x.teams.every((t) => t.className === 'גורדון' || t.className), 'class name');
   assert.ok(!s.includes('פרטי'), 'learning-only reflection excluded');
   const tp = x.teams.find((t) => !t.allConsented); assert.equal(tp.checks, null); assert.equal(tp.summary, null);
   const ta = x.teams.find((t) => t.allConsented); assert.equal(ta.checks.length, 1);
+  const [, k2] = await all.P('p.check', { kind: 'new', url: 'https://example.org/y', title: 'שני' });
+  await all.P('p.check', { kind: 'remove', id: k2.id });
+  const x2 = await researchExport(E.store, await E.store.get('cra:' + E.A.id));
+  const ta2 = x2.teams.find((t) => t.allConsented); assert.equal(ta2.checks.length, 1); assert.equal(ta2.removedChecks.length, 1, 'restart keeps the check for research');
 });
 
 test('model gate: only the team page, only while open', async () => {

@@ -193,15 +193,31 @@
       + ex('זה דיווח עצמי. המשמעות נמצאת בתשובות הפתוחות: מה הביא לשינוי, ומה היה יכול לשנות את הדעה. אפשר לקרוא אותן בלשונית הצוותים, או בקובץ הייצוא.')
       + '<h4>בדיקות לקריאה לעומק</h4><ul>' + checks.filter((k) => has(k, 'first') && has(k, 'team') && Math.abs(k.first.score - k.team.score) >= 2).map((k) => '<li>' + esc(k._team.name) + ': ' + esc(k.title) + ' (AI ' + k.first.score + ', צוות ' + k.team.score + ')</li>').join('') + '</ul>'
       + ex('בדיקות שבהן הצוות והמודל רחוקים זה מזה בשתי רמות או יותר. אלה בדרך כלל המקרים המעניינים ביותר לניתוח.')
-      + '<p><button class="dlm-btn" id="exp">⬇ ייצוא מחקרי (JSON)</button> <button class="dlm-btn" id="csv">⬇ טבלת בדיקות (CSV, נפתח באקסל)</button></p><p class="dlm-hint">הייצוא כולל רק משתתפים שהסכימו למחקר, בלי שמות. תוצר צוותי נכלל רק אם כל חברי הצוות הסכימו.</p></div>';
+      + '<p><button class="dlm-btn" id="exp">⬇ ייצוא מחקרי (JSON)</button> <button class="dlm-btn" id="csv">⬇ טבלת בדיקות (CSV, נפתח באקסל)</button> <button class="dlm-btn" id="csvp">⬇ טבלת משתתפים: שאלונים ורפלקציה (CSV)</button></p><p class="dlm-hint">הייצוא כולל רק משתתפים שהסכימו למחקר, עם ראשי התיבות בלבד. כל שורה מזוהה בכיתה, בקוד הצוות ובראשי התיבות. תוצר צוותי נכלל רק אם כל חברי הצוות הסכימו.</p></div>';
     $('#onlyR').onchange = (e) => { S.onlyResearch = e.target.checked; findingsTab(); };
     const dl = (name, text, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
     $('#exp').onclick = async () => { try { dl('credibility-research.json', JSON.stringify(await call('f.export', { id: S.a.id }), null, 2), 'application/json'); } catch (e) { U.say(e.message); } };
+    // טבלת משתתפים (26/11/2026): שורה לכל משתתף/ת שהסכים/ה, עם שאלון העמדות הראשוני, העמדה, השאלון המסכם והרפלקציה
+    $('#csvp').onclick = async () => {
+      try {
+        const x = await call('f.export', { id: S.a.id });
+        const AK = M.ATTITUDES.map((q) => q.k), RQ = M.REFLECT;
+        const RK = []; RQ.forEach((q) => { if (q.items) q.items.forEach((it) => RK.push([q.k, it.k])); else RK.push([q.k, null]); });
+        const head = ['class', 'class_name', 'team', 'participant', 'initials', 'pre_at'].concat(AK.map((k) => 'pre_' + k), ['initial_position', 'post_at'], AK.map((k) => 'post_' + k), ['reflect_at'], RK.map((r) => 'reflect_' + (r[1] || r[0])), ['ai_level']);
+        const rows = [head];
+        x.teams.forEach((t) => t.members.filter((m) => m.consent === 'research').forEach((m) => {
+          const pre = m.pre || {}, post = m.post || {}, rf = m.reflect || {};
+          rows.push([t.class, t.className || '', t.code, m.code, m.initials || '', pre.at || ''].concat(AK.map((k) => pre[k] ?? ''), [(m.initial || {}).text || '', post.at || ''], AK.map((k) => post[k] ?? ''), [rf.at || ''],
+            RK.map((r) => { const v = rf[r[0]]; return r[1] ? (v && typeof v === 'object' ? (v[r[1]] ?? '') : '') : (v && typeof v === 'object' ? '' : (v ?? '')); }), [(m.reflectAI || {}).level ?? '']));
+        }));
+        dl('credibility-participants.csv', '\ufeff' + rows.map((r) => r.map((v) => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n'), 'text/csv');
+      } catch (e) { U.say(e.message); }
+    };
     $('#csv').onclick = async () => {
       try {
         const x = await call('f.export', { id: S.a.id });
-        const rows = [['class', 'team', 'source', 'ai_first', 'team_score', 'ai_final', 'external_sources', 'team_messages', 'done']];
-        x.teams.forEach((t) => (t.summary || []).forEach((s) => rows.push([t.class, t.code, s.title || '', s.first ?? '', s.team ?? '', s.final ?? '', s.ext, s.turns, s.done ? 1 : 0])));
+        const rows = [['class', 'class_name', 'team', 'source', 'bank_item', 'ai_first', 'team_score', 'ai_final', 'external_sources', 'team_messages', 'done']];
+        x.teams.forEach((t) => (t.summary || []).forEach((s) => rows.push([t.class, t.className || '', t.code, s.title || '', s.bank || '', s.first ?? '', s.team ?? '', s.final ?? '', s.ext, s.turns, s.done ? 1 : 0])));
         dl('credibility-checks.csv', '﻿' + rows.map((r) => r.map((v) => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n'), 'text/csv');
       } catch (e) { U.say(e.message); }
     };
