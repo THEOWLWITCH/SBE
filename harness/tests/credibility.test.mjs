@@ -326,6 +326,14 @@ test('מרכז המחקר: רשימת הפעילויות עם התקדמות, ש
   const x = await researchExport(E.store, await E.store.get('cra:' + E.A.id));
   assert.equal(x.activity.studyId, 'study-1');
   const pr = M.participantsRows(x); assert.equal(pr.length, 3); assert.ok(pr[0].includes('initials'));
-  const cr = M.checksRows(x); assert.equal(cr.length, 2); assert.equal(cr[1][3], x.teams.find((t) => t.summary && t.summary.length).code);
+  const cr = M.checksRows(x); assert.equal(cr.length, 2); assert.equal(cr[1][2], x.teams.find((t) => t.summary && t.summary.length).code);
   assert.ok(M.toCsv(pr).startsWith('﻿'));
+});
+
+test('ייצוא לפי מכללה וכיתה', () => {
+  const M = require('../../app/lib/credibility-model.js');
+  assert.equal(M.collegeOf('גורדון · כיתה 3'), 'גורדון'); assert.equal(M.classOf('גורדון · כיתה 3'), 'כיתה 3');
+  assert.equal(M.classOf('אורנים'), 'כיתה 1'); assert.ok(M.isTestClass('כיתת בדיקה'));
+  const r = M.checksRows({ teams: [{ className: 'גורדון · כיתה 2', code: '2210', summary: [{ title: 'x', ext: 0, turns: 0 }] }] });
+  assert.deepEqual(r[1].slice(0, 3), ['גורדון', 'כיתה 2', '2210']);
 });
