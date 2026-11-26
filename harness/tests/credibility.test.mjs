@@ -74,7 +74,7 @@ test('team entry: up to 10 teams per class, consent per member, join only with t
 });
 
 const P8 = Object.fromEntries(['a1','a2','a3','a4','a5','a6','a7','a8'].map((k) => [k, 3]));
-const FEEL = { f1: 4, f2: 3, f3: 2, f4: 3, f5: 2, f6: 5 }, THINK = { t1: 4, t2: 3, t3: 4, t4: 2, t5: 3, t6: 4 };
+const FEEL = { f1: 4, f2: 3, f3: 2, f4: 3, f5: 2, f6: 5, f7: 2 }, THINK = { t1: 4, t2: 3, t3: 4, t4: 2, t5: 3, t6: 4 };
 test('separation: a team sees only itself; reflections are shared within the team, AI level only to the lecturer', async () => {
   const E = await setup();
   const t1 = await E.team(E.c1, 'צוות 1'), t2 = await E.team(E.c1, 'צוות 2');
