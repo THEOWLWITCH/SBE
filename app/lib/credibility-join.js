@@ -72,8 +72,11 @@
     const a = info.activity;
     $('#topTitle').textContent = a.title;
     const mine = getMine();
+    if (testAct()) { if (!mine || !mine.pre) return personalPre(info); return newTeam(info); }
+    // 26/11/2026: "זה ממש חשוב שהתהליך יהיה פשוט: ברקוד >> קוד צוות. זהו"
+    // כשבכיתה יש צוותים מוכנים: ראשי תיבות וקוד צוות בלבד; השאלון ממולא בתוך הצוות
+    if (info.teams.length) return quickJoin(info);
     if (!mine || !mine.pre) return personalPre(info);
-    if (testAct()) return newTeam(info);
     app.innerHTML = '<div class="dlm-card"><h1>' + esc(a.title) + '</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
       + (a.dilemma ? '<p><b>הדילמה:</b> ' + esc(a.dilemma) + '</p>' : '')
       + (a.status !== 'open' ? msg('הפעילות סגורה כרגע. המרצה תפתח אותה.') : '')
@@ -88,6 +91,27 @@
       catch (e) { $('#jm').innerHTML = msg(e.message, 'err'); }
     };
     const nb = $('#new'); if (nb) nb.onclick = () => newTeam(info);
+  }
+  function quickJoin(info) {
+    const a = info.activity, mine = getMine() || {};
+    app.innerHTML = '<div class="dlm-card crd-quick"><h1>' + esc(a.title) + '</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
+      + (a.status !== 'open' ? msg('הפעילות סגורה כרגע. המרצה תפתח אותה.') : '')
+      + '<label for="mi">ראשי התיבות שלי</label><input type="text" id="mi" maxlength="12" placeholder="למשל: י.ש" style="max-width:12rem" value="' + esc(mine.name || '') + '">'
+      + '<label for="tc">קוד הצוות</label><input type="text" id="tc" dir="ltr" autocomplete="off" inputmode="numeric" maxlength="6" placeholder="למשל: 113" style="max-width:10rem">'
+      + '<p><button class="dlm-btn main" id="join">כניסה לצוות</button></p><div id="jm"></div></div>';
+    const go = async () => {
+      const name = $('#mi').value.trim(), tcode = $('#tc').value.trim();
+      if (!name) { $('#jm').innerHTML = msg('כדי להמשיך, אפשר לכתוב את ראשי התיבות שלך.', 'err'); return; }
+      if (!tcode) { $('#jm').innerHTML = msg('כדי להמשיך, אפשר לכתוב את קוד הצוות.', 'err'); return; }
+      try {
+        const r = await U.api('p.teamJoin', { code: classCode, tcode, name });
+        putMine(Object.assign(getMine() || {}, { name }));
+        S.cred = { a: r.a, t: r.t, key: r.key }; saveCred(classCode, S.cred);
+        const hit = (r.team && r.team.members || []).find((m) => normName(m.name) === normName(name)); if (hit) setMe(hit.id);
+        load();
+      } catch (e) { $('#jm').innerHTML = msg(e.message, 'err'); }
+    };
+    $('#join').onclick = go; $('#tc').onkeydown = (e) => { if (e.key === 'Enter') go(); };
   }
   function personalPre(info, edit) {
     const a = info.activity, mine = getMine() || {};
