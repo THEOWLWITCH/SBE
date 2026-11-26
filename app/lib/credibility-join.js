@@ -34,10 +34,25 @@
 
   // ── כניסה ──
   async function start() {
+    // בלי סריקה: ראשי תיבות וקוד צוות בלבד (26/11/2026: "זה מלחיץ ועוד פרט לזכור"). הקוד מוביל לכיתה שלו (p.findTeam).
+    // קוד כיתה (8 תווים) או 7777 עדיין מתקבלים באותו שדה
     if (!classCode) {
-      app.innerHTML = '<div class="dlm-card"><h1>בדיקת אמינות של מקורות</h1><p>אפשר לסרוק את ה־QR שהמרצה מציגה, או להקליד את קוד הכיתה.</p>'
-        + '<label for="cc">קוד הכיתה</label><input type="text" id="cc" dir="ltr" autocomplete="off" style="max-width:14rem"> <button class="dlm-btn main" id="go">כניסה</button><div id="m"></div></div>';
-      $('#go').onclick = () => { classCode = $('#cc').value.toUpperCase().trim(); if (classCode) { history.replaceState(null, '', '?c=' + classCode); start(); } };
+      app.innerHTML = '<div class="dlm-card crd-quick"><h1>בדיקת אמינות של מקורות</h1>'
+        + '<label for="mi">ראשי התיבות שלי</label><input type="text" id="mi" maxlength="12" placeholder="למשל: י.ש" style="max-width:12rem">'
+        + '<label for="tc">קוד הצוות</label><input type="text" id="tc" dir="ltr" autocomplete="off" inputmode="numeric" maxlength="8" placeholder="למשל: 214" style="max-width:10rem">'
+        + '<p><button class="dlm-btn main" id="join">כניסה לצוות</button></p><div id="jm"></div></div>';
+      const go = async () => {
+        const name = $('#mi').value.trim(), tcode = $('#tc').value.trim().toUpperCase();
+        if (/^(7777|[A-Z0-9]{8})$/.test(tcode) && !/^\d{8}$/.test(tcode)) { classCode = tcode; history.replaceState(null, '', '?c=' + classCode); start(); return; }
+        if (!name) { $('#jm').innerHTML = msg('כדי להמשיך, אפשר לכתוב את ראשי התיבות שלך.', 'err'); return; }
+        if (!tcode) { $('#jm').innerHTML = msg('כדי להמשיך, אפשר לכתוב את קוד הצוות.', 'err'); return; }
+        try {
+          const f = await U.api('p.findTeam', { tcode });
+          classCode = f.code; history.replaceState(null, '', '?c=' + classCode);
+          await joinTeam(name, tcode);
+        } catch (e) { $('#jm').innerHTML = msg(e.message, 'err'); }
+      };
+      $('#join').onclick = go; $('#tc').onkeydown = (e) => { if (e.key === 'Enter') go(); };
       return;
     }
     // 7777: בדיקה של מנהלת המערכת, עינת ואיבנה (sys-test-7777.js, זמני)
@@ -89,6 +104,13 @@
     };
     const nb = $('#new'); if (nb) nb.onclick = () => newTeam(info);
   }
+  async function joinTeam(name, tcode) {
+    const r = await U.api('p.teamJoin', { code: classCode, tcode, name });
+    putMine(Object.assign(getMine() || {}, { name }));
+    S.cred = { a: r.a, t: r.t, key: r.key }; saveCred(classCode, S.cred);
+    const hit = (r.team && r.team.members || []).find((m) => normName(m.name) === normName(name)); if (hit) setMe(hit.id);
+    load();
+  }
   function quickJoin(info) {
     const a = info.activity, mine = getMine() || {};
     app.innerHTML = '<div class="dlm-card crd-quick"><h1>בדיקת אמינות של מקורות</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
@@ -100,13 +122,7 @@
       const name = $('#mi').value.trim(), tcode = $('#tc').value.trim();
       if (!name) { $('#jm').innerHTML = msg('כדי להמשיך, אפשר לכתוב את ראשי התיבות שלך.', 'err'); return; }
       if (!tcode) { $('#jm').innerHTML = msg('כדי להמשיך, אפשר לכתוב את קוד הצוות.', 'err'); return; }
-      try {
-        const r = await U.api('p.teamJoin', { code: classCode, tcode, name });
-        putMine(Object.assign(getMine() || {}, { name }));
-        S.cred = { a: r.a, t: r.t, key: r.key }; saveCred(classCode, S.cred);
-        const hit = (r.team && r.team.members || []).find((m) => normName(m.name) === normName(name)); if (hit) setMe(hit.id);
-        load();
-      } catch (e) { $('#jm').innerHTML = msg(e.message, 'err'); }
+      try { await joinTeam(name, tcode); } catch (e) { $('#jm').innerHTML = msg(e.message, 'err'); }
     };
     $('#join').onclick = go; $('#tc').onkeydown = (e) => { if (e.key === 'Enter') go(); };
   }
