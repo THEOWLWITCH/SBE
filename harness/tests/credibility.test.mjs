@@ -261,7 +261,7 @@ test('מאגר הידיעות: שתי קבוצות, פריטים שלמים, ט�
   const req = createRequire(import.meta.url);
   const B = req('../../app/lib/credibility-bank.js');
   assert.equal(B.GROUPS.length, 3);
-  assert.equal(B.all().length, 13);
+  assert.equal(B.all().length, 14);
   const ids = new Set();
   for (const x of B.all()) {
     assert.match(x.id, /^[a-z]\d{1,2}$/); assert.ok(!ids.has(x.id)); ids.add(x.id);
