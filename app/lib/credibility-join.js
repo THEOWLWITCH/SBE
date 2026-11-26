@@ -270,10 +270,11 @@
   }
   function checksList() {
     const ks = S.data.checks;
+    // מקור חדש קודם, והבדיקות הקיימות אחריו (26/11/2026: "כשנכנסים שוב בנייד - נשארים על אותה ידיעה קודמת ואי אפשר לבחור דילמה חדשה")
     return '<div class="dlm-card"><h2>המקורות שאנחנו בודקים</h2>'
-      + (ks.length ? '<div class="crd-list">' + ks.map((k) => '<button type="button" class="crd-item" data-open="' + esc(k.id) + '"><b>' + esc(k.title || 'מקור') + '</b>' + U.scoresRow(k) + '<span class="dlm-hint">' + stageLabel(k) + '</span></button>').join('') + '</div>'
-        + '<p class="dlm-hint">אפשר לבדוק כמה מקורות. כל בדיקה נוספת היא הזדמנות לראות מה השתפר.</p>'
-        : '<p>עוד לא התחלנו. מעלים מקור (קובץ או קישור), ואז ממלאים את כל מה שידוע עליו ונותנים ציון.</p>')
+      + (ks.length ? '<h3>הבדיקות שלנו</h3><div class="crd-list">' + ks.map((k) => '<button type="button" class="crd-item" data-open="' + esc(k.id) + '"><b>' + esc(k.title || 'מקור') + '</b>' + U.scoresRow(k) + '<span class="dlm-hint">' + stageLabel(k) + ' · להמשך הבדיקה</span></button>').join('') + '</div>'
+        + '<p class="dlm-hint">אפשר לבדוק כמה מקורות: בוחרים כאן דילמה חדשה מהמאגר או מקור משלכם.</p>'
+        : '<p>עוד לא התחלנו. בוחרים ידיעה מהמאגר או מקור משלכם, ואז ממלאים את כל מה שידוע עליו ונותנים ציון.</p>')
       + bankList()
       + '<h3>' + (window.SBE_CRED_BANK ? 'או מקור משלכם' : 'מקור חדש לבדיקה') + '</h3><div class="dlm-grid2"><div><label for="nf">העלאת קובץ</label><input type="file" id="nf" accept="image/*,application/pdf,text/plain,audio/*,video/*">'
       + '<p class="dlm-hint">תמונה, צילום מסך, PDF, טקסט, הקלטה או וידאו קצר.</p></div><div><label for="nu">או קישור</label><input type="url" id="nu" dir="ltr" placeholder="https://"></div></div>'
@@ -323,7 +324,8 @@
       : '<p>ה־AI יקרא את המקור, את הפרטים שמילאתם ואת הציון שנתתם, ויחזיר ציון 1–5, הסבר, ומה חסר כדי לדעת יותר.</p><p><button class="dlm-btn main" data-ai="first">בדיקת AI</button></p>');
     else if (st === 'inquiry') inner = inquiryHTML(k);
     else inner = finalHTML(k);
-    return '<div class="dlm-card"><p><button class="crd-link" id="backList">לכל המקורות</button></p>' + src + nav + '<div id="stage">' + inner + '</div><div id="sm"></div></div>';
+    const back = (id) => '<p class="crd-newsrc"><button type="button" class="crd-link" id="' + id + '">→ לכל המקורות</button><button type="button" class="crd-link" data-newsrc>➕ בחירת דילמה חדשה מהמאגר או מקור משלכם</button></p>';
+    return '<div class="dlm-card">' + back('backList') + src + nav + '<div id="stage">' + inner + '</div><div id="sm"></div>' + back('backList2') + '</div>';
   }
   function describeHTML(k) {
     const f = k.fields || {}, lock = !!k.first, sc = k.team ? k.team.score : null;
@@ -574,6 +576,8 @@
     app.querySelectorAll('[data-ai]').forEach((b) => { b.onclick = () => act(async () => { b.disabled = true; await runAI(k, b.dataset.ai); S.stage = b.dataset.ai === 'fields' ? 'describe' : b.dataset.ai; S.stageFor = k.id; render(); }); });
     app.querySelectorAll('[data-extdel]').forEach((b) => { b.onclick = () => act(async () => { await saveCheck('extDel', { id: k.id, extId: b.dataset.extdel }); render(); }); });
     on('#backList', () => { S.open = null; render(); });
+    on('#backList2', () => { S.open = null; render(); window.scrollTo(0, 0); });
+    app.querySelectorAll('[data-newsrc]').forEach((b) => { b.onclick = () => { S.open = null; S.stage = null; render(); const x = $('.crd-bankbox') || $('#nf'); if (x) { const d = x.querySelector && x.querySelector('details'); if (d) d.open = true; x.scrollIntoView({ block: 'start' }); } }; });
     on('#addk', () => act(async () => {
       const f = $('#nf').files[0], url = $('#nu').value.trim(), title = $('#nt').value.trim(), pasted = ($('#nx') ? $('#nx').value : '').trim();
       if (!f && !url && !pasted) throw new Error('אפשר להעלות קובץ, להדביק קישור או להדביק את הטקסט של הידיעה.');
@@ -662,5 +666,7 @@
     scrollChat();
   }
   function scrollChat() { const c = $('#chat'); if (c) c.scrollTop = c.scrollHeight; }
+  // חזרה לדף בטלפון (מהזיכרון של הדפדפן): חוזרים לרשימת המקורות, כדי שאפשר לבחור דילמה חדשה
+  window.addEventListener('pageshow', (ev) => { if (ev.persisted && S.cred && S.data) { S.open = null; S.stage = null; load(); } });
   start();
 })();
