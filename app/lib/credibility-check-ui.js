@@ -75,7 +75,7 @@
           + '<button class="crd-link" data-copy="' + esc(joinUrl(c.code).replace('credibility-join.html', 'credibility-pocket.html')) + '">העתקת קישור לגירסה לסטודנטיות.ים של הכיתה</button>'
           + '<button class="crd-link" data-big="' + esc(c.id) + '">QR גדול להקרנה</button><button class="crd-link" data-recode="' + esc(c.id) + '">קוד חדש</button><button class="crd-link" data-ren="' + esc(c.id) + '">שינוי שם</button></div>'
           + '<p class="dlm-hint">' + t.length + ' צוותים · ' + t.reduce((s, x) => s + x.members.length, 0) + ' משתתפים</p>'
-          + (t.length ? '<p class="dlm-hint">קודי הצוותים: ' + t.map((x) => esc(x.name) + ' <b dir="ltr">' + esc(x.code || '') + '</b>').join(' · ') + '</p>' : '')
+          + (t.length ? '<p class="dlm-hint">קודי הצוותים: ' + t.slice().sort((p, q) => String(p.code).localeCompare(String(q.code))).map((x) => esc(x.name) + ' <b dir="ltr">' + esc(x.code || '') + '</b>').join(' · ') + '</p>' : '')
           + '<p class="crd-mk">צוותים מוכנים עם קוד של 3 ספרות: מכללה <input type="text" inputmode="numeric" maxlength="1" class="crd-d" data-col="' + esc(c.id) + '" value="' + (a.classes.indexOf(c) + 1) + '" aria-label="ספרת המכללה"> כיתה <input type="text" inputmode="numeric" maxlength="1" class="crd-d" data-cls="' + esc(c.id) + '" value="1" aria-label="ספרת הכיתה"> <button class="crd-link" data-mk="' + esc(c.id) + '">פתיחת 7 צוותים</button></p></div><div class="dlm-qr" data-qr="' + esc(c.code) + '"></div></div></div>';
       }).join('');
     n.querySelectorAll('[data-qr]').forEach((q) => U.qr(q, joinUrl(q.dataset.qr)));
