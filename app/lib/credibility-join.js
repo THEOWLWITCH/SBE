@@ -320,8 +320,8 @@
       + (k.verify ? ' <span class="dlm-tag">' + esc({ exists: 'הקישור נפתח', not_found: 'הקישור לא נמצא', unreachable: 'הקישור לא נפתח' }[k.verify.status] || '') + '</span>' : '') + U.scoresRow(k) + '</div>' + bankStory(k);
     let inner = '';
     if (st === 'describe') inner = describeHTML(k);
-    else if (st === 'first') inner = '<h3>בדיקת AI</h3>' + (k.first ? U.assessHTML(k.first, 'ההערכה של ה־AI') + '<p><button class="dlm-btn main" data-stage="inquiry">ממשיכים לחקור</button></p>'
-      : '<p>ה־AI יקרא את המקור, את הפרטים שמילאתם ואת הציון שנתתם, ויחזיר ציון 1–5, הסבר, ומה חסר כדי לדעת יותר.</p><p><button class="dlm-btn main" data-ai="first">בדיקת AI</button></p>');
+    else if (st === 'first') inner = (k.first ? U.assessHTML(k.first, 'ההערכה של ה־AI') + '<p><button class="dlm-btn main" data-stage="inquiry">ממשיכים לחקור</button></p>'
+      : '<p>ה־AI יקרא את המקור, את הפרטים שמילאתם ואת הציון שנתתם, ויחזיר ציון 1–5, הסבר, ומה חסר כדי לדעת יותר.</p><p><button class="dlm-btn main" data-ai="first">שליחה לבדיקה</button></p>');
     else if (st === 'inquiry') inner = inquiryHTML(k);
     else inner = finalHTML(k);
     const back = (id) => '<p class="crd-newsrc"><button type="button" class="crd-link" id="' + id + '">→ לכל המקורות</button><button type="button" class="crd-link" data-newsrc>➕ בחירת דילמה חדשה מהמאגר או מקור משלכם</button></p>';
@@ -357,7 +357,7 @@
   function finalHTML(k) {
     return '<h3>בדיקת AI חוזרת</h3>' + (k.final ? U.assessHTML(k.final, 'ההערכה החוזרת של ה־AI') + '<h4>שלושת הציונים</h4>' + U.scoresRow(k)
         + '<p>הבדיקה הושלמה. <button class="dlm-btn main" id="nextCheck">בדיקה של מקור נוסף</button></p>'
-      : '<p>ה־AI יקרא את כל פריטי המידע שמצאתם, וייתן ציון, הסבר, מה עדיין חסר, ומשוב על תהליך הבדיקה שלכם.</p><p><button class="dlm-btn main" data-ai="final">בדיקת AI חוזרת</button></p>');
+      : '<p>ה־AI יקרא את כל פריטי המידע שמצאתם, וייתן ציון, הסבר, מה עדיין חסר, ומשוב על תהליך הבדיקה שלכם.</p><p><button class="dlm-btn main" data-ai="final">שליחה לבדיקה חוזרת</button></p>');
   }
   const nameOf = (id) => ((S.data.team.members.find((m) => m.id === id) || {}).name || '');
 
