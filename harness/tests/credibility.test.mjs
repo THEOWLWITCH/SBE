@@ -256,3 +256,22 @@ test('ההנחיה ל־AI: אותו נוסח בפנקס ובמודל, ובגיר
   const n = read('credibility-notebook.html');
   for (const w of ['ד״ר איבנה ריטנר', 'ד״ר עינת שושן־רפאלי', 'ד״ר יעל שדה', 'mailto:yael.sade@gmail.com', 'mailto:ei0509000408@gmail.com', 'mailto:ratnere@gmail.com']) assert.ok(n.includes(w), w);
 });
+
+test('מאגר הידיעות: שתי קבוצות, פריטים שלמים, טקסט לבדיקה, סדר לפי הדילמה', () => {
+  const req = createRequire(import.meta.url);
+  const B = req('../../app/lib/credibility-bank.js');
+  assert.equal(B.GROUPS.length, 2);
+  assert.equal(B.all().length, 11);
+  const ids = new Set();
+  for (const x of B.all()) {
+    assert.match(x.id, /^[a-z]\d{1,2}$/); assert.ok(!ids.has(x.id)); ids.add(x.id);
+    for (const f of ['title', 'who', 'outlet', 'date', 'link', 'body']) assert.ok(x[f], x.id + ' ' + f);
+    if (x.url) assert.match(x.url, /^https:\/\//);
+    assert.ok(!/—/.test(x.title + x.body), 'בלי מקף ארוך ' + x.id);
+    assert.ok(B.text(x).includes(x.body));
+  }
+  assert.equal(B.ordered('האם כולם מושחתים?')[0].key, 'corrupt');
+  assert.equal(B.ordered('התקשורת שמאלנית?')[0].key, 'media');
+  const html = fs.readFileSync(new URL('../../app/credibility-join.html', import.meta.url), 'utf8');
+  assert.ok(html.indexOf('lib/credibility-bank.js') > 0 && html.indexOf('lib/credibility-bank.js') < html.indexOf('lib/credibility-join.js'));
+});

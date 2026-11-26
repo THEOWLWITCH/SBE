@@ -114,6 +114,7 @@ function newCheck(d) {
   if (!url && !d.fileId) throw new CrdError('אפשר להעלות קובץ או להדביק קישור');
   return { id: sid('k'), title: txt(d.title, 'שם המקור', 200) || (d.fileName ? String(d.fileName).slice(0, 200) : url.slice(0, 200)),
     url, fileId: d.fileId && okId(d.fileId) ? d.fileId : '', fileName: txt(d.fileName, 'שם הקובץ', 200), fileType: txt(d.fileType, 'סוג הקובץ', 80),
+    bank: /^[a-z]\d{1,2}$/.test(String(d.bank || '')) ? String(d.bank) : '',
     verify: null, seen: '', fields: {}, extra: [], first: null, chat: [], external: [], done: null, team: null, final: null, at: now(), log: [] };
 }
 const stamp = (k, kind, by) => { k.log.push({ at: now(), kind, by: by || null }); if (k.log.length > 400) k.log.shift(); };
@@ -149,7 +150,7 @@ function teamReflection(r) {
 }
 // סיכום בדיקה למרצה ולממצאים
 function checkSummary(k) {
-  return { id: k.id, title: k.title, url: k.url, fileName: k.fileName, fileType: k.fileType, at: k.at,
+  return { id: k.id, title: k.title, url: k.url, fileName: k.fileName, fileType: k.fileType, bank: k.bank || '', at: k.at,
     first: k.first ? k.first.score : undefined, team: k.team ? k.team.score : undefined, final: k.final ? k.final.score : undefined,
     ext: k.external.length, extKinds: [...new Set(k.external.map((e) => e.kind))], turns: k.chat.filter((m) => m.role === 'team').length, done: !!k.done };
 }
