@@ -123,3 +123,12 @@ body.crd-page .crd-link{font-size:16px;font-weight:500;text-decoration-color:rgb
 .crd-bankstory{margin:.6rem 0 1rem;border:1px solid #d9dee4;border-right:4px solid #2EC4B6;border-radius:12px;padding:.6rem .9rem;background:#f7fbfb}
 .crd-bankstory summary{cursor:pointer;font-weight:600;color:#1d3f63}
 .crd-bankstory .crd-bank-text{margin:.5rem 0 0;font-size:1.02rem;line-height:1.6}
+
+.crd-viewer{width:min(900px,96vw);max-height:92vh;padding:0;border:1px solid #d9dee4;border-radius:12px;box-shadow:0 8px 30px rgba(29,63,99,.18)}
+.crd-viewer::backdrop{background:rgba(29,63,99,.35)}
+.crd-view-head{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;gap:.6rem;padding:.6rem .9rem;background:#fff;border-bottom:1px solid #e3e7ec;z-index:1}
+.crd-view-body{padding:.8rem .9rem;overflow:auto;max-height:calc(92vh - 3.2rem)}
+.crd-view-text{margin:0;font-size:1.02rem;line-height:1.65}
+.crd-view-media{display:block;max-width:100%;margin:0 auto}
+.crd-view-pdf{width:100%;height:75vh;border:0}
+.crd-newsrc{display:flex;flex-wrap:wrap;gap:.4rem 1rem;align-items:center;margin:.2rem 0 .6rem}

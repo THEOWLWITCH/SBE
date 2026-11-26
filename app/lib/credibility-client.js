@@ -42,9 +42,26 @@
     throw new Error('המודל לא הספיק לענות בזמן. אפשר לנסות שוב.');
   }
   function blobOf(r) { const bin = atob(r.data), u8 = new Uint8Array(bin.length); for (let i = 0; i < bin.length; i++) u8[i] = bin.charCodeAt(i); return new Blob([u8], { type: /^text\/plain$/.test(r.type || '') ? 'text/plain;charset=utf-8' : r.type }); }
+  // הקובץ נפתח בתוך חלון המערכת, ולא בלשונית חדשה (26/11/2026: "שכל הידיעה תפתח בתוך חלון המערכת")
   function showFile(r, dl) {
+    if (!r) return;
     const url = URL.createObjectURL(blobOf(r));
-    if (dl) { const a = document.createElement('a'); a.href = url; a.download = r.name || 'קובץ'; document.body.appendChild(a); a.click(); a.remove(); } else window.open(url, '_blank', 'noopener');
+    if (dl) { const a = document.createElement('a'); a.href = url; a.download = r.name || 'קובץ'; document.body.appendChild(a); a.click(); a.remove(); return; }
+    const t = r.type || '', e = (x) => String(x == null ? '' : x).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+    let body;
+    if (t.indexOf('text/plain') === 0) { let txt = ''; try { txt = new TextDecoder().decode(Uint8Array.from(atob(r.data), (c) => c.charCodeAt(0))); } catch (x) {} body = '<pre class="crd-bank-text crd-view-text">' + e(txt) + '</pre>'; }
+    else if (/^image\//.test(t)) body = '<img src="' + url + '" alt="' + e(r.name || 'תמונה') + '" class="crd-view-media">';
+    else if (/^audio\//.test(t)) body = '<audio src="' + url + '" controls class="crd-view-media"></audio>';
+    else if (/^video\//.test(t)) body = '<video src="' + url + '" controls playsinline class="crd-view-media"></video>';
+    else if (t === 'application/pdf') body = '<iframe src="' + url + '" title="' + e(r.name || 'PDF') + '" class="crd-view-pdf"></iframe>';
+    else body = '<p>את הקובץ הזה אי אפשר להציג כאן. אפשר להוריד אותו.</p>';
+    const d = document.createElement('dialog'); d.className = 'crd-viewer'; d.setAttribute('dir', 'rtl');
+    d.innerHTML = '<div class="crd-view-head"><b>' + e(r.name || 'הקובץ') + '</b><span><a href="' + url + '" download="' + e(r.name || 'קובץ') + '" class="crd-link">הורדה</a> · <button type="button" class="crd-link" data-close>סגירה</button></span></div><div class="crd-view-body">' + body + '</div>';
+    document.body.appendChild(d);
+    const close = () => { try { d.close(); } catch (x) {} d.remove(); setTimeout(() => URL.revokeObjectURL(url), 60000); };
+    d.querySelector('[data-close]').onclick = close; d.addEventListener('cancel', close);
+    d.addEventListener('click', (ev) => { if (ev.target === d) close(); });
+    if (d.showModal) d.showModal(); else d.setAttribute('open', '');
   }
   function readFile(file) {
     return new Promise((res, rej) => { const fr = new FileReader(); fr.onload = () => res(String(fr.result).split(',')[1] || ''); fr.onerror = () => rej(new Error('הקובץ לא נקרא')); fr.readAsDataURL(file); });
