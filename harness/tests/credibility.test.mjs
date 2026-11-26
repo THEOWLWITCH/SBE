@@ -275,3 +275,22 @@ test('מאגר הידיעות: שתי קבוצות, פריטים שלמים, ט�
   const html = fs.readFileSync(new URL('../../app/credibility-join.html', import.meta.url), 'utf8');
   assert.ok(html.indexOf('lib/credibility-bank.js') > 0 && html.indexOf('lib/credibility-bank.js') < html.indexOf('lib/credibility-join.js'));
 });
+
+test('צוותים מוכנים: 7 צוותים לכל כיתה, קוד של 3 ספרות, ומי שמצטרף/ת נוסף/ה לרשימה', async () => {
+  const E = await setup();
+  const r1 = await E.fac('f.teamsMake', { id: E.A.id, classId: E.c1.id, college: '1', cls: '1', n: 7 });
+  assert.deepEqual(r1.made, ['111', '112', '113', '114', '115', '116', '117']);
+  const r2 = await E.fac('f.teamsMake', { id: E.A.id, classId: E.c2.id, college: '2', cls: '1', n: 7 });
+  assert.equal(r2.made[0], '211');
+  assert.deepEqual((await E.fac('f.teamsMake', { id: E.A.id, classId: E.c1.id, college: '1', cls: '1', n: 7 })).made, [], 'again: nothing new');
+  const [sc] = await E.run('f.teamsMake', { id: E.A.id, classId: E.c2.id, college: '1', cls: '1', n: 7 }, { token: 'T1' });
+  assert.equal(sc, 409, 'code of another class');
+  const [sj, rj] = await E.run('p.teamJoin', { code: E.c1.code, tcode: '113', name: 'י.ש' });
+  assert.equal(sj, 200); assert.equal(rj.team.name, 'צוות 3'); assert.deepEqual(rj.team.members.map((m) => m.name), ['י.ש']);
+  const [, rj2] = await E.run('p.teamJoin', { code: E.c1.code, tcode: '113', name: 'יש' });
+  assert.equal(rj2.team.members.length, 1, 'same initials are not added twice');
+  const [sx] = await E.run('p.teamJoin', { code: E.c2.code, tcode: '113', name: 'א.ב' });
+  assert.equal(sx, 404);
+  const [, g] = await E.run('p.get', {}, { a: rj.a, t: rj.t, key: rj.key });
+  assert.equal(g.team.code, '113');
+});

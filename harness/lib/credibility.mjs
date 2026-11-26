@@ -253,6 +253,26 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
         await store.set('crj:' + jc, { a: a.id, all: true });
         return [200, { activity: view(a) }];
       }
+      // צוותים מוכנים מראש (26/11/2026: "לכל כיתה תפיק 7 צוותים - קודים פשוטים של 3 ספרות - ספרה ראשונה
+      // מציינת מכללה - ספרה שניה מסמנת כיתה וספרה שלישית היא מספר הצוות"): צוות 1 עד n, קוד <מכללה><כיתה><צוות>.
+      // הצוות ריק, ומי שמצטרף/ת עם הקוד נוסף/ה אליו לפי ראשי התיבות
+      if (op === 'f.teamsMake') {
+        const a = await mine(d.id);
+        const c = a.classes.find((x) => x.id === d.classId); if (!c) throw new CrdError('הכיתה לא נמצאה', 404);
+        const col = String(d.college || ''), cl = String(d.cls || ''), n = Math.min(Number(d.n) || 7, 9);
+        if (!/^[1-9]$/.test(col) || !/^[1-9]$/.test(cl)) throw new CrdError('ספרת המכללה וספרת הכיתה: מספר אחד מ־1 עד 9');
+        const teams = (await teamsOf(store, a)).filter((t) => t.classId === c.id);
+        const made = [];
+        for (let i = 1; i <= n; i++) {
+          const tc = col + cl + i, name = 'צוות ' + i;
+          const hit = await store.get('crtc:' + a.id + ':' + tc);
+          if (hit) { const ex = await store.get('crt:' + a.id + ':' + hit.t); if (ex && ex.classId === c.id) continue; throw new CrdError('הקוד ' + tc + ' כבר שייך לכיתה אחרת בפעילות. אפשר לבחור ספרת כיתה אחרת', 409); }
+          if (teams.length + made.length >= LIM.teams) throw new CrdError('בכיתה הזו כבר יש ' + LIM.teams + ' צוותים', 409);
+          const t = { id: sid('t'), classId: c.id, name: teams.some((x) => x.name === name) ? name + ' (' + tc + ')' : name, tcode: tc, keyHash: null, keys: [], members: [], premade: true, createdAt: now() };
+          await store.set('crt:' + a.id + ':' + t.id, t); await store.set('crtc:' + a.id + ':' + tc, { t: t.id }); made.push(tc);
+        }
+        return [200, { made }];
+      }
       if (op === 'f.classEdit') {
         const a = await saveAct(d.id, (a) => { const c = a.classes.find((x) => x.id === d.classId); if (!c) throw new CrdError('הכיתה לא נמצאה', 404); c.name = txt(d.name, 'שם הכיתה', 120, true); });
         return [200, { activity: view(a) }];
@@ -336,11 +356,19 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
       const key = randomBytes(24).toString('hex');
       if (op === 'p.teamJoin') {
         const tc = String(d.tcode || '').toUpperCase().trim();
-        const id = /^[A-Z0-9]{6}$/.test(tc) ? await store.get('crtc:' + a.id + ':' + tc) : null;
+        const id = /^([A-Z0-9]{6}|[1-9]{3})$/.test(tc) ? await store.get('crtc:' + a.id + ':' + tc) : null;
         const t = id ? await store.get('crt:' + a.id + ':' + id.t) : null;
         if (!t || t.classId !== r.c) throw new CrdError('קוד הצוות לא נמצא בכיתה הזו', 404);
-        await mutate(store, 'crt:' + a.id + ':' + t.id, (t) => { t.keyHash = t.keyHash || hash(key); (t.keys = t.keys || []).push(hash(key)); t.keys = t.keys.slice(-30); });
-        return [200, { a: a.id, t: t.id, key, team: teamView(t) }];
+        // מי שמצטרף/ת עם ראשי התיבות שלו/ה ועוד לא ברשימת הצוות נוסף/ה אליה (בצוות מוכן מראש הרשימה מתחילה ריקה)
+        const nm = String(d.name || '').trim().slice(0, 80);
+        const norm = (x) => String(x || '').replace(/[\s.'"״׳-]/g, '');
+        const t2 = await mutate(store, 'crt:' + a.id + ':' + t.id, (t) => {
+          t.keyHash = t.keyHash || hash(key); (t.keys = t.keys || []).push(hash(key)); t.keys = t.keys.slice(-30);
+          if (nm && !t.members.some((m) => norm(m.name) === norm(nm)) && t.members.length < LIM.members) {
+            const at = now(); t.members.push({ id: sid('m'), name: nm, consent: 'research', at, history: [{ consent: 'research', at }] });
+          }
+        });
+        return [200, { a: a.id, t: t.id, key, team: teamView(t2) }];
       }
       const teams = (await teamsOf(store, a)).filter((t) => t.classId === r.c);
       if (teams.length >= LIM.teams) throw new CrdError('בכיתה הזו כבר יש ' + LIM.teams + ' צוותים. אפשר להצטרף לצוות קיים עם קוד הצוות', 409);

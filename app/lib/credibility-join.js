@@ -77,14 +77,14 @@
     app.innerHTML = '<div class="dlm-card"><h1>' + esc(a.title) + '</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
       + (a.dilemma ? '<p><b>הדילמה:</b> ' + esc(a.dilemma) + '</p>' : '')
       + (a.status !== 'open' ? msg('הפעילות סגורה כרגע. המרצה תפתח אותה.') : '')
-      + '<div class="dlm-grid2"><div class="dlm-card soft"><h2>הצוות שלנו כבר נפתח</h2><p class="dlm-hint">כל אחד ואחת מהצוות נכנס/ת עם קוד הצוות שמופיע אצל מי שפתח/ה אותו.</p>'
-      + '<label for="tc">קוד הצוות</label><input type="text" id="tc" dir="ltr" autocomplete="off" maxlength="6" style="max-width:10rem"> <button class="dlm-btn main" id="join">הצטרפות לצוות</button><div id="jm"></div></div>'
+      + '<div class="dlm-grid2"><div class="dlm-card soft"><h2>הצוות שלנו כבר נפתח</h2><p class="dlm-hint">כל אחד ואחת מהצוות נכנס/ת עם קוד הצוות: שלוש ספרות שהמרצה נותנת, או הקוד שמופיע אצל מי שפתח/ה את הצוות.</p>'
+      + '<label for="tc">קוד הצוות</label><input type="text" id="tc" dir="ltr" autocomplete="off" inputmode="text" maxlength="6" placeholder="למשל: 113" style="max-width:10rem"> <button class="dlm-btn main" id="join">הצטרפות לצוות</button><div id="jm"></div></div>'
       + '<div class="dlm-card soft"><h2>פתיחת צוות חדש</h2>' + (info.full ? '<p>בכיתה כבר יש 10 צוותים. אפשר להצטרף לצוות קיים עם קוד הצוות.</p>' : '<p class="dlm-hint">אחד/ת מהצוות פותח/ת, וכותב/ת את ראשי התיבות של כל המשתתפים.</p><button class="dlm-btn main" id="new">פתיחת צוות</button>') + '</div></div>'
       + (info.teams.length ? '<p class="dlm-hint">צוותים בכיתה: ' + info.teams.map((t) => esc(t.name)).join(' · ') + '</p>' : '') + '</div>';
     app.querySelector('.dlm-card').insertAdjacentHTML('afterbegin', '<p class="dlm-msg">✓ השאלון של ' + esc(mine.name) + ' נשמר במכשיר הזה. הוא נשלח לצוות כשנכנסים אליו. <button type="button" class="crd-link" id="redoPre">עריכת השאלון</button></p>');
     $('#redoPre').onclick = () => personalPre(info, true);
     $('#join').onclick = async () => {
-      try { const r = await U.api('p.teamJoin', { code: classCode, tcode: $('#tc').value }); S.cred = { a: r.a, t: r.t, key: r.key }; saveCred(classCode, S.cred); load(); }
+      try { const r = await U.api('p.teamJoin', { code: classCode, tcode: $('#tc').value, name: (getMine() || {}).name || '' }); S.cred = { a: r.a, t: r.t, key: r.key }; saveCred(classCode, S.cred); load(); }
       catch (e) { $('#jm').innerHTML = msg(e.message, 'err'); }
     };
     const nb = $('#new'); if (nb) nb.onclick = () => newTeam(info);

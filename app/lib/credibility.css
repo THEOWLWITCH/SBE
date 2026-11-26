@@ -114,3 +114,5 @@ body.crd-page .crd-link{font-size:16px;font-weight:500;text-decoration-color:rgb
 .crd-bank summary{cursor:pointer;font-weight:600;color:#1d3f63}
 .crd-bank .crd-list{margin-top:.5rem}
 .crd-item[disabled]{opacity:.55;cursor:default}
+.crd-mk{font-size:.92rem;color:#3c4a5c}
+.crd-d{width:2.2rem;text-align:center;padding:.15rem;display:inline-block}
