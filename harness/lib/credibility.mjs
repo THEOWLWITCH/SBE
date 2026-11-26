@@ -177,6 +177,32 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
           .map((a) => ({ id: a.id, title: a.title, status: a.status, classes: a.classes.map((c) => c.name), updatedAt: a.updatedAt, co: a.owner !== me.principal && !me.sys }));
         return [200, { activities: rows }];
       }
+      // מרכז המחקר (26/11/2026: "תבנה את זה דחוף מאוד"): כל הפעילויות של המשתמש/ת עם התקדמות, ושיוך פעילות למחקר
+      if (op === 'f.researchList') {
+        const acts = (await store.list('cra:')).map((r) => r.value).filter((a) => a && !expired(a) && owns(a));
+        const out = [];
+        for (const a of acts) {
+          const teams = await teamsOf(store, a);
+          const cl = a.classes.map((c) => ({ name: c.name, teams: 0, members: 0, research: 0, pre: 0, post: 0, reflect: 0, checks: 0, final: 0 }));
+          const idx = Object.fromEntries(a.classes.map((c, i) => [c.id, i]));
+          for (const t of teams) {
+            const c = cl[idx[t.classId]]; if (!c) continue;
+            const ks = (await store.get('crs:' + a.id + ':' + t.id)) || { checks: [] };
+            const rr = (await store.get('crr:' + a.id + ':' + t.id)) || { members: {} };
+            c.teams++; c.members += t.members.length;
+            for (const m of t.members) { const r = rr.members[m.id] || {}; if (m.consent === 'research') c.research++; if (r.pre) c.pre++; if (r.post) c.post++; if (r.reflect) c.reflect++; }
+            c.checks += ks.checks.length; c.final += ks.checks.filter((k) => k.final).length;
+          }
+          out.push({ id: a.id, title: a.title, status: a.status, research: !!(a.research && a.research.enabled), studyId: a.studyId || '', createdAt: a.createdAt, updatedAt: a.updatedAt, classes: cl });
+        }
+        out.sort((x, y) => String(y.updatedAt).localeCompare(String(x.updatedAt)));
+        return [200, { activities: out }];
+      }
+      if (op === 'f.linkStudy') {
+        const sid2 = String(d.studyId || '').slice(0, 80);
+        const a = await saveAct(d.id, (a) => { a.studyId = sid2; });
+        return [200, { activity: view(a) }];
+      }
       if (op === 'f.create') {
         const n = (await store.list('cra:')).filter((r) => r.value && r.value.owner === me.principal && !expired(r.value)).length;
         if (n >= LIM.mine) throw new CrdError('יש כבר הרבה פעילויות. אפשר למחוק פעילויות ישנות', 429);
@@ -550,7 +576,7 @@ export async function researchExport(store, a) {
   // ומשתתף/ת לפי קוד הצוות וראשי התיבות. בדיקות שהצוות התחיל מחדש נשמרות בנפרד (removedChecks)
   const order = Object.fromEntries(a.classes.map((c, i) => [c.id, i]));
   const teams = (await teamsOf(store, a)).sort((x, y) => (order[x.classId] ?? 99) - (order[y.classId] ?? 99) || String(x.tcode || '').localeCompare(String(y.tcode || ''), 'en', { numeric: true }) || String(x.createdAt || '').localeCompare(String(y.createdAt || '')));
-  const out = { activity: { id: a.id, title: a.title, dilemma: a.dilemma, exportedAt: now() }, classes: a.classes.map((c, i) => ({ id: 'C' + (i + 1), name: c.name })), teams: [] };
+  const out = { activity: { id: a.id, title: a.title, dilemma: a.dilemma, studyId: a.studyId || '', exportedAt: now() }, classes: a.classes.map((c, i) => ({ id: 'C' + (i + 1), name: c.name })), teams: [] };
   const cmap = Object.fromEntries(a.classes.map((c, i) => [c.id, 'C' + (i + 1)]));
   const cname = Object.fromEntries(a.classes.map((c) => [c.id, c.name]));
   const clean = (k) => ({ ...k, fileId: undefined, by: undefined, removedBy: undefined, log: (k.log || []).map((l) => ({ at: l.at, kind: l.kind })), chat: (k.chat || []).map((m) => ({ role: m.role, text: m.text, at: m.at })), external: (k.external || []).map((e) => ({ ...e, by: undefined })) });

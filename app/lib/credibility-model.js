@@ -341,6 +341,30 @@
     'נתחיל: בקש/י ממני את המקור.'
   ].join('\n');
 
-  return { esc, SCALE, GREY, FROM_OLD, validScore, levelOf, dotHTML, REMEMBER, EXAMPLES, QUESTIONS, FIELDS, EXT_KINDS, REFLECT, REFLECT_NOTE, REFLECT_MIN, INITIAL, ATT_SCALE, ATTITUDES, ATT, cleanAttitudes, reflectValue, cleanScale,
+  // ── טבלאות לייצוא המחקרי (26/11/2026): אותן טבלאות במסך המרצות ובמרכז המחקר. x הוא הפלט של researchExport ──
+  function checksRows(x) {
+    const rows = [['activity', 'class', 'class_name', 'team', 'source', 'bank_item', 'ai_first', 'team_score', 'ai_final', 'external_sources', 'team_messages', 'done', 'restarted']];
+    const act = (x.activity && x.activity.title) || '';
+    (x.teams || []).forEach((t) => {
+      (t.summary || []).forEach((s) => rows.push([act, t.class, t.className || '', t.code, s.title || '', s.bank || '', s.first ?? '', s.team ?? '', s.final ?? '', s.ext, s.turns, s.done ? 1 : 0, 0]));
+      (t.removedChecks || []).forEach((k) => rows.push([act, t.class, t.className || '', t.code, k.title || '', k.bank || '', k.first ? k.first.score : '', k.team ? k.team.score : '', k.final ? k.final.score : '', (k.external || []).length, (k.chat || []).filter((m) => m.role === 'team').length, k.done ? 1 : 0, 1]));
+    });
+    return rows;
+  }
+  function participantsRows(x) {
+    const AK = ATTITUDES.map((q) => q.k), RK = [];
+    REFLECT.forEach((q) => { if (q.items) q.items.forEach((it) => RK.push([q.k, it.k])); else RK.push([q.k, null]); });
+    const rows = [['activity', 'class', 'class_name', 'team', 'participant', 'initials', 'pre_at'].concat(AK.map((k) => 'pre_' + k), ['initial_position', 'post_at'], AK.map((k) => 'post_' + k), ['reflect_at'], RK.map((r) => 'reflect_' + (r[1] || r[0])), ['ai_level'])];
+    const act = (x.activity && x.activity.title) || '';
+    (x.teams || []).forEach((t) => (t.members || []).filter((m) => m.consent === 'research').forEach((m) => {
+      const pre = m.pre || {}, post = m.post || {}, rf = m.reflect || {};
+      rows.push([act, t.class, t.className || '', t.code, m.code, m.initials || '', pre.at || ''].concat(AK.map((k) => pre[k] ?? ''), [(m.initial || {}).text || '', post.at || ''], AK.map((k) => post[k] ?? ''), [rf.at || ''],
+        RK.map((r) => { const v = rf[r[0]]; return r[1] ? (v && typeof v === 'object' ? (v[r[1]] ?? '') : '') : (v && typeof v === 'object' ? '' : (v ?? '')); }), [(m.reflectAI || {}).level ?? '']));
+    }));
+    return rows;
+  }
+  const toCsv = (rows) => '\ufeff' + rows.map((r) => r.map((v) => '"' + String(v ?? '').replace(/"/g, '""') + '"').join(',')).join('\n');
+
+  return { checksRows, participantsRows, toCsv, esc, SCALE, GREY, FROM_OLD, validScore, levelOf, dotHTML, REMEMBER, EXAMPLES, QUESTIONS, FIELDS, EXT_KINDS, REFLECT, REFLECT_NOTE, REFLECT_MIN, INITIAL, ATT_SCALE, ATTITUDES, ATT, cleanAttitudes, reflectValue, cleanScale,
     GRADE, gradeTotal, CONSENT, REFLECT_CRITERIA, reflectSystem, reflectText, cleanReflectAI, BASE, fieldsSystem, assessSystem, chatSystem, sourceText, inquiryText, aiText, parseJSON, cleanFields, cleanAssess, cleanChat, aboutHTML, AI_PROMPT };
 });

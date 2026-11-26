@@ -312,3 +312,20 @@ test('צוותים מוכנים: 7 צוותים לכל כיתה, קוד של 3 �
   const [, g] = await E.run('p.get', {}, { a: rj.a, t: rj.t, key: rj.key });
   assert.equal(g.team.code, '113');
 });
+
+test('מרכז המחקר: רשימת הפעילויות עם התקדמות, שיוך למחקר, וטבלאות הייצוא', async () => {
+  const E = await setup();
+  const t = await E.team(E.c1, 'צוות 1', ['research', 'research']);
+  await t.P('p.check', { kind: 'new', url: 'https://example.org/x', title: 'מקור' });
+  const l = await E.fac('f.researchList', {});
+  const a = l.activities.find((x) => x.id === E.A.id); assert.ok(a);
+  const c = a.classes.find((x) => x.teams === 1); assert.equal(c.members, 2); assert.equal(c.checks, 1);
+  await E.fac('f.linkStudy', { id: E.A.id, studyId: 'study-1' });
+  const l2 = await E.fac('f.researchList', {}); assert.equal(l2.activities.find((x) => x.id === E.A.id).studyId, 'study-1');
+  const M = (await import('../../app/lib/credibility-model.js')).default;
+  const x = await researchExport(E.store, await E.store.get('cra:' + E.A.id));
+  assert.equal(x.activity.studyId, 'study-1');
+  const pr = M.participantsRows(x); assert.equal(pr.length, 3); assert.ok(pr[0].includes('initials'));
+  const cr = M.checksRows(x); assert.equal(cr.length, 2); assert.equal(cr[1][3], x.teams.find((t) => t.summary && t.summary.length).code);
+  assert.ok(M.toCsv(pr).startsWith('﻿'));
+});
