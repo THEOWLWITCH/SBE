@@ -56,7 +56,7 @@ test('scale: five levels, merged from 0–7, grey is not a score', () => {
   assert.deepEqual(M.REFLECT.map((q) => q.k), ['feel', 'think', 'changed', 'why', 'could', 'free']);
 });
 
-test('team entry: up to 10 teams per class, consent per member, join only with the team code', async () => {
+test('team entry: up to 15 teams per class, consent per member, join only with the team code', async () => {
   const E = await setup();
   const [s0] = await E.run('p.teamCreate', { code: E.c1.code, name: 'א', members: [{ name: 'רונית' }] });
   assert.equal(s0, 400, 'consent required');
@@ -65,11 +65,11 @@ test('team entry: up to 10 teams per class, consent per member, join only with t
   assert.equal(sj, 200); assert.equal(rj.t, t1.r.t);
   const [sx] = await E.run('p.teamJoin', { code: E.c2.code, tcode: t1.r.team.code });
   assert.equal(sx, 404, 'team code from another class');
-  for (let i = 2; i <= 10; i++) await E.team(E.c1, 'צוות ' + i);
-  const [sf] = await E.run('p.teamCreate', { code: E.c1.code, name: 'צוות 11', members: [{ name: 'x', consent: 'research' }] });
+  for (let i = 2; i <= 15; i++) await E.team(E.c1, 'צוות ' + i);
+  const [sf] = await E.run('p.teamCreate', { code: E.c1.code, name: 'צוות 16', members: [{ name: 'x', consent: 'research' }] });
   assert.equal(sf, 409);
   const [, info] = await E.run('p.class', { code: E.c1.code });
-  assert.equal(info.full, true); assert.equal(info.teams.length, 10);
+  assert.equal(info.full, true); assert.equal(info.teams.length, 15);
   assert.ok(!JSON.stringify(info).includes('משתתפת'), 'class view shows no names');
 });
 
@@ -168,10 +168,17 @@ test('research export: only consented people, team work only when all consented,
   const a = await E.store.get('cra:' + E.A.id);
   const x = await researchExport(E.store, a);
   const s = JSON.stringify(x);
-  assert.ok(!s.includes('משתתפת'), 'no names');
+  // ראשי התיבות רק של מי שהסכים/ה למחקר (המשתתפים כותבים ראשי תיבות בלבד)
+  const tpx = x.teams.find((t) => !t.allConsented); assert.equal(tpx.members[1].initials, undefined, 'no initials for learning-only'); assert.ok(tpx.members[0].initials);
+  assert.equal(x.teams[0].members[0].initials, all.r.team.members[0].name);
+  assert.ok(x.teams.every((t) => t.className === 'גורדון' || t.className), 'class name');
   assert.ok(!s.includes('פרטי'), 'learning-only reflection excluded');
   const tp = x.teams.find((t) => !t.allConsented); assert.equal(tp.checks, null); assert.equal(tp.summary, null);
   const ta = x.teams.find((t) => t.allConsented); assert.equal(ta.checks.length, 1);
+  const [, k2] = await all.P('p.check', { kind: 'new', url: 'https://example.org/y', title: 'שני' });
+  await all.P('p.check', { kind: 'remove', id: k2.id });
+  const x2 = await researchExport(E.store, await E.store.get('cra:' + E.A.id));
+  const ta2 = x2.teams.find((t) => t.allConsented); assert.equal(ta2.checks.length, 1); assert.equal(ta2.removedChecks.length, 1, 'restart keeps the check for research');
 });
 
 test('model gate: only the team page, only while open', async () => {
@@ -289,6 +296,11 @@ test('צוותים מוכנים: 7 צוותים לכל כיתה, קוד של 3 �
   const r2 = await E.fac('f.teamsMake', { id: E.A.id, classId: E.c2.id, college: '2', cls: '1', n: 7 });
   assert.equal(r2.made[0], '211');
   assert.deepEqual((await E.fac('f.teamsMake', { id: E.A.id, classId: E.c1.id, college: '1', cls: '1', n: 7 })).made, [], 'again: nothing new');
+  const ca = await E.fac('f.classAdd', { id: E.A.id, name: 'כיתה 3' }); const c3 = ca.activity.classes.find((x) => x.name === 'כיתה 3');
+  const r3 = await E.fac('f.teamsMake', { id: E.A.id, classId: c3.id, college: '2', cls: '3', n: 15 });
+  assert.equal(r3.made.length, 15); assert.equal(r3.made[14], '2315');
+  const [s15] = await E.run('p.teamJoin', { code: c3.code, tcode: '2315', name: 'א.ב' });
+  assert.equal(s15, 200, 'four-digit team code');
   const [sc] = await E.run('f.teamsMake', { id: E.A.id, classId: E.c2.id, college: '1', cls: '1', n: 7 }, { token: 'T1' });
   assert.equal(sc, 409, 'code of another class');
   const [sj, rj] = await E.run('p.teamJoin', { code: E.c1.code, tcode: '113', name: 'י.ש' });
@@ -299,4 +311,21 @@ test('צוותים מוכנים: 7 צוותים לכל כיתה, קוד של 3 �
   assert.equal(sx, 404);
   const [, g] = await E.run('p.get', {}, { a: rj.a, t: rj.t, key: rj.key });
   assert.equal(g.team.code, '113');
+});
+
+test('מרכז המחקר: רשימת הפעילויות עם התקדמות, שיוך למחקר, וטבלאות הייצוא', async () => {
+  const E = await setup();
+  const t = await E.team(E.c1, 'צוות 1', ['research', 'research']);
+  await t.P('p.check', { kind: 'new', url: 'https://example.org/x', title: 'מקור' });
+  const l = await E.fac('f.researchList', {});
+  const a = l.activities.find((x) => x.id === E.A.id); assert.ok(a);
+  const c = a.classes.find((x) => x.teams === 1); assert.equal(c.members, 2); assert.equal(c.checks, 1);
+  await E.fac('f.linkStudy', { id: E.A.id, studyId: 'study-1' });
+  const l2 = await E.fac('f.researchList', {}); assert.equal(l2.activities.find((x) => x.id === E.A.id).studyId, 'study-1');
+  const M = (await import('../../app/lib/credibility-model.js')).default;
+  const x = await researchExport(E.store, await E.store.get('cra:' + E.A.id));
+  assert.equal(x.activity.studyId, 'study-1');
+  const pr = M.participantsRows(x); assert.equal(pr.length, 3); assert.ok(pr[0].includes('initials'));
+  const cr = M.checksRows(x); assert.equal(cr.length, 2); assert.equal(cr[1][3], x.teams.find((t) => t.summary && t.summary.length).code);
+  assert.ok(M.toCsv(pr).startsWith('﻿'));
 });

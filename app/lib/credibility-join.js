@@ -315,7 +315,7 @@
       + (k.verify ? ' <span class="dlm-tag">' + esc({ exists: 'הקישור נפתח', not_found: 'הקישור לא נמצא', unreachable: 'הקישור לא נפתח' }[k.verify.status] || '') + '</span>' : '') + U.scoresRow(k) + '</div>' + bankStory(k);
     let inner = '';
     if (st === 'describe') inner = describeHTML(k);
-    else if (st === 'first') inner = (k.first ? U.assessHTML(k.first, 'ההערכה של ה־AI') + '<p><button class="dlm-btn main" data-stage="inquiry">ממשיכים לחקור</button></p>'
+    else if (st === 'first') inner = (k.first ? U.assessHTML(k.first, 'ההערכה של ה־AI') + '<p><button class="dlm-btn main" data-stage="inquiry">ממשיכים לחקור</button>' + (reflectReady() ? ' <button class="crd-link" id="toReflect">אין עוד פרטים: ממשיכים לשאלון העמדות המסכם ולרפלקציה ←</button>' : '') + '</p>'
       : '<p>ה־AI יקרא את המקור, את הפרטים שמילאתם ואת הציון שנתתם, ויחזיר ציון 1–5, הסבר, ומה חסר כדי לדעת יותר.</p><p><button class="dlm-btn main" data-ai="first">שליחה לבדיקה</button></p>');
     else if (st === 'inquiry') inner = inquiryHTML(k);
     else inner = finalHTML(k);
@@ -347,7 +347,7 @@
         + '<label for="ek">סוג המקור</label><select id="ek" data-closed>' + M.EXT_KINDS.map((x) => '<option value="' + x.k + '">' + esc(x.t) + '</option>').join('') + '</select>'
         + '<p><button class="dlm-btn" id="addext">הוספת הפריט</button></p></div>')
       + (k.done ? '<p>' + msg('קבעתם: אין לנו עוד מידע.') + (k.final ? '' : ' <button class="crd-link" id="reopen">ממשיכים לחקור</button>') + ' <button class="dlm-btn main" data-stage="final">לבדיקת AI חוזרת</button></p>'
-        : '<p class="crd-donebar"><button class="dlm-btn main" id="done">אין לנו עוד מידע</button></p>');
+        : '<p class="crd-donebar"><button class="dlm-btn main" id="done">אין לנו עוד מידע</button>' + (reflectReady() ? ' <button class="crd-link" id="toReflect">אין עוד פרטים: ממשיכים לשאלון העמדות המסכם ולרפלקציה ←</button>' : '') + '</p>');
   }
   function finalHTML(k) {
     // מיד אחרי הבדיקה החוזרת: הרפלקציה ושאלון העמדות המסכם (26/11/2026)

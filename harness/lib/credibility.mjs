@@ -23,7 +23,7 @@ const M = require('../../app/lib/credibility-model.js');
 
 export const CRD_JOIN_PAGE = 'credibility-join.html';
 const KEEP_DAYS = 400;
-const LIM = { mine: 80, classes: 12, teams: 10, members: 8, checks: 12, chat: 80, ext: 20, files: 40, text: 3000, long: 8000 };
+const LIM = { mine: 80, classes: 12, teams: 15, members: 8, checks: 12, chat: 80, ext: 20, files: 40, text: 3000, long: 8000 };
 const FILE_KINDS = [
   { re: /^(image\/(png|jpeg|webp|gif)|application\/pdf|text\/plain)$/, max: 3_000_000, t: '3 מגה' },
   { re: /^audio\/(mpeg|mp3|mp4|x-m4a|m4a|aac|ogg|wav|x-wav|webm)$/, max: 6_000_000, t: '6 מגה' },
@@ -177,6 +177,32 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
           .map((a) => ({ id: a.id, title: a.title, status: a.status, classes: a.classes.map((c) => c.name), updatedAt: a.updatedAt, co: a.owner !== me.principal && !me.sys }));
         return [200, { activities: rows }];
       }
+      // מרכז המחקר (26/11/2026: "תבנה את זה דחוף מאוד"): כל הפעילויות של המשתמש/ת עם התקדמות, ושיוך פעילות למחקר
+      if (op === 'f.researchList') {
+        const acts = (await store.list('cra:')).map((r) => r.value).filter((a) => a && !expired(a) && owns(a));
+        const out = [];
+        for (const a of acts) {
+          const teams = await teamsOf(store, a);
+          const cl = a.classes.map((c) => ({ name: c.name, teams: 0, members: 0, research: 0, pre: 0, post: 0, reflect: 0, checks: 0, final: 0 }));
+          const idx = Object.fromEntries(a.classes.map((c, i) => [c.id, i]));
+          for (const t of teams) {
+            const c = cl[idx[t.classId]]; if (!c) continue;
+            const ks = (await store.get('crs:' + a.id + ':' + t.id)) || { checks: [] };
+            const rr = (await store.get('crr:' + a.id + ':' + t.id)) || { members: {} };
+            c.teams++; c.members += t.members.length;
+            for (const m of t.members) { const r = rr.members[m.id] || {}; if (m.consent === 'research') c.research++; if (r.pre) c.pre++; if (r.post) c.post++; if (r.reflect) c.reflect++; }
+            c.checks += ks.checks.length; c.final += ks.checks.filter((k) => k.final).length;
+          }
+          out.push({ id: a.id, title: a.title, status: a.status, research: !!(a.research && a.research.enabled), studyId: a.studyId || '', createdAt: a.createdAt, updatedAt: a.updatedAt, classes: cl });
+        }
+        out.sort((x, y) => String(y.updatedAt).localeCompare(String(x.updatedAt)));
+        return [200, { activities: out }];
+      }
+      if (op === 'f.linkStudy') {
+        const sid2 = String(d.studyId || '').slice(0, 80);
+        const a = await saveAct(d.id, (a) => { a.studyId = sid2; });
+        return [200, { activity: view(a) }];
+      }
       if (op === 'f.create') {
         const n = (await store.list('cra:')).filter((r) => r.value && r.value.owner === me.principal && !expired(r.value)).length;
         if (n >= LIM.mine) throw new CrdError('יש כבר הרבה פעילויות. אפשר למחוק פעילויות ישנות', 429);
@@ -259,7 +285,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
       if (op === 'f.teamsMake') {
         const a = await mine(d.id);
         const c = a.classes.find((x) => x.id === d.classId); if (!c) throw new CrdError('הכיתה לא נמצאה', 404);
-        const col = String(d.college || ''), cl = String(d.cls || ''), n = Math.min(Number(d.n) || 7, 9);
+        const col = String(d.college || ''), cl = String(d.cls || ''), n = Math.min(Number(d.n) || 7, LIM.teams);
         if (!/^[1-9]$/.test(col) || !/^[1-9]$/.test(cl)) throw new CrdError('ספרת המכללה וספרת הכיתה: מספר אחד מ־1 עד 9');
         const teams = (await teamsOf(store, a)).filter((t) => t.classId === c.id);
         const made = [];
@@ -356,7 +382,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
       const key = randomBytes(24).toString('hex');
       if (op === 'p.teamJoin') {
         const tc = String(d.tcode || '').toUpperCase().trim();
-        const id = /^([A-Z0-9]{6}|[1-9]{3})$/.test(tc) ? await store.get('crtc:' + a.id + ':' + tc) : null;
+        const id = /^([A-Z0-9]{6}|[1-9]{3}|[1-9]{2}1[0-5])$/.test(tc) ? await store.get('crtc:' + a.id + ':' + tc) : null;
         const t = id ? await store.get('crt:' + a.id + ':' + id.t) : null;
         if (!t || t.classId !== r.c) throw new CrdError('קוד הצוות לא נמצא בכיתה הזו', 404);
         // מי שמצטרף/ת עם ראשי התיבות שלו/ה ועוד לא ברשימת הצוות נוסף/ה אליה (בצוות מוכן מראש הרשימה מתחילה ריקה)
@@ -491,6 +517,8 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
             k.team = { score: s, why: txt(d.why, 'הנימוק', LIM.text, true), basis: txt(d.basis, 'על מה זה נשען', LIM.text), at: now(), by };
             stamp(k, 'team', by);
           } else if (kind === 'remove') {
+            // התחלה מחדש: הבדיקה יורדת מהמסך של הצוות, אבל נשמרת לייצוא המחקרי (removed)
+            ks.removed = (ks.removed || []).concat([{ ...k, removedAt: now(), removedBy: by }]).slice(-40);
             ks.checks = ks.checks.filter((x) => x.id !== k.id);
           } else throw new CrdError('פעולה לא מוכרת');
         }, () => ({ checks: [] }));
@@ -544,18 +572,30 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
 
 // ── ייצוא מחקרי: רק מי שהסכים/ה. תוצר צוותי רק אם כל חברי הצוות הסכימו. בלי שמות: קודים. ──
 export async function researchExport(store, a) {
-  const teams = await teamsOf(store, a), out = { activity: { id: a.id, title: a.title, dilemma: a.dilemma, exportedAt: now() }, classes: a.classes.map((c, i) => ({ id: 'C' + (i + 1), name: c.name })), teams: [] };
+  // זיהוי (26/11/2026: "תוודא שכל הנתונים נשמרים... בחלוקה הנכונה והמזוהה"): כיתה לפי הסדר ובשמה, צוות לפי קוד הצוות שהמשתתפים הקלידו (למשל 214),
+  // ומשתתף/ת לפי קוד הצוות וראשי התיבות. בדיקות שהצוות התחיל מחדש נשמרות בנפרד (removedChecks)
+  const order = Object.fromEntries(a.classes.map((c, i) => [c.id, i]));
+  const teams = (await teamsOf(store, a)).sort((x, y) => (order[x.classId] ?? 99) - (order[y.classId] ?? 99) || String(x.tcode || '').localeCompare(String(y.tcode || ''), 'en', { numeric: true }) || String(x.createdAt || '').localeCompare(String(y.createdAt || '')));
+  const out = { activity: { id: a.id, title: a.title, dilemma: a.dilemma, studyId: a.studyId || '', exportedAt: now() }, classes: a.classes.map((c, i) => ({ id: 'C' + (i + 1), name: c.name })), teams: [] };
   const cmap = Object.fromEntries(a.classes.map((c, i) => [c.id, 'C' + (i + 1)]));
+  const cname = Object.fromEntries(a.classes.map((c) => [c.id, c.name]));
+  const clean = (k) => ({ ...k, fileId: undefined, by: undefined, removedBy: undefined, log: (k.log || []).map((l) => ({ at: l.at, kind: l.kind })), chat: (k.chat || []).map((m) => ({ role: m.role, text: m.text, at: m.at })), external: (k.external || []).map((e) => ({ ...e, by: undefined })) });
   let ti = 0;
   for (const t of teams) {
     ti++;
-    const all = t.members.every((m) => m.consent === 'research');
+    const tcode = t.tcode || ('T' + ti);
+    const all = t.members.length > 0 && t.members.every((m) => m.consent === 'research');
     const ks = (await store.get('crs:' + a.id + ':' + t.id)) || { checks: [] };
     const rr = (await store.get('crr:' + a.id + ':' + t.id)) || { members: {} };
-    const ppl = t.members.map((m, i) => ({ code: 'T' + ti + '-P' + (i + 1), consent: m.consent, ...(m.consent === 'research' ? { pre: (rr.members[m.id] || {}).pre || null, post: (rr.members[m.id] || {}).post || null, initial: (rr.members[m.id] || {}).initial || null, reflect: (rr.members[m.id] || {}).reflect || null, reflectAI: (rr.members[m.id] || {}).ai || null } : {}) }));
-    out.teams.push({ code: 'T' + ti, class: cmap[t.classId], size: t.members.length, allConsented: all, members: ppl,
-      checks: all ? ks.checks.map((k) => ({ ...k, fileId: undefined, by: undefined, log: k.log.map((l) => ({ at: l.at, kind: l.kind })), chat: k.chat.map((m) => ({ role: m.role, text: m.text, at: m.at })), external: k.external.map((e) => ({ ...e, by: undefined })) })) : null,
-      summary: all ? ks.checks.map(checkSummary).map((s) => ({ ...s, fileName: undefined })) : null });
+    const ppl = t.members.map((m, i) => {
+      const r = rr.members[m.id] || {};
+      return { code: tcode + '-P' + (i + 1), consent: m.consent, joinedAt: m.at || null,
+        ...(m.consent === 'research' ? { initials: m.name, pre: r.pre || null, initial: r.initial || null, post: r.post || null, reflect: r.reflect || null, reflectAI: r.ai || null } : {}) };
+    });
+    out.teams.push({ code: tcode, name: t.name, class: cmap[t.classId], className: cname[t.classId] || '', size: t.members.length, allConsented: all, members: ppl,
+      checks: all ? ks.checks.map(clean) : null,
+      summary: all ? ks.checks.map(checkSummary).map((s) => ({ ...s, fileName: undefined })) : null,
+      removedChecks: all ? (ks.removed || []).map(clean) : null });
   }
   return out;
 }

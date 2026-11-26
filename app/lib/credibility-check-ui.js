@@ -75,10 +75,10 @@
           + '<button class="crd-link" data-big="' + esc(c.id) + '">QR גדול להקרנה</button><button class="crd-link" data-recode="' + esc(c.id) + '">קוד חדש</button><button class="crd-link" data-ren="' + esc(c.id) + '">שינוי שם</button></div>'
           + '<p class="dlm-hint">' + t.length + ' צוותים · ' + t.reduce((s, x) => s + x.members.length, 0) + ' משתתפים</p>'
           + (t.length ? '<p class="dlm-hint">קודי הצוותים: ' + t.slice().sort((p, q) => String(p.code).localeCompare(String(q.code))).map((x) => esc(x.name) + ' <b dir="ltr">' + esc(x.code || '') + '</b>').join(' · ') + '</p>' : '')
-          + '<p class="crd-mk">צוותים מוכנים עם קוד של 3 ספרות: מכללה <input type="text" inputmode="numeric" maxlength="1" class="crd-d" data-col="' + esc(c.id) + '" value="' + (a.classes.indexOf(c) + 1) + '" aria-label="ספרת המכללה"> כיתה <input type="text" inputmode="numeric" maxlength="1" class="crd-d" data-cls="' + esc(c.id) + '" value="1" aria-label="ספרת הכיתה"> <button class="crd-link" data-mk="' + esc(c.id) + '">פתיחת 7 צוותים</button></p></div><div class="dlm-qr" data-qr="' + esc(c.code) + '"></div></div></div>';
+          + '<p class="crd-mk">צוותים מוכנים עם קוד של ספרות (מכללה, כיתה, צוות): מכללה <input type="text" inputmode="numeric" maxlength="1" class="crd-d" data-col="' + esc(c.id) + '" value="' + (a.classes.indexOf(c) + 1) + '" aria-label="ספרת המכללה"> כיתה <input type="text" inputmode="numeric" maxlength="1" class="crd-d" data-cls="' + esc(c.id) + '" value="1" aria-label="ספרת הכיתה"> מספר צוותים <input type="text" inputmode="numeric" maxlength="2" class="crd-d" data-n="' + esc(c.id) + '" value="7" aria-label="מספר הצוותים"> <button class="crd-link" data-mk="' + esc(c.id) + '">פתיחת הצוותים</button></p></div><div class="dlm-qr" data-qr="' + esc(c.code) + '"></div></div></div>';
       }).join('');
     n.querySelectorAll('[data-qr]').forEach((q) => U.qr(q, joinUrl(q.dataset.qr)));
-    n.querySelectorAll('[data-mk]').forEach((b) => { b.onclick = async () => { const id = b.dataset.mk; try { const r = await call('f.teamsMake', { id: a.id, classId: id, college: n.querySelector('[data-col="' + id + '"]').value, cls: n.querySelector('[data-cls="' + id + '"]').value, n: 7 }); U.say(r.made.length ? 'נפתחו צוותים: ' + r.made.join(', ') : 'הצוותים כבר פתוחים.'); open(a.id); } catch (e) { U.say(e.message); } }; });
+    n.querySelectorAll('[data-mk]').forEach((b) => { b.onclick = async () => { const id = b.dataset.mk; try { const r = await call('f.teamsMake', { id: a.id, classId: id, college: n.querySelector('[data-col="' + id + '"]').value, cls: n.querySelector('[data-cls="' + id + '"]').value, n: Number(n.querySelector('[data-n="' + id + '"]').value) || 7 }); U.say(r.made.length ? 'נפתחו צוותים: ' + r.made.join(', ') : 'הצוותים כבר פתוחים.'); open(a.id); } catch (e) { U.say(e.message); } }; });
     if ($('#bigAll')) $('#bigAll').onclick = () => { openDlg('<div style="text-align:center"><h2>' + esc(a.title) + '</h2><h3>' + a.classes.map((c) => esc(c.name)).join(' / ') + '</h3><div id="bigqr" style="display:inline-block"></div><p class="dlm-hint" dir="ltr"><a target="_blank" rel="noopener" href="' + esc(joinUrl(a.allCode)) + '">' + esc(joinUrl(a.allCode)) + '</a></p></div>'); U.qr($('#bigqr'), joinUrl(a.allCode), 360); };
     if ($('#recodeAll')) $('#recodeAll').onclick = async () => { if (!a.allCode || await U.ask('להפיק קוד חדש ל־QR המשותף? ה־QR הישן יפסיק לעבוד.')) { try { await call('f.allCode', { id: a.id }); open(a.id); } catch (e) { U.say(e.message); } } };
     $('#ca').onclick = async () => { try { await call('f.classAdd', { id: a.id, name: $('#cn').value }); open(a.id); } catch (e) { $('#cam').innerHTML = msg(e.message, 'err'); } };
@@ -193,18 +193,13 @@
       + ex('זה דיווח עצמי. המשמעות נמצאת בתשובות הפתוחות: מה הביא לשינוי, ומה היה יכול לשנות את הדעה. אפשר לקרוא אותן בלשונית הצוותים, או בקובץ הייצוא.')
       + '<h4>בדיקות לקריאה לעומק</h4><ul>' + checks.filter((k) => has(k, 'first') && has(k, 'team') && Math.abs(k.first.score - k.team.score) >= 2).map((k) => '<li>' + esc(k._team.name) + ': ' + esc(k.title) + ' (AI ' + k.first.score + ', צוות ' + k.team.score + ')</li>').join('') + '</ul>'
       + ex('בדיקות שבהן הצוות והמודל רחוקים זה מזה בשתי רמות או יותר. אלה בדרך כלל המקרים המעניינים ביותר לניתוח.')
-      + '<p><button class="dlm-btn" id="exp">⬇ ייצוא מחקרי (JSON)</button> <button class="dlm-btn" id="csv">⬇ טבלת בדיקות (CSV, נפתח באקסל)</button></p><p class="dlm-hint">הייצוא כולל רק משתתפים שהסכימו למחקר, בלי שמות. תוצר צוותי נכלל רק אם כל חברי הצוות הסכימו.</p></div>';
+      + '<p><button class="dlm-btn" id="exp">⬇ ייצוא מחקרי (JSON)</button> <button class="dlm-btn" id="csv">⬇ טבלת בדיקות (CSV, נפתח באקסל)</button> <button class="dlm-btn" id="csvp">⬇ טבלת משתתפים: שאלונים ורפלקציה (CSV)</button></p><p class="dlm-hint">הייצוא כולל רק משתתפים שהסכימו למחקר, עם ראשי התיבות בלבד. כל שורה מזוהה בכיתה, בקוד הצוות ובראשי התיבות. תוצר צוותי נכלל רק אם כל חברי הצוות הסכימו.</p></div>';
     $('#onlyR').onchange = (e) => { S.onlyResearch = e.target.checked; findingsTab(); };
     const dl = (name, text, type) => { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text], { type })); a.download = name; document.body.appendChild(a); a.click(); a.remove(); };
     $('#exp').onclick = async () => { try { dl('credibility-research.json', JSON.stringify(await call('f.export', { id: S.a.id }), null, 2), 'application/json'); } catch (e) { U.say(e.message); } };
-    $('#csv').onclick = async () => {
-      try {
-        const x = await call('f.export', { id: S.a.id });
-        const rows = [['class', 'team', 'source', 'ai_first', 'team_score', 'ai_final', 'external_sources', 'team_messages', 'done']];
-        x.teams.forEach((t) => (t.summary || []).forEach((s) => rows.push([t.class, t.code, s.title || '', s.first ?? '', s.team ?? '', s.final ?? '', s.ext, s.turns, s.done ? 1 : 0])));
-        dl('credibility-checks.csv', '﻿' + rows.map((r) => r.map((v) => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n'), 'text/csv');
-      } catch (e) { U.say(e.message); }
-    };
+    // טבלאות הייצוא (26/11/2026): אותן טבלאות כמו במרכז המחקר (M.checksRows, M.participantsRows)
+    $('#csvp').onclick = async () => { try { dl('credibility-participants.csv', M.toCsv(M.participantsRows(await call('f.export', { id: S.a.id }))), 'text/csv'); } catch (e) { U.say(e.message); } };
+    $('#csv').onclick = async () => { try { dl('credibility-checks.csv', M.toCsv(M.checksRows(await call('f.export', { id: S.a.id }))), 'text/csv'); } catch (e) { U.say(e.message); } };
   }
 
   // מאגר הידיעות (26/11/2026: "איבנה לא רואה את המאגר"): הצוותים בוחרים ממנו אחרי שאלון העמדות; כאן המרצות רואות את כל הידיעות
