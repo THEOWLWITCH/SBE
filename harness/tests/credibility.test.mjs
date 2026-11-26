@@ -254,5 +254,43 @@ test('ההנחיה ל־AI: אותו נוסח בפנקס ובמודל, ובגיר
   for (const l of M.SCALE) assert.ok(M.AI_PROMPT.includes(l.score + ' = ' + l.name + ': ' + l.d));
   assert.match(read('credibility-pocket.html'), /M\.AI_PROMPT/);
   const n = read('credibility-notebook.html');
-  for (const w of ['ד״ר איבנה ריטנר', 'ד״ר עינת שושן־רפאלי', 'ד״ר יעל שדה', 'mailto:yael.sade@gmail.com', 'mailto:ei0509000408@gmail.com', 'mailto:ratnere@gmail.com']) assert.ok(n.includes(w), w);
+  for (const w of ['ד״ר איבנה רטנר', 'ד״ר עינת שושן־רפאלי', 'ד״ר יעל שדה', 'המכללה האקדמית גורדון', 'המכללה האקדמית אורנים ומוסד שמואל נאמן', 'mailto:yael.sade@gmail.com', 'mailto:ei0509000408@gmail.com', 'mailto:ratnere@gmail.com']) assert.ok(n.includes(w), w);
+});
+
+test('מאגר הידיעות: שתי קבוצות, פריטים שלמים, טקסט לבדיקה, סדר לפי הדילמה', () => {
+  const req = createRequire(import.meta.url);
+  const B = req('../../app/lib/credibility-bank.js');
+  assert.equal(B.GROUPS.length, 2);
+  assert.equal(B.all().length, 11);
+  const ids = new Set();
+  for (const x of B.all()) {
+    assert.match(x.id, /^[a-z]\d{1,2}$/); assert.ok(!ids.has(x.id)); ids.add(x.id);
+    for (const f of ['title', 'who', 'outlet', 'date', 'link', 'body']) assert.ok(x[f], x.id + ' ' + f);
+    if (x.url) assert.match(x.url, /^https:\/\//);
+    assert.ok(!/—/.test(x.title + x.body), 'בלי מקף ארוך ' + x.id);
+    assert.ok(B.text(x).includes(x.body));
+  }
+  assert.equal(B.ordered('האם כולם מושחתים?')[0].key, 'corrupt');
+  assert.equal(B.ordered('התקשורת שמאלנית?')[0].key, 'media');
+  const html = fs.readFileSync(new URL('../../app/credibility-join.html', import.meta.url), 'utf8');
+  assert.ok(html.indexOf('lib/credibility-bank.js') > 0 && html.indexOf('lib/credibility-bank.js') < html.indexOf('lib/credibility-join.js'));
+});
+
+test('צוותים מוכנים: 7 צוותים לכל כיתה, קוד של 3 ספרות, ומי שמצטרף/ת נוסף/ה לרשימה', async () => {
+  const E = await setup();
+  const r1 = await E.fac('f.teamsMake', { id: E.A.id, classId: E.c1.id, college: '1', cls: '1', n: 7 });
+  assert.deepEqual(r1.made, ['111', '112', '113', '114', '115', '116', '117']);
+  const r2 = await E.fac('f.teamsMake', { id: E.A.id, classId: E.c2.id, college: '2', cls: '1', n: 7 });
+  assert.equal(r2.made[0], '211');
+  assert.deepEqual((await E.fac('f.teamsMake', { id: E.A.id, classId: E.c1.id, college: '1', cls: '1', n: 7 })).made, [], 'again: nothing new');
+  const [sc] = await E.run('f.teamsMake', { id: E.A.id, classId: E.c2.id, college: '1', cls: '1', n: 7 }, { token: 'T1' });
+  assert.equal(sc, 409, 'code of another class');
+  const [sj, rj] = await E.run('p.teamJoin', { code: E.c1.code, tcode: '113', name: 'י.ש' });
+  assert.equal(sj, 200); assert.equal(rj.team.name, 'צוות 3'); assert.deepEqual(rj.team.members.map((m) => m.name), ['י.ש']);
+  const [, rj2] = await E.run('p.teamJoin', { code: E.c1.code, tcode: '113', name: 'יש' });
+  assert.equal(rj2.team.members.length, 1, 'same initials are not added twice');
+  const [sx] = await E.run('p.teamJoin', { code: E.c2.code, tcode: '113', name: 'א.ב' });
+  assert.equal(sx, 404);
+  const [, g] = await E.run('p.get', {}, { a: rj.a, t: rj.t, key: rj.key });
+  assert.equal(g.team.code, '113');
 });

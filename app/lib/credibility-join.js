@@ -77,14 +77,14 @@
     app.innerHTML = '<div class="dlm-card"><h1>' + esc(a.title) + '</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
       + (a.dilemma ? '<p><b>הדילמה:</b> ' + esc(a.dilemma) + '</p>' : '')
       + (a.status !== 'open' ? msg('הפעילות סגורה כרגע. המרצה תפתח אותה.') : '')
-      + '<div class="dlm-grid2"><div class="dlm-card soft"><h2>הצוות שלנו כבר נפתח</h2><p class="dlm-hint">כל אחד ואחת מהצוות נכנס/ת עם קוד הצוות שמופיע אצל מי שפתח/ה אותו.</p>'
-      + '<label for="tc">קוד הצוות</label><input type="text" id="tc" dir="ltr" autocomplete="off" maxlength="6" style="max-width:10rem"> <button class="dlm-btn main" id="join">הצטרפות לצוות</button><div id="jm"></div></div>'
+      + '<div class="dlm-grid2"><div class="dlm-card soft"><h2>הצוות שלנו כבר נפתח</h2><p class="dlm-hint">כל אחד ואחת מהצוות נכנס/ת עם קוד הצוות: שלוש ספרות שהמרצה נותנת, או הקוד שמופיע אצל מי שפתח/ה את הצוות.</p>'
+      + '<label for="tc">קוד הצוות</label><input type="text" id="tc" dir="ltr" autocomplete="off" inputmode="text" maxlength="6" placeholder="למשל: 113" style="max-width:10rem"> <button class="dlm-btn main" id="join">הצטרפות לצוות</button><div id="jm"></div></div>'
       + '<div class="dlm-card soft"><h2>פתיחת צוות חדש</h2>' + (info.full ? '<p>בכיתה כבר יש 10 צוותים. אפשר להצטרף לצוות קיים עם קוד הצוות.</p>' : '<p class="dlm-hint">אחד/ת מהצוות פותח/ת, וכותב/ת את ראשי התיבות של כל המשתתפים.</p><button class="dlm-btn main" id="new">פתיחת צוות</button>') + '</div></div>'
       + (info.teams.length ? '<p class="dlm-hint">צוותים בכיתה: ' + info.teams.map((t) => esc(t.name)).join(' · ') + '</p>' : '') + '</div>';
     app.querySelector('.dlm-card').insertAdjacentHTML('afterbegin', '<p class="dlm-msg">✓ השאלון של ' + esc(mine.name) + ' נשמר במכשיר הזה. הוא נשלח לצוות כשנכנסים אליו. <button type="button" class="crd-link" id="redoPre">עריכת השאלון</button></p>');
     $('#redoPre').onclick = () => personalPre(info, true);
     $('#join').onclick = async () => {
-      try { const r = await U.api('p.teamJoin', { code: classCode, tcode: $('#tc').value }); S.cred = { a: r.a, t: r.t, key: r.key }; saveCred(classCode, S.cred); load(); }
+      try { const r = await U.api('p.teamJoin', { code: classCode, tcode: $('#tc').value, name: (getMine() || {}).name || '' }); S.cred = { a: r.a, t: r.t, key: r.key }; saveCred(classCode, S.cred); load(); }
       catch (e) { $('#jm').innerHTML = msg(e.message, 'err'); }
     };
     const nb = $('#new'); if (nb) nb.onclick = () => newTeam(info);
@@ -253,7 +253,16 @@
       + '<h3>מקור חדש לבדיקה</h3><div class="dlm-grid2"><div><label for="nf">העלאת קובץ</label><input type="file" id="nf" accept="image/*,application/pdf,text/plain,audio/*,video/*">'
       + '<p class="dlm-hint">תמונה, צילום מסך, PDF, טקסט, הקלטה או וידאו קצר.</p></div><div><label for="nu">או קישור</label><input type="url" id="nu" dir="ltr" placeholder="https://"></div></div>'
       + '<label for="nt">שם קצר למקור (רשות)</label><input type="text" id="nt" placeholder="למשל: הפוסט על הנתונים המזויפים">'
-      + '<p><button class="dlm-btn main" id="addk">התחלת בדיקה</button></p><div id="km"></div></div>';
+      + '<p><button class="dlm-btn main" id="addk">התחלת בדיקה</button></p><div id="km"></div>' + bankList() + '</div>';
+  }
+  // מאגר הידיעות: בחירה מעלה את הידיעה לצוות ופותחת את שלב 1
+  function bankList() {
+    const B = window.SBE_CRED_BANK; if (!B) return '';
+    const used = new Set(S.data.checks.map((k) => k.bank).filter(Boolean));
+    return '<h3>או בחירת ידיעה מהמאגר</h3><p class="dlm-hint">הידיעה עולה כמקור לבדיקה, ומשם ממשיכים לשלב 1. כשאין קישור, מחפשים את המקור לפי הכותרת.</p>'
+      + B.ordered(S.data.activity.dilemma).map((g) => '<details class="crd-bank"><summary>' + esc(g.t) + ' (' + g.items.length + ')</summary><div class="crd-list">'
+        + g.items.map((x) => '<button type="button" class="crd-item" data-bank="' + esc(x.id) + '"' + (used.has(x.id) ? ' disabled' : '') + '><b>' + esc(x.title) + '</b><span class="dlm-hint">' + esc(x.outlet + ' · ' + x.date) + (used.has(x.id) ? ' · כבר בבדיקה' : '') + '</span></button>').join('')
+        + '</div></details>').join('') + '<div id="bkm"></div>';
   }
   function stageLabel(k) {
     if (k.final) return 'הבדיקה הושלמה';
@@ -542,6 +551,14 @@
       const r = await saveCheck('new', { url, title, fileId, fileName, fileType }); clearDrafts();
       S.open = r.id; S.stage = 'describe'; S.stageFor = r.id; render();
     }, $('#km')));
+    app.querySelectorAll('[data-bank]').forEach((b) => { b.onclick = () => act(async () => {
+      const B = window.SBE_CRED_BANK, x = B && B.find(b.dataset.bank); if (!x) return;
+      b.disabled = true; $('#bkm').innerHTML = msg('מעלים את הידיעה…');
+      const bytes = new TextEncoder().encode(B.text(x)); let bin = ''; bytes.forEach((c) => { bin += String.fromCharCode(c); });
+      const up = await call('p.upload', { data: btoa(bin), type: 'text/plain', name: x.title + '.txt' });
+      const r = await saveCheck('new', { url: x.url || '', title: x.title, fileId: up.fid, fileName: x.title + '.txt', fileType: 'text/plain', bank: x.id }); clearDrafts();
+      S.open = r.id; S.stage = 'describe'; S.stageFor = r.id; render();
+    }, $('#bkm')); });
     on('#saveFields', () => act(async () => {
       const fields = {}; for (const x of M.FIELDS) fields[x.k] = $('#f-' + x.k).value;
       if (!fields.claim.trim()) throw new Error('אפשר לנסח את הטענה במשפט אחד. זה השדה העיקרי.');
