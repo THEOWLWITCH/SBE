@@ -324,7 +324,7 @@
       : '<p>ה־AI יקרא את המקור, את הפרטים שמילאתם ואת הציון שנתתם, ויחזיר ציון 1–5, הסבר, ומה חסר כדי לדעת יותר.</p><p><button class="dlm-btn main" data-ai="first">שליחה לבדיקה</button></p>');
     else if (st === 'inquiry') inner = inquiryHTML(k);
     else inner = finalHTML(k);
-    const back = (id) => '<p class="crd-newsrc"><button type="button" class="crd-link" id="' + id + '">→ לכל המקורות</button><button type="button" class="crd-link" data-newsrc>➕ בחירת דילמה חדשה מהמאגר או מקור משלכם</button></p>';
+    const back = (id) => '<p class="crd-newsrc"><button type="button" class="crd-link" id="' + id + '">→ לכל המקורות</button><button type="button" class="crd-link" data-newsrc>➕ בחירת דילמה חדשה מהמאגר או מקור משלכם</button><button type="button" class="crd-link" data-restart="' + esc(k.id) + '">↺ התחלה מחדש של התרגול</button></p>';
     return '<div class="dlm-card">' + back('backList') + src + nav + '<div id="stage">' + inner + '</div><div id="sm"></div>' + back('backList2') + '</div>';
   }
   function describeHTML(k) {
@@ -580,6 +580,11 @@
     on('#backList', () => { S.open = null; render(); });
     on('#toReflect', () => { S.tab = 'reflect'; S.open = null; S.stage = null; render(); window.scrollTo(0, 0); });
     on('#backList2', () => { S.open = null; render(); window.scrollTo(0, 0); });
+    // התחלה מחדש של התרגול (26/11/2026: "תאפשר כפתור של התחלה חוזר של תרגול"): הבדיקה הזו נמחקת, והידיעה חוזרת למאגר לבחירה
+    app.querySelectorAll('[data-restart]').forEach((b) => { b.onclick = async () => {
+      if (!(await U.ask('להתחיל את התרגול מחדש? הבדיקה של המקור הזה תימחק, ואפשר לבחור אותו שוב או מקור אחר.'))) return;
+      act(async () => { const id = b.dataset.restart; await call('p.check', { kind: 'remove', id }); S.data.checks = S.data.checks.filter((x) => x.id !== id); S.open = null; S.stage = null; render(); window.scrollTo(0, 0); });
+    }; });
     app.querySelectorAll('[data-newsrc]').forEach((b) => { b.onclick = () => { S.open = null; S.stage = null; render(); const x = $('.crd-bankbox') || $('#nf'); if (x) { const d = x.querySelector && x.querySelector('details'); if (d) d.open = true; x.scrollIntoView({ block: 'start' }); } }; });
     on('#addk', () => act(async () => {
       const f = $('#nf').files[0], url = $('#nu').value.trim(), title = $('#nt').value.trim(), pasted = ($('#nx') ? $('#nx').value : '').trim();

@@ -72,7 +72,6 @@
         return '<div class="dlm-card"><div class="dlm-grid2"><div><h3>' + esc(c.name) + '</h3><p>קוד הכיתה: <b class="dlm-code" dir="ltr">' + esc(c.code) + '</b></p>'
           + '<p><input type="text" readonly dir="ltr" value="' + esc(joinUrl(c.code)) + '" aria-label="קישור הכניסה"></p>'
           + '<div class="dlm-row">' + '<a class="crd-link" target="_blank" rel="noopener" href="' + esc(joinUrl(c.code)) + '">פתיחת הקישור</a>' + '<button class="crd-link" data-copy="' + esc(joinUrl(c.code)) + '">העתקת הקישור</button><a class="crd-link" target="_blank" rel="noopener" href="https://wa.me/?text=' + encodeURIComponent('כניסה לבדיקת אמינות של מקורות (' + c.name + '): ' + joinUrl(c.code)) + '">וואטסאפ</a>'
-          + '<button class="crd-link" data-copy="' + esc(joinUrl(c.code).replace('credibility-join.html', 'credibility-pocket.html')) + '">העתקת קישור לגירסה לסטודנטיות.ים של הכיתה</button>'
           + '<button class="crd-link" data-big="' + esc(c.id) + '">QR גדול להקרנה</button><button class="crd-link" data-recode="' + esc(c.id) + '">קוד חדש</button><button class="crd-link" data-ren="' + esc(c.id) + '">שינוי שם</button></div>'
           + '<p class="dlm-hint">' + t.length + ' צוותים · ' + t.reduce((s, x) => s + x.members.length, 0) + ' משתתפים</p>'
           + (t.length ? '<p class="dlm-hint">קודי הצוותים: ' + t.slice().sort((p, q) => String(p.code).localeCompare(String(q.code))).map((x) => esc(x.name) + ' <b dir="ltr">' + esc(x.code || '') + '</b>').join(' · ') + '</p>' : '')
