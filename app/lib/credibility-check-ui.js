@@ -46,7 +46,7 @@
   }
   function render() {
     const a = S.a;
-    const tabs = [['classes', 'כיתות וכניסה'], ['teams', 'צוותים ועבודה'], ['findings', 'ממצאים'], ['settings', 'הגדרות']];
+    const tabs = [['classes', 'כיתות וכניסה'], ['teams', 'צוותים ועבודה'], ['findings', 'ממצאים'], ['bank', 'מאגר הידיעות'], ['settings', 'הגדרות']];
     app.innerHTML = '<div class="dlm-card"><p><button class="crd-link" id="all">לכל הפעילויות</button></p><h2>' + esc(a.title) + '</h2>'
       + '<p>' + (a.status === 'open' ? '<b>פתוחה:</b> הצוותים יכולים להיכנס ולעבוד.' : '<b>סגורה:</b> הצוותים רואים את העבודה ואינם יכולים לשנות.') + ' <button class="crd-link" id="st">' + (a.status === 'open' ? 'סגירה' : 'פתיחה') + '</button></p>'
       + '<p>' + (a.reflectOpen ? '<b>הרפלקציה פתוחה</b> לכל הצוותים.' : '<b>הרפלקציה סגורה.</b> פותחים אותה בשיעור הבא.') + ' <button class="crd-link" id="rfo">' + (a.reflectOpen ? 'סגירת הרפלקציה' : 'פתיחת הרפלקציה') + '</button></p>'
@@ -55,7 +55,7 @@
     $('#rfo').onclick = async () => { try { await call('f.update', { id: a.id, reflectOpen: !a.reflectOpen }); open(a.id); } catch (e) { U.say(e.message); } };
     $('#st').onclick = async () => { try { await call('f.status', { id: a.id, status: a.status === 'open' ? 'closed' : 'open' }); open(a.id); } catch (e) { U.say(e.message); } };
     app.querySelectorAll('[data-tab]').forEach((b) => { b.onclick = () => { S.tab = b.dataset.tab; place({ id: a.id, tab: S.tab }); render(); }; });
-    ({ classes: classesTab, teams: teamsTab, findings: findingsTab, settings: settingsTab })[S.tab]();
+    ({ classes: classesTab, teams: teamsTab, findings: findingsTab, bank: bankTab, settings: settingsTab })[S.tab]();
   }
 
   function classesTab() {
@@ -206,6 +206,16 @@
         dl('credibility-checks.csv', '﻿' + rows.map((r) => r.map((v) => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\n'), 'text/csv');
       } catch (e) { U.say(e.message); }
     };
+  }
+
+  // מאגר הידיעות (26/11/2026: "איבנה לא רואה את המאגר"): הצוותים בוחרים ממנו אחרי שאלון העמדות; כאן המרצות רואות את כל הידיעות
+  function bankTab() {
+    const n = $('#tab'), B = window.SBE_CRED_BANK;
+    if (!B) { n.innerHTML = '<div class="dlm-card"><p>המאגר לא נטען. אפשר לרענן את הדף.</p></div>'; return; }
+    n.innerHTML = '<div class="dlm-card"><h3>מאגר הידיעות (' + B.all().length + ')</h3><p class="dlm-hint">אלה הידיעות שהצוותים יכולים לבחור מהן. אצל הצוותים המאגר מופיע בלשונית בדיקת המקורות, אחרי שאלון העמדות ופתיחת אזור העבודה, מעל העלאת הקובץ. הקבוצה של הדילמה של הפעילות מופיעה ראשונה.</p>'
+      + B.ordered(S.a.dilemma).map((g) => '<details class="crd-bank"><summary>' + esc(g.t) + ' (' + g.items.length + ')</summary>'
+        + g.items.map((x) => '<details class="crd-bank"><summary>' + esc(x.title) + ' <span class="dlm-hint">' + esc(x.outlet + ' · ' + x.date) + '</span></summary><pre class="crd-bank-text">' + esc(B.text(x)) + '</pre>' + (x.url ? '<p><a href="' + esc(x.url) + '" target="_blank" rel="noopener">קישור למקור</a></p>' : '') + '</details>').join('')
+        + '</details>').join('') + '</div>';
   }
 
   function settingsTab() {
