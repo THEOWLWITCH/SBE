@@ -63,21 +63,19 @@
     try { info = await U.api('p.class', { code: classCode }); }
     catch (e) { app.innerHTML = msg(e.message, 'err') + '<p><button class="dlm-btn" id="other">קוד כיתה אחר</button></p>'; $('#other').onclick = () => { classCode = ''; start(); }; return; }
     if (info.pick) {
-      $('#topTitle').textContent = info.pick.title;
-      app.innerHTML = '<div class="dlm-card"><h1>' + esc(info.pick.title) + '</h1><h2>באיזו כיתה אני?</h2><p class="crd-pick">'
+      app.innerHTML = '<div class="dlm-card"><h1>בדיקת אמינות של מקורות</h1><h2>באיזו כיתה אני?</h2><p class="crd-pick">'
         + info.pick.classes.map((c) => '<button class="dlm-btn main" data-pick="' + esc(c.code) + '">' + esc(c.name) + '</button>').join('') + '</p></div>';
       app.querySelectorAll('[data-pick]').forEach((b) => { b.onclick = () => { classCode = b.dataset.pick; history.replaceState(null, '', '?c=' + classCode); start(); }; });
       return;
     }
     const a = info.activity;
-    $('#topTitle').textContent = a.title;
     const mine = getMine();
     if (testAct()) { if (!mine || !mine.pre) return personalPre(info); return newTeam(info); }
     // 26/11/2026: "זה ממש חשוב שהתהליך יהיה פשוט: ברקוד >> קוד צוות. זהו"
     // כשבכיתה יש צוותים מוכנים: ראשי תיבות וקוד צוות בלבד; השאלון ממולא בתוך הצוות
     if (info.teams.length) return quickJoin(info);
     if (!mine || !mine.pre) return personalPre(info);
-    app.innerHTML = '<div class="dlm-card"><h1>' + esc(a.title) + '</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
+    app.innerHTML = '<div class="dlm-card"><h1>בדיקת אמינות של מקורות</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
       + (a.dilemma ? '<p><b>הדילמה:</b> ' + esc(a.dilemma) + '</p>' : '')
       + (a.status !== 'open' ? msg('הפעילות סגורה כרגע. המרצה תפתח אותה.') : '')
       + '<div class="dlm-grid2"><div class="dlm-card soft"><h2>הצוות שלנו כבר נפתח</h2><p class="dlm-hint">כל אחד ואחת מהצוות נכנס/ת עם קוד הצוות: שלוש ספרות שהמרצה נותנת, או הקוד שמופיע אצל מי שפתח/ה את הצוות.</p>'
@@ -94,7 +92,7 @@
   }
   function quickJoin(info) {
     const a = info.activity, mine = getMine() || {};
-    app.innerHTML = '<div class="dlm-card crd-quick"><h1>' + esc(a.title) + '</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
+    app.innerHTML = '<div class="dlm-card crd-quick"><h1>בדיקת אמינות של מקורות</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
       + (a.status !== 'open' ? msg('הפעילות סגורה כרגע. המרצה תפתח אותה.') : '')
       + '<label for="mi">ראשי התיבות שלי</label><input type="text" id="mi" maxlength="12" placeholder="למשל: י.ש" style="max-width:12rem" value="' + esc(mine.name || '') + '">'
       + '<label for="tc">קוד הצוות</label><input type="text" id="tc" dir="ltr" autocomplete="off" inputmode="numeric" maxlength="6" placeholder="למשל: 113" style="max-width:10rem">'
@@ -115,7 +113,7 @@
   }
   function personalPre(info, edit) {
     const a = info.activity, mine = getMine() || {};
-    app.innerHTML = testBar() + '<div class="dlm-card"><h1>' + esc(M.ATT.pre) + '</h1><p class="dlm-sub">' + esc(a.title) + ' · ' + esc(a.class.name) + '</p>'
+    app.innerHTML = testBar() + '<div class="dlm-card"><h1>' + esc(M.ATT.pre) + '</h1><p class="dlm-sub">' + esc(a.class.name) + '</p>'
       + '<p>לפני הכניסה לצוותים, כל משתתף/ת ממלא/ת שאלון עמדות אישי קצר, מהמכשיר שלו/ה. אחר כך פותחים צוות או מצטרפים לצוות.</p>'
       + '<p class="dlm-hint">' + esc(M.ATT.note) + '</p>'
       + '<label for="mi">ראשי התיבות שלי <span class="crd-req">(שדה עיקרי)</span></label><input type="text" id="mi" maxlength="12" placeholder="למשל: י.ש" style="max-width:12rem" value="' + esc(mine.name || '') + '">'
@@ -220,7 +218,6 @@
   function clearDrafts() { const d = drafts(), p = ctxKey(); Object.keys(d).forEach((k) => { if (k.startsWith(p)) delete d[k]; }); saveDrafts(); }
   function render() {
     const D = S.data, t = D.team;
-    $('#topTitle').textContent = D.activity.title;
     const who = me();
     const head = '<div class="dlm-card crd-team"><div class="dlm-row" style="justify-content:space-between"><div><h1>' + esc(t.name) + '</h1><div class="dlm-hint">' + esc(D.activity.class.name) + ' · קוד הצוות: <b dir="ltr">' + esc(t.code) + '</b> · <button type="button" class="crd-link" id="switchTeam">לא הצוות שלי? כניסה לצוות אחר</button></div></div>'
       + '<div><label for="who">מי עובד/ת עכשיו במכשיר הזה?</label><select id="who" data-closed><option value="">בחירה</option>' + t.members.map((m) => '<option value="' + esc(m.id) + '"' + (who === m.id ? ' selected' : '') + '>' + esc(m.name) + '</option>').join('') + '</select></div></div>'
