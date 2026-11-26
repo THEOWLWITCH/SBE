@@ -23,7 +23,7 @@ const M = require('../../app/lib/credibility-model.js');
 
 export const CRD_JOIN_PAGE = 'credibility-join.html';
 const KEEP_DAYS = 400;
-const LIM = { mine: 80, classes: 12, teams: 10, members: 8, checks: 12, chat: 80, ext: 20, files: 40, text: 3000, long: 8000 };
+const LIM = { mine: 80, classes: 12, teams: 15, members: 8, checks: 12, chat: 80, ext: 20, files: 40, text: 3000, long: 8000 };
 const FILE_KINDS = [
   { re: /^(image\/(png|jpeg|webp|gif)|application\/pdf|text\/plain)$/, max: 3_000_000, t: '3 מגה' },
   { re: /^audio\/(mpeg|mp3|mp4|x-m4a|m4a|aac|ogg|wav|x-wav|webm)$/, max: 6_000_000, t: '6 מגה' },
@@ -259,7 +259,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
       if (op === 'f.teamsMake') {
         const a = await mine(d.id);
         const c = a.classes.find((x) => x.id === d.classId); if (!c) throw new CrdError('הכיתה לא נמצאה', 404);
-        const col = String(d.college || ''), cl = String(d.cls || ''), n = Math.min(Number(d.n) || 7, 9);
+        const col = String(d.college || ''), cl = String(d.cls || ''), n = Math.min(Number(d.n) || 7, LIM.teams);
         if (!/^[1-9]$/.test(col) || !/^[1-9]$/.test(cl)) throw new CrdError('ספרת המכללה וספרת הכיתה: מספר אחד מ־1 עד 9');
         const teams = (await teamsOf(store, a)).filter((t) => t.classId === c.id);
         const made = [];
@@ -356,7 +356,7 @@ export async function handleCredibility(store, body, { who, fetchImpl, resolve }
       const key = randomBytes(24).toString('hex');
       if (op === 'p.teamJoin') {
         const tc = String(d.tcode || '').toUpperCase().trim();
-        const id = /^([A-Z0-9]{6}|[1-9]{3})$/.test(tc) ? await store.get('crtc:' + a.id + ':' + tc) : null;
+        const id = /^([A-Z0-9]{6}|[1-9]{3}|[1-9]{2}1[0-5])$/.test(tc) ? await store.get('crtc:' + a.id + ':' + tc) : null;
         const t = id ? await store.get('crt:' + a.id + ':' + id.t) : null;
         if (!t || t.classId !== r.c) throw new CrdError('קוד הצוות לא נמצא בכיתה הזו', 404);
         // מי שמצטרף/ת עם ראשי התיבות שלו/ה ועוד לא ברשימת הצוות נוסף/ה אליה (בצוות מוכן מראש הרשימה מתחילה ריקה)

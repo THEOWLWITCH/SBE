@@ -56,7 +56,7 @@ test('scale: five levels, merged from 0–7, grey is not a score', () => {
   assert.deepEqual(M.REFLECT.map((q) => q.k), ['feel', 'think', 'changed', 'why', 'could', 'free']);
 });
 
-test('team entry: up to 10 teams per class, consent per member, join only with the team code', async () => {
+test('team entry: up to 15 teams per class, consent per member, join only with the team code', async () => {
   const E = await setup();
   const [s0] = await E.run('p.teamCreate', { code: E.c1.code, name: 'א', members: [{ name: 'רונית' }] });
   assert.equal(s0, 400, 'consent required');
@@ -65,11 +65,11 @@ test('team entry: up to 10 teams per class, consent per member, join only with t
   assert.equal(sj, 200); assert.equal(rj.t, t1.r.t);
   const [sx] = await E.run('p.teamJoin', { code: E.c2.code, tcode: t1.r.team.code });
   assert.equal(sx, 404, 'team code from another class');
-  for (let i = 2; i <= 10; i++) await E.team(E.c1, 'צוות ' + i);
-  const [sf] = await E.run('p.teamCreate', { code: E.c1.code, name: 'צוות 11', members: [{ name: 'x', consent: 'research' }] });
+  for (let i = 2; i <= 15; i++) await E.team(E.c1, 'צוות ' + i);
+  const [sf] = await E.run('p.teamCreate', { code: E.c1.code, name: 'צוות 16', members: [{ name: 'x', consent: 'research' }] });
   assert.equal(sf, 409);
   const [, info] = await E.run('p.class', { code: E.c1.code });
-  assert.equal(info.full, true); assert.equal(info.teams.length, 10);
+  assert.equal(info.full, true); assert.equal(info.teams.length, 15);
   assert.ok(!JSON.stringify(info).includes('משתתפת'), 'class view shows no names');
 });
 
@@ -289,6 +289,11 @@ test('צוותים מוכנים: 7 צוותים לכל כיתה, קוד של 3 �
   const r2 = await E.fac('f.teamsMake', { id: E.A.id, classId: E.c2.id, college: '2', cls: '1', n: 7 });
   assert.equal(r2.made[0], '211');
   assert.deepEqual((await E.fac('f.teamsMake', { id: E.A.id, classId: E.c1.id, college: '1', cls: '1', n: 7 })).made, [], 'again: nothing new');
+  const ca = await E.fac('f.classAdd', { id: E.A.id, name: 'כיתה 3' }); const c3 = ca.activity.classes.find((x) => x.name === 'כיתה 3');
+  const r3 = await E.fac('f.teamsMake', { id: E.A.id, classId: c3.id, college: '2', cls: '3', n: 15 });
+  assert.equal(r3.made.length, 15); assert.equal(r3.made[14], '2315');
+  const [s15] = await E.run('p.teamJoin', { code: c3.code, tcode: '2315', name: 'א.ב' });
+  assert.equal(s15, 200, 'four-digit team code');
   const [sc] = await E.run('f.teamsMake', { id: E.A.id, classId: E.c2.id, college: '1', cls: '1', n: 7 }, { token: 'T1' });
   assert.equal(sc, 409, 'code of another class');
   const [sj, rj] = await E.run('p.teamJoin', { code: E.c1.code, tcode: '113', name: 'י.ש' });
