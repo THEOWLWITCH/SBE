@@ -272,6 +272,8 @@ test('מאגר הידיעות: שתי קבוצות, פריטים שלמים, ט�
   }
   assert.equal(B.ordered('האם כולם מושחתים?')[0].key, 'corrupt');
   assert.equal(B.ordered('התקשורת שמאלנית?')[0].key, 'media');
+  assert.equal(B.ordered('האם ההתחממות הגלובלית היא הונאה?')[0].key, 'climate');
+  assert.deepEqual(B.GROUPS.map((g) => g.t), ['שחיתות שלטונית', 'התחממות גלובלית', 'תקשורת שמאלנית']);
   const html = fs.readFileSync(new URL('../../app/credibility-join.html', import.meta.url), 'utf8');
   assert.ok(html.indexOf('lib/credibility-bank.js') > 0 && html.indexOf('lib/credibility-bank.js') < html.indexOf('lib/credibility-join.js'));
 });

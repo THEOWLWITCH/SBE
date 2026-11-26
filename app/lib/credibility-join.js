@@ -277,6 +277,7 @@
       + bankList()
       + '<h3>' + (window.SBE_CRED_BANK ? 'או מקור משלכם' : 'מקור חדש לבדיקה') + '</h3><div class="dlm-grid2"><div><label for="nf">העלאת קובץ</label><input type="file" id="nf" accept="image/*,application/pdf,text/plain,audio/*,video/*">'
       + '<p class="dlm-hint">תמונה, צילום מסך, PDF, טקסט, הקלטה או וידאו קצר.</p></div><div><label for="nu">או קישור</label><input type="url" id="nu" dir="ltr" placeholder="https://"></div></div>'
+      + '<label for="nx">או הדבקת הטקסט של הידיעה</label><textarea id="nx" rows="4" placeholder="מדביקים כאן את הכותרת ואת גוף הידיעה"></textarea>'
       + '<label for="nt">שם קצר למקור (רשות)</label><input type="text" id="nt" placeholder="למשל: הפוסט על הנתונים המזויפים">'
       + '<p><button class="dlm-btn main" id="addk">התחלת בדיקה</button></p><div id="km"></div></div>';
   }
@@ -290,10 +291,14 @@
         + '</div></details>').join('') + '<div id="bkm"></div></div>';
   }
   // ידיעה מהמאגר: הטקסט המלא על המסך, כדי שאפשר לקרוא אותה בזמן הבדיקה (26/11/2026: "אי אפשר לקרוא את הידיעות שבוחרים")
+  // גם ידיעה שהדביקו (קובץ טקסט). הטקסט נשלח ל־AI בכל בדיקה (ctxOf: text)
   function bankStory(k) {
-    const B = window.SBE_CRED_BANK, x = k.bank && B && B.find(k.bank); if (!x) return '';
-    return '<details class="crd-bankstory" open><summary>הידיעה לבדיקה</summary><pre class="crd-bank-text">' + esc(B.text(x)) + '</pre></details>';
+    const B = window.SBE_CRED_BANK, x = k.bank && B && B.find(k.bank);
+    if (!x && k.fileType !== 'text/plain') return '';
+    const body = x ? esc(B.text(x)) : '<span class="dlm-hint">טוענים את הידיעה…</span>';
+    return '<details class="crd-bankstory" open><summary>הידיעה לבדיקה</summary><pre class="crd-bank-text" id="storyText"' + (x ? '' : ' data-load="1"') + '>' + body + '</pre><p class="dlm-hint">זה הטקסט שה־AI קורא ובודק, יחד עם הפרטים שתמלאו.</p></details>';
   }
+  function b64(t) { const bytes = new TextEncoder().encode(t); let bin = ''; bytes.forEach((c) => { bin += String.fromCharCode(c); }); return btoa(bin); }
   function stageLabel(k) {
     if (k.final) return 'הבדיקה הושלמה';
     if (k.done) return 'שלב 4: מחכה לבדיקת AI חוזרת';
@@ -565,27 +570,32 @@
     app.querySelectorAll('[data-open]').forEach((b) => { b.onclick = () => { S.open = b.dataset.open; S.stage = null; render(); }; });
     app.querySelectorAll('[data-stage]').forEach((b) => { b.onclick = () => { S.stage = b.dataset.stage; S.stageFor = S.open; render(); }; });
     app.querySelectorAll('[data-file]').forEach((b) => { b.onclick = () => act(async () => U.showFile(await fileFor(k))); });
+    const st = $('#storyText[data-load]'); if (st) fileText(k).then((t) => { if (st.isConnected) st.textContent = t || 'אפשר לפתוח את הקובץ מהקישור למעלה.'; }).catch(() => {});
     app.querySelectorAll('[data-ai]').forEach((b) => { b.onclick = () => act(async () => { b.disabled = true; await runAI(k, b.dataset.ai); S.stage = b.dataset.ai === 'fields' ? 'describe' : b.dataset.ai; S.stageFor = k.id; render(); }); });
     app.querySelectorAll('[data-extdel]').forEach((b) => { b.onclick = () => act(async () => { await saveCheck('extDel', { id: k.id, extId: b.dataset.extdel }); render(); }); });
     on('#backList', () => { S.open = null; render(); });
     on('#addk', () => act(async () => {
-      const f = $('#nf').files[0], url = $('#nu').value.trim(), title = $('#nt').value.trim();
-      if (!f && !url) throw new Error('אפשר להעלות קובץ או להדביק קישור.');
+      const f = $('#nf').files[0], url = $('#nu').value.trim(), title = $('#nt').value.trim(), pasted = ($('#nx') ? $('#nx').value : '').trim();
+      if (!f && !url && !pasted) throw new Error('אפשר להעלות קובץ, להדביק קישור או להדביק את הטקסט של הידיעה.');
       let fileId = '', fileName = '', fileType = '';
-      if (f) {
+      if (!f && pasted) {
+        $('#km').innerHTML = msg('שומרים את הידיעה…');
+        const nm = (title || pasted.split('\n')[0]).slice(0, 80) + '.txt';
+        const up = await call('p.upload', { data: b64(pasted.slice(0, 60000)), type: 'text/plain', name: nm });
+        fileId = up.fid; fileName = nm; fileType = 'text/plain';
+      } else if (f) {
         $('#km').innerHTML = msg('מעלים את הקובץ…');
         const small = await U.shrinkImage(f);
         const up = await call('p.upload', { data: small || await U.readFile(f), type: small ? 'image/jpeg' : f.type, name: f.name });
         fileId = up.fid; fileName = f.name; fileType = small ? 'image/jpeg' : f.type;
       }
-      const r = await saveCheck('new', { url, title, fileId, fileName, fileType }); clearDrafts();
+      const r = await saveCheck('new', { url, title: title || (pasted ? pasted.split('\n')[0].slice(0, 120) : ''), fileId, fileName, fileType }); clearDrafts();
       S.open = r.id; S.stage = 'describe'; S.stageFor = r.id; render();
     }, $('#km')));
     app.querySelectorAll('[data-bank]').forEach((b) => { b.onclick = () => act(async () => {
       const B = window.SBE_CRED_BANK, x = B && B.find(b.dataset.bank); if (!x) return;
       b.disabled = true; $('#bkm').innerHTML = msg('מעלים את הידיעה…');
-      const bytes = new TextEncoder().encode(B.text(x)); let bin = ''; bytes.forEach((c) => { bin += String.fromCharCode(c); });
-      const up = await call('p.upload', { data: btoa(bin), type: 'text/plain', name: x.title + '.txt' });
+      const up = await call('p.upload', { data: b64(B.text(x)), type: 'text/plain', name: x.title + '.txt' });
       const r = await saveCheck('new', { url: x.url || '', title: x.title, fileId: up.fid, fileName: x.title + '.txt', fileType: 'text/plain', bank: x.id }); clearDrafts();
       S.open = r.id; S.stage = 'describe'; S.stageFor = r.id; render();
     }, $('#bkm')); });
